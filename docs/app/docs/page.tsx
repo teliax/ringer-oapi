@@ -10,7 +10,7 @@ export default function DocsPage() {
       
       <h2 className="text-2xl font-semibold mt-8 mb-4">Getting Started</h2>
       <p className="mb-4">
-        To get started with the Ringer API, you'll need to:
+        To get started with the Ringer API, you&apos;ll need to:
       </p>
       <ol className="list-decimal pl-6 mb-6 space-y-2">
         <li>Sign up for a Ringer account</li>

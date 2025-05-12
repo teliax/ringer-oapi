@@ -6,7 +6,7 @@ export default function TeliquePage() {
       <h1 className="text-3xl font-bold mb-6">Telique</h1>
       
       <p className="mb-4">
-        Telique is Ringer's database API tool that provides access to telecommunications data. 
+        Telique is Ringer&apos;s database API tool that provides access to telecommunications data. 
         It allows you to query information about phone numbers, such as caller name (CNAM) data, 
         line type information, and more.
       </p>

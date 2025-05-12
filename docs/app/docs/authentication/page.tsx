@@ -16,7 +16,7 @@ export default function AuthenticationPage() {
       
       <h3 className="text-xl font-semibold mt-6 mb-3">Bearer Token Authentication</h3>
       <p className="mb-4">
-        For most API endpoints, you'll need to include your API key in the Authorization header:
+        For most API endpoints, you&apos;ll need to include your API key in the Authorization header:
       </p>
       <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded font-mono text-sm mb-6 overflow-x-auto">
         Authorization: Bearer your_api_key
@@ -53,7 +53,7 @@ export default function AuthenticationPage() {
         <li>Custom limits available for enterprise customers</li>
       </ul>
       <p className="mb-4">
-        If you exceed the rate limit, you'll receive a <code className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded font-mono">429 Too Many Requests</code> response.
+        If you exceed the rate limit, you&apos;ll receive a <code className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded font-mono">429 Too Many Requests</code> response.
       </p>
     </div>
   )
