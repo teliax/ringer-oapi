@@ -1,0 +1,72 @@
+name: Validate OpenAPI Specifications
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'openapi/**/*.yaml'
+      - 'openapi/**/*.yml'
+      - 'openapi/**/*.json'
+      - '.spectral.yaml'
+      - '.github/workflows/validate-specs.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'openapi/**/*.yaml'
+      - 'openapi/**/*.yml'
+      - 'openapi/**/*.json'
+      - '.spectral.yaml'
+
+jobs:
+  validate:
+    name: Validate OpenAPI Specifications
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install Spectral
+        run: npm install -g @stoplight/spectral-cli
+      
+      - name: Validate OpenAPI specifications with Spectral
+        run: |
+          for file in $(find openapi -name "*.yaml" -o -name "*.yml" -o -name "*.json"); do
+            echo "Validating $file..."
+            spectral lint "$file" --ruleset .spectral.yaml
+          done
+      
+      - name: Validate against OpenAPI 3.0 Schema
+        run: |
+          npm install -g @apidevtools/swagger-cli
+          for file in $(find openapi -name "*.yaml" -o -name "*.yml" -o -name "*.json"); do
+            echo "Validating $file against OpenAPI 3.0 schema..."
+            swagger-cli validate "$file"
+          done
+        
+      - name: Check for Potential Breaking Changes (on PRs)
+        if: github.event_name == 'pull_request'
+        run: |
+          # Install necessary tools
+          npm install -g @openapitools/openapi-diff
+          
+          # Get the base branch ref
+          BASE_REF=${{ github.event.pull_request.base.ref }}
+          
+          # For each changed OpenAPI file, compare with the base branch version
+          git diff --name-only origin/$BASE_REF -- 'openapi/**/*.yaml' 'openapi/**/*.yml' 'openapi/**/*.json' | while read file; do
+            if [ -f "$file" ]; then
+              echo "Checking for breaking changes in $file..."
+              # Get the same file from the base branch
+              git show "origin/$BASE_REF:$file" > "base_$file" || continue
+              
+              # Compare the files
+              openapi-diff "base_$file" "$file" || echo "Warning: Potential breaking changes detected in $file"
+            fi
+          done 

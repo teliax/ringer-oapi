@@ -1,0 +1,52 @@
+extends: [[spectral:oas, all]]
+
+rules:
+  # Customize severity of rules
+  openapi-tags: error
+  operation-tags: error
+  operation-operationId: error
+  operation-description: error
+  
+  # Enforce parameter descriptions
+  parameter-description: error
+  
+  # Enforce schema descriptions
+  schema-description: error
+  
+  # Enforce response descriptions
+  response-description: error
+  
+  # Enforce example values
+  example-value-or-externalValue: warn
+  
+  # Enforce consistent naming
+  path-params:
+    description: Path parameters should be defined and valid in the path
+    given: $.paths.*~
+    severity: error
+    then:
+      function: oasPathParam
+      
+  operation-success-response:
+    description: Operation must have at least one 2xx or 3xx response
+    given: $.paths.*.*.responses
+    severity: error
+    then:
+      function: oasOpSuccessResponse
+
+  # Check info object completeness  
+  info-contact:
+    description: Info object should contain a contact object
+    given: $.info
+    severity: warn
+    then:
+      field: contact
+      function: truthy
+      
+  info-description:
+    description: Info object should contain a description
+    given: $.info
+    severity: error
+    then:
+      field: description
+      function: truthy 

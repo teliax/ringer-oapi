@@ -1,0 +1,48 @@
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor directories and files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Node modules (if using Node-based tools)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing and validation
+.coverage/
+.nyc_output/
+coverage/
+
+# Temporary files
+*.log
+*.tmp
+tmp/
+temp/
+
+# Backup files
+*.bak
+*~
+
+# OpenAPI specific
+*.resolved.yaml
+*.resolved.json
+*.bundled.yaml
+*.bundled.json
+
+# Build directories
+dist/
+build/ 
