@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Ringer Telique API
+  title: Telique API
   description: |
     The Ringer Telique API provides access to telecommunications data, 
     including caller name (CNAM) data, line type information, and more.
