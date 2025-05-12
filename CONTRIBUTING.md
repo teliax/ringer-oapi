@@ -23,8 +23,8 @@ Thank you for your interest in contributing to Ringer's OpenAPI specifications! 
 ### OpenAPI File Structure
 
 All API specifications are in the `openapi` directory, organized by business domain:
-- `openapi/ringer/` - Core Ringer APIs
-- `openapi/ringer-business/` - Business-focused APIs
+- `openapi/ringer/` - Ringer Carrier APIs
+- `openapi/ringer-business/` - The UCaaS APIs
 - `openapi/ringer-mobile/` - Mobile-specific APIs
 
 ### Guidelines for Changes
