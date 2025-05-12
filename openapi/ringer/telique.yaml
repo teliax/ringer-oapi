@@ -1,0 +1,265 @@
+openapi: 3.0.3
+info:
+  title: Ringer Telique API
+  description: |
+    The Ringer Telique API provides access to telecommunications data, 
+    including caller name (CNAM) data, line type information, and more.
+  version: 1.0.0
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/
+    email: support@ringer.tel
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server
+  - url: https://api.staging.ringer.tel/v1
+    description: Staging server
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+tags:
+  - name: Lookup
+    description: Endpoints for looking up phone number information
+paths:
+  /telique/lookup:
+    get:
+      tags:
+        - Lookup
+      summary: Look up a phone number
+      description: Returns detailed information about a specified phone number.
+      operationId: lookupPhoneNumber
+      parameters:
+        - name: phone_number
+          in: query
+          description: The phone number to look up in E.164 format (e.g., +18005551234)
+          required: true
+          schema:
+            type: string
+            pattern: ^\+[1-9]\d{10,14}$
+        - name: include_cnam
+          in: query
+          description: Whether to include caller name information
+          required: false
+          schema:
+            type: boolean
+            default: true
+        - name: include_line_type
+          in: query
+          description: Whether to include line type information
+          required: false
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /telique/bulk-lookup:
+    post:
+      tags:
+        - Lookup
+      summary: Look up multiple phone numbers
+      description: Returns detailed information about multiple phone numbers in a single request.
+      operationId: bulkLookupPhoneNumbers
+      requestBody:
+        description: Request parameters for bulk lookup
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phone_numbers
+              properties:
+                phone_numbers:
+                  type: array
+                  description: Array of phone numbers to look up in E.164 format
+                  maxItems: 100
+                  items:
+                    type: string
+                    pattern: ^\+[1-9]\d{10,14}$
+                include_cnam:
+                  type: boolean
+                  description: Whether to include caller name information
+                  default: true
+                include_line_type:
+                  type: boolean
+                  description: Whether to include line type information
+                  default: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkLookupResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API key
+    ApiKeyAuth:
+      type: apiKey
+      in: query
+      name: api_key
+  schemas:
+    LookupResponse:
+      type: object
+      required:
+        - status
+        - data
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+          type: object
+          required:
+            - phone_number
+          properties:
+            phone_number:
+              type: string
+              example: "+18005551234"
+            cnam:
+              $ref: '#/components/schemas/CnamData'
+            line_type:
+              $ref: '#/components/schemas/LineTypeData'
+            location:
+              $ref: '#/components/schemas/LocationData'
+    BulkLookupResponse:
+      type: object
+      required:
+        - status
+        - data
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+          type: array
+          items:
+            type: object
+            required:
+              - phone_number
+            properties:
+              phone_number:
+                type: string
+                example: "+18005551234"
+              cnam:
+                $ref: '#/components/schemas/CnamData'
+              line_type:
+                $ref: '#/components/schemas/LineTypeData'
+              location:
+                $ref: '#/components/schemas/LocationData'
+              error:
+                type: string
+                description: Error message if the lookup for this phone number failed
+    CnamData:
+      type: object
+      properties:
+        caller_name:
+          type: string
+          example: "JOHN SMITH"
+        caller_type:
+          type: string
+          enum: [CONSUMER, BUSINESS, UNKNOWN]
+          example: "CONSUMER"
+        last_updated:
+          type: string
+          format: date-time
+          example: "2023-05-15T12:34:56Z"
+    LineTypeData:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [FIXED_LINE, MOBILE, VOIP, TOLL_FREE, PREMIUM_RATE, UNKNOWN]
+          example: "FIXED_LINE"
+        carrier:
+          type: string
+          example: "Example Telecom"
+    LocationData:
+      type: object
+      properties:
+        country:
+          type: string
+          example: "US"
+        state:
+          type: string
+          example: "CA"
+        city:
+          type: string
+          example: "Los Angeles"
+    Error:
+      type: object
+      required:
+        - status
+        - error
+      properties:
+        status:
+          type: string
+          example: error
+        error:
+          type: string
+          example: Invalid phone number format
+        error_code:
+          type: string
+          example: invalid_phone_number 
