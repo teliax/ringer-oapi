@@ -150,12 +150,12 @@ export default function CNAMLookupPage() {
         <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg font-mono text-sm overflow-x-auto">
 {`# GET request
 curl -X GET &quot;https://api.ringer.tel/v1/telique/cnam?number=8005551234&quot; \\
-  -H "Authorization: Bearer your_api_key"
+  -H &quot;Authorization: Bearer your_api_key&quot;
 
 # POST request
 curl -X POST &quot;https://api.ringer.tel/v1/telique/cnam&quot; \\
-  -H "Authorization: Bearer your_api_key" \\
-  -d "number=8005551234"`}
+  -H &quot;Authorization: Bearer your_api_key&quot; \\
+  -d &quot;number=8005551234&quot;`}
         </div>
       </div>
       
@@ -173,20 +173,20 @@ fetch(\`https://api.ringer.tel/v1/telique/cnam?number=\${phoneNumber}\`, {
 })
   .then(response => response.json())
   .then(data => console.log(data))
-  .catch(error => console.error('Error:', error));
+  .catch(error => console.error(&apos;Error:&apos;, error));
 
 // Using fetch with POST
 fetch(&quot;https://api.ringer.tel/v1/telique/cnam&quot;, {
-  method: 'POST',
+  method: &apos;POST&apos;,
   headers: {
-    'Content-Type': 'application/x-www-form-urlencoded',
-    'Authorization': \`Bearer \${apiKey}\`
+    &apos;Content-Type&apos;: &apos;application/x-www-form-urlencoded&apos;,
+    &apos;Authorization&apos;: \`Bearer \${apiKey}\`
   },
   body: \`number=\${phoneNumber}\`
 })
   .then(response => response.json())
   .then(data => console.log(data))
-  .catch(error => console.error('Error:', error));`}
+  .catch(error => console.error(&apos;Error:&apos;, error));`}
         </div>
       </div>
       
@@ -196,16 +196,16 @@ fetch(&quot;https://api.ringer.tel/v1/telique/cnam&quot;, {
 {`# Using requests with GET
 import requests
 
-api_key = 'your_api_key'
-phone_number = '8005551234'
+api_key = &apos;your_api_key&apos;
+phone_number = &apos;8005551234&apos;
 
 headers = {
-    'Authorization': f'Bearer {api_key}'
+    &apos;Authorization&apos;: f&apos;Bearer {api_key}&apos;
 }
 
 response = requests.get(
-    'https://api.ringer.tel/v1/telique/cnam',
-    params={'number': phone_number},
+    &apos;https://api.ringer.tel/v1/telique/cnam&apos;,
+    params={&apos;number&apos;: phone_number},
     headers=headers
 )
 data = response.json()
@@ -213,8 +213,8 @@ print(data)
 
 # Using requests with POST
 response = requests.post(
-    'https://api.ringer.tel/v1/telique/cnam',
-    data={'number': phone_number},
+    &apos;https://api.ringer.tel/v1/telique/cnam&apos;,
+    data={&apos;number&apos;: phone_number},
     headers=headers
 )
 data = response.json()
