@@ -87,6 +87,127 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /telique/cnam:
+    get:
+      tags:
+        - Lookup
+      summary: CNAM Lookup
+      description: Returns Caller Name (CNAM) information for a specified phone number.
+      operationId: cnamLookup
+      parameters:
+        - name: number
+          in: query
+          description: The phone number to look up (10-15 digits, possibly with a leading +)
+          required: true
+          schema:
+            type: string
+            pattern: ^\+?[0-9]{10,15}$
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CnamLookupResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          description: Method not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - Lookup
+      summary: CNAM Lookup (POST)
+      description: Alternative method to perform a CNAM lookup using a POST request with form data.
+      operationId: cnamLookupPost
+      requestBody:
+        description: CNAM lookup request parameters
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - number
+              properties:
+                number:
+                  type: string
+                  description: The phone number to look up (10-15 digits, possibly with a leading +)
+                  pattern: ^\+?[0-9]{10,15}$
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CnamLookupResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          description: Method not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /telique/bulk-lookup:
     post:
       tags:
@@ -184,6 +305,28 @@ components:
               $ref: '#/components/schemas/LineTypeData'
             location:
               $ref: '#/components/schemas/LocationData'
+    CnamLookupResponse:
+      type: object
+      required:
+        - phoneNumber
+        - name
+        - status
+      properties:
+        phoneNumber:
+          type: string
+          example: "8005551234"
+        name:
+          type: string
+          example: "ACME CORPORATION"
+        status:
+          type: string
+          example: "success"
+        cacheHit:
+          type: boolean
+          example: true
+        error:
+          type: string
+          description: Error message (only present when status is "error")
     BulkLookupResponse:
       type: object
       required:

@@ -24,6 +24,11 @@ export default function ApiReferenceLayout({
                       </Link>
                     </li>
                     <li>
+                      <Link href="/api-reference/ringer/telique/cnam-lookup" className="hover:underline">
+                        CNAM Lookup
+                      </Link>
+                    </li>
+                    <li>
                       <Link href="/api-reference/ringer/telique/bulk-lookup" className="hover:underline">
                         Bulk Lookup
                       </Link>
