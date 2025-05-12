@@ -20,6 +20,8 @@ security:
 tags:
   - name: Lookup
     description: Endpoints for looking up phone number information
+  - name: Portability
+    description: Endpoints for phone number portability information
 paths:
   /telique/lookup:
     get:
@@ -271,6 +273,89 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /telique/lrn/{phoneNumber}:
+    get:
+      tags:
+        - Portability
+      summary: Retrieve LRN information for a phone number
+      description: |
+        Returns the Local Routing Number (LRN) and Service Provider ID (SPID) 
+        for a specified 10-digit North American phone number. This information 
+        is used to correctly route calls to numbers that have been ported 
+        from one carrier to another.
+      operationId: getLrnInfo
+      parameters:
+        - name: phoneNumber
+          in: path
+          description: 10-digit North American telephone number (NANP format)
+          required: true
+          schema:
+            type: string
+            pattern: '^[2-9][0-9]{9}$'
+            example: '5551234567'
+      responses:
+        '200':
+          description: Successful LRN lookup
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LrnResponse'
+              examples:
+                ported:
+                  value:
+                    phoneNumber: '5551234567'
+                    lrn: '5552345678'
+                    spid: 'AB12'
+                    ported: true
+                nonPorted:
+                  value:
+                    phoneNumber: '5551234567'
+                    lrn: '5551234567'
+                    spid: null
+                    ported: false
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                status: error
+                error: 'Invalid phone number format. Must be a 10-digit NANP number.'
+                error_code: 'INVALID_FORMAT'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                status: error
+                error: 'Forbidden. Your API key does not have permission to access this resource.'
+                error_code: 'FORBIDDEN'
+        '429':
+          description: Too many requests
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Time in seconds to wait before making another request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 components:
   securitySchemes:
     BearerAuth:
@@ -355,6 +440,30 @@ components:
               error:
                 type: string
                 description: Error message if the lookup for this phone number failed
+    LrnResponse:
+      type: object
+      properties:
+        phoneNumber:
+          type: string
+          description: The queried telephone number
+          example: '5551234567'
+        lrn:
+          type: string
+          description: Local Routing Number for the queried number
+          example: '5552345678'
+        spid:
+          type: string
+          nullable: true
+          description: Service Provider ID for the carrier serving this number
+          example: 'AB12'
+        ported:
+          type: boolean
+          description: Indicates whether the number has been ported (true) or not (false)
+          example: true
+      required:
+        - phoneNumber
+        - lrn
+        - ported
     CnamData:
       type: object
       properties:
