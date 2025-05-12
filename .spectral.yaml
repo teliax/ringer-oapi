@@ -19,20 +19,26 @@ rules:
   # Enforce example values
   example-value-or-externalValue: warn
   
-  # Enforce consistent naming
-  path-params:
+  # Enforce consistent naming - using built-in function
+  path-parameters-valid:
     description: Path parameters should be defined and valid in the path
-    given: $.paths.*~
+    given: $.paths
     severity: error
-    then:
-      function: oasPathParam
-      
+    recommended: true
+    type: style
+    
   operation-success-response:
     description: Operation must have at least one 2xx or 3xx response
     given: $.paths.*.*.responses
     severity: error
     then:
-      function: oasOpSuccessResponse
+      function: schema
+      functionOptions:
+        schema:
+          type: object
+          minProperties: 1
+          propertyNames:
+            pattern: "^[2-3][0-9][0-9]$"
 
   # Check info object completeness  
   info-contact:
