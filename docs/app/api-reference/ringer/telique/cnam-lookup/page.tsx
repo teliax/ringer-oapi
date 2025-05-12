@@ -149,11 +149,11 @@ export default function CNAMLookupPage() {
         <h3 className="text-lg font-semibold mb-2">cURL</h3>
         <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg font-mono text-sm overflow-x-auto">
 {`# GET request
-curl -X GET "https://api.ringer.tel/v1/telique/cnam?number=8005551234" \\
+curl -X GET &quot;https://api.ringer.tel/v1/telique/cnam?number=8005551234&quot; \\
   -H "Authorization: Bearer your_api_key"
 
 # POST request
-curl -X POST "https://api.ringer.tel/v1/telique/cnam" \\
+curl -X POST &quot;https://api.ringer.tel/v1/telique/cnam&quot; \\
   -H "Authorization: Bearer your_api_key" \\
   -d "number=8005551234"`}
         </div>
@@ -163,8 +163,8 @@ curl -X POST "https://api.ringer.tel/v1/telique/cnam" \\
         <h3 className="text-lg font-semibold mb-2">JavaScript</h3>
         <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg font-mono text-sm overflow-x-auto">
 {`// Using fetch with GET
-const apiKey = 'your_api_key';
-const phoneNumber = '8005551234';
+const apiKey = &apos;your_api_key&apos;;
+const phoneNumber = &apos;8005551234&apos;;
 
 fetch(\`https://api.ringer.tel/v1/telique/cnam?number=\${phoneNumber}\`, {
   headers: {
@@ -176,7 +176,7 @@ fetch(\`https://api.ringer.tel/v1/telique/cnam?number=\${phoneNumber}\`, {
   .catch(error => console.error('Error:', error));
 
 // Using fetch with POST
-fetch('https://api.ringer.tel/v1/telique/cnam', {
+fetch(&quot;https://api.ringer.tel/v1/telique/cnam&quot;, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded',
