@@ -25,6 +25,10 @@ tags:
     description: Endpoints for looking up phone number information
   - name: Portability
     description: Endpoints for phone number portability information
+  - name: CIC
+    description: Operations for Carrier Identification Code
+  - name: ROR
+    description: Operations for Route of Record
 paths:
   /telique/lookup:
     get:
@@ -359,6 +363,330 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /telique/cic/{crn}/{ani}/{lata}:
+    get:
+      summary: Get CIC information
+      description: Retrieve Carrier Identification Code (CIC) information for the specified parameters.
+      tags:
+        - CIC
+      parameters:
+        - name: crn
+          in: path
+          description: Customer Record Number (10-digit)
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 2000000000
+            maximum: 9999999999
+        - name: ani
+          in: path
+          description: Automatic Number Identification (10-digit)
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 2000000000
+            maximum: 9999999999
+        - name: lata
+          in: path
+          description: Local Access and Transport Area (3-digit)
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 999
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CICResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Unknown CRN
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /telique/cic/{crn}/{ani}/{lata}/plain:
+    get:
+      summary: Get CIC information (plain text)
+      description: Retrieve Carrier Identification Code (CIC) information in plain text format.
+      tags:
+        - CIC
+      parameters:
+        - name: crn
+          in: path
+          description: Customer Record Number (10-digit)
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 2000000000
+            maximum: 9999999999
+        - name: ani
+          in: path
+          description: Automatic Number Identification (10-digit)
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 2000000000
+            maximum: 9999999999
+        - name: lata
+          in: path
+          description: Local Access and Transport Area (3-digit)
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 999
+      responses:
+        '200':
+          description: Successful response
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: CIC code (4 digits, zero-padded)
+        '400':
+          description: Bad request
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Unknown CRN
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Unknown
+        '500':
+          description: Server error
+          content:
+            text/plain:
+              schema:
+                type: string
+  /telique/cicror/{crn}/{ani}/{lata}:
+    get:
+      summary: Get CIC information with ROR
+      description: Retrieve Carrier Identification Code (CIC) information including Route of Record (ROR) data.
+      tags:
+        - CIC
+        - ROR
+      parameters:
+        - name: crn
+          in: path
+          description: Customer Record Number (10-digit)
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 2000000000
+            maximum: 9999999999
+        - name: ani
+          in: path
+          description: Automatic Number Identification (10-digit)
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 2000000000
+            maximum: 9999999999
+        - name: lata
+          in: path
+          description: Local Access and Transport Area (3-digit)
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 999
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CICRORResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Unknown CRN
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /telique/cicror/{crn}/{ani}/{lata}/plain:
+    get:
+      summary: Get CIC information with ROR (plain text)
+      description: Retrieve Carrier Identification Code (CIC) and Route of Record (ROR) information in plain text format.
+      tags:
+        - CIC
+        - ROR
+      parameters:
+        - name: crn
+          in: path
+          description: Customer Record Number (10-digit)
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 2000000000
+            maximum: 9999999999
+        - name: ani
+          in: path
+          description: Automatic Number Identification (10-digit)
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 2000000000
+            maximum: 9999999999
+        - name: lata
+          in: path
+          description: Local Access and Transport Area (3-digit)
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 999
+      responses:
+        '200':
+          description: Successful response
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: CIC code and ROR separated by semicolon
+                example: "0123;ROUTE1234"
+        '400':
+          description: Bad request
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Unknown CRN
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Unknown
+        '500':
+          description: Server error
+          content:
+            text/plain:
+              schema:
+                type: string
+  /telique/ror/{crn}:
+    get:
+      summary: Get ROR information
+      description: Retrieve Route of Record (ROR) information for the specified CRN.
+      tags:
+        - ROR
+      parameters:
+        - name: crn
+          in: path
+          description: Customer Record Number (10-digit)
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 2000000000
+            maximum: 9999999999
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RORResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Unknown CRN
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /telique/ror/{crn}/plain:
+    get:
+      summary: Get ROR information (plain text)
+      description: Retrieve Route of Record (ROR) information in plain text format.
+      tags:
+        - ROR
+      parameters:
+        - name: crn
+          in: path
+          description: Customer Record Number (10-digit)
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 2000000000
+            maximum: 9999999999
+      responses:
+        '200':
+          description: Successful response
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Route of Record
+                example: "ROUTE1234"
+        '400':
+          description: Bad request
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Unknown CRN
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Unknown
+        '500':
+          description: Server error
+          content:
+            text/plain:
+              schema:
+                type: string
 components:
   securitySchemes:
     BearerAuth:
@@ -517,4 +845,48 @@ components:
           example: Invalid phone number format
         error_code:
           type: string
-          example: invalid_phone_number 
+          example: invalid_phone_number
+    CICResponse:
+      type: object
+      properties:
+        carrier:
+          type: string
+          description: Carrier Identification Code
+          example: "0123"
+        data:
+          type: object
+          description: Additional data from the interpretation
+        ir:
+          type: object
+          description: Interpretation result data structure
+      required:
+        - carrier
+    RORResponse:
+      type: object
+      properties:
+        ror:
+          type: string
+          description: Route of Record
+          example: "ROUTE1234"
+      required:
+        - ror
+    CICRORResponse:
+      type: object
+      properties:
+        carrier:
+          type: string
+          description: Carrier Identification Code
+          example: "0123"
+        ror:
+          type: string
+          description: Route of Record
+          example: "ROUTE1234"
+        data:
+          type: object
+          description: Additional data from the interpretation
+        ir:
+          type: object
+          description: Interpretation result data structure
+      required:
+        - carrier
+        - ror 
