@@ -19,14 +19,9 @@ rules:
   # Enforce example values
   example-value-or-externalValue: warn
   
-  # Enforce consistent naming - using built-in function
-  path-parameters-valid:
-    description: Path parameters should be defined and valid in the path
-    given: $.paths
-    severity: error
-    recommended: true
-    type: style
-    
+  # Use built-in rules for path parameters
+  operation-parameters: error  # This is a built-in rule that checks parameters
+  
   operation-success-response:
     description: Operation must have at least one 2xx or 3xx response
     given: $.paths.*.*.responses

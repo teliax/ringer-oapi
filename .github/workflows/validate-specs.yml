@@ -38,7 +38,7 @@ jobs:
         run: |
           for file in $(find openapi -name "*.yaml" -o -name "*.yml" -o -name "*.json"); do
             echo "Validating $file..."
-            spectral lint "$file" --ruleset .spectral.yaml
+            spectral lint "$file" --ruleset .spectral.yaml --verbose
           done
       
       - name: Validate against OpenAPI 3.0 Schema
