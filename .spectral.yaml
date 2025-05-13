@@ -1,26 +1,17 @@
 extends: [[spectral:oas, all]]
 
 rules:
-  # Customize severity of rules
+  # Customize severity of built-in rules
   openapi-tags: error
   operation-tags: error
   operation-operationId: error
   operation-description: error
-  
-  # Enforce parameter descriptions
-  parameter-description: error
-  
-  # Enforce schema descriptions
-  schema-description: error
-  
-  # Enforce response descriptions
-  response-description: error
+  operation-parameters: error
+  schema-properties: error
+  response-content: error
   
   # Enforce example values
   example-value-or-externalValue: warn
-  
-  # Use built-in rules for path parameters
-  operation-parameters: error  # This is a built-in rule that checks parameters
   
   operation-success-response:
     description: Operation must have at least one 2xx or 3xx response
