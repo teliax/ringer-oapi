@@ -5,6 +5,9 @@ info:
     The Ringer Telique API provides access to telecommunications data, 
     including caller name (CNAM) data, line type information, and more.
   version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
   contact:
     name: Ringer API Support
     url: https://docs.ringer.tel/
