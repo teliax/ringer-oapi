@@ -1,3 +1,7 @@
+# THIS IS A PARTIAL OPENAPI FILE
+# This file contains only path objects and is not meant to be validated standalone.
+# It is referenced by main.yaml which contains the complete OpenAPI document.
+
 paths:
   /plans:
     get:

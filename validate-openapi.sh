@@ -5,15 +5,18 @@
 echo "Validating OpenAPI files..."
 echo "================================================================================"
 
-# Check if openapi-validator is installed
-if ! command -v openapi-validator &> /dev/null; then
-    echo "openapi-validator not found. Installing..."
-    npm install -g @redocly/openapi-cli
+# Check if the appropriate validator is installed
+if ! command -v npx &> /dev/null; then
+    echo "npx not found. Please install Node.js and npm."
+    exit 1
 fi
 
-# Validate the main specification file
-echo "Validating main.yaml..."
-openapi-validator lint openapi/ringer_business/main.yaml
+# Validate the main specification files only
+echo "Validating openapi/ringer/telique.yaml..."
+npx @redocly/cli lint openapi/ringer/telique.yaml
+
+echo "Validating openapi/ringer_business/main.yaml..."
+npx @redocly/cli lint openapi/ringer_business/main.yaml
 
 # Output validation results
 if [ $? -eq 0 ]; then
