@@ -4,28 +4,45 @@
 
 openapi: 3.0.3
 info:
-  title: Partial OpenAPI Document
-  description: This is a partial file containing path objects for the IVY API.
+  title: IVY API - Usites
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to Usites.
   version: 1.0.0
   contact:
     name: IVY API Support
     url: https://ivy.teliax.com/
     email: support@ivy.teliax.com
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
   x-partial-file: true
 servers:
   - url: http://ivy-api.teliax.com
     description: Production server
-# Below is the actual content referenced by main.yaml
-
-# THIS IS A PARTIAL OPENAPI FILE
-# This file contains only path objects and is not meant to be validated standalone.
-# It is referenced by main.yaml which contains the complete OpenAPI document.
+tags:
+  - name: Usites
+    description: Operations related to Usites
+security:
+  - apiKey: []
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: Authorization
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
 
 paths:
   /sites:
       get:
         tags:
-          - Sites
+          - Usites
         summary: List Sites
         description: Retrieve a list of sites for your account.
         operationId: list_sites
@@ -59,7 +76,7 @@ paths:
   /sites/{id}:
       get:
         tags:
-          - Sites
+          - Usites
         summary: Site Details
         description: Retrieve detailed information about a specific site.
         operationId: show_site

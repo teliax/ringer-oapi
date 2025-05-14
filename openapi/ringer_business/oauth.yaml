@@ -4,28 +4,45 @@
 
 openapi: 3.0.3
 info:
-  title: Partial OpenAPI Document
-  description: This is a partial file containing path objects for the IVY API.
+  title: IVY API - Uoauth
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to Uoauth.
   version: 1.0.0
   contact:
     name: IVY API Support
     url: https://ivy.teliax.com/
     email: support@ivy.teliax.com
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
   x-partial-file: true
 servers:
   - url: http://ivy-api.teliax.com
     description: Production server
-# Below is the actual content referenced by main.yaml
-
-# THIS IS A PARTIAL OPENAPI FILE
-# This file contains only path objects and is not meant to be validated standalone.
-# It is referenced by main.yaml which contains the complete OpenAPI document.
+tags:
+  - name: Uoauth
+    description: Operations related to Uoauth
+security:
+  - apiKey: []
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: Authorization
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
 
 paths:
   /oauth/token:
     post:
       tags:
-        - Authentication
+        - Uoauth
       summary: Fetch the access token
       description: |-
         To access the IVY API the client needs to be authenticated first. The authentication happens through OAuth 2.0 using the `password` and `client_credentilas` grant flows:
@@ -70,7 +87,7 @@ paths:
   /oauth/revoke:
     post:
       tags:
-        - Authentication
+        - Uoauth
       summary: Logout
       description: |-
         To access the IVY API the client needs to be authenticated first. The authentication happens through OAuth 2.0.

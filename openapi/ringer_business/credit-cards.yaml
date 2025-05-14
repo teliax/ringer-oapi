@@ -4,28 +4,45 @@
 
 openapi: 3.0.3
 info:
-  title: Partial OpenAPI Document
-  description: This is a partial file containing path objects for the IVY API.
+  title: IVY API - UcreditUcards
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to UcreditUcards.
   version: 1.0.0
   contact:
     name: IVY API Support
     url: https://ivy.teliax.com/
     email: support@ivy.teliax.com
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
   x-partial-file: true
 servers:
   - url: http://ivy-api.teliax.com
     description: Production server
-# Below is the actual content referenced by main.yaml
-
-# THIS IS A PARTIAL OPENAPI FILE
-# This file contains only path objects and is not meant to be validated standalone.
-# It is referenced by main.yaml which contains the complete OpenAPI document.
+tags:
+  - name: UcreditUcards
+    description: Operations related to UcreditUcards
+security:
+  - apiKey: []
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: Authorization
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
 
 paths:
   /credit-cards:
     get:
       tags:
-        - Credit Cards
+        - UcreditUcards
       summary: List all credit cards
       description: Returns a list of all credit cards associated with the account.
       operationId: list_credit_cards
@@ -49,7 +66,7 @@ paths:
                 $ref: './components.yaml#/components/schemas/error'
     post:
       tags:
-        - Credit Cards
+        - UcreditUcards
       summary: Add a new credit card
       description: Adds a new credit card to the account.
       operationId: add_credit_card
@@ -83,7 +100,7 @@ paths:
   /credit-cards/{id}:
     get:
       tags:
-        - Credit Cards
+        - UcreditUcards
       summary: Get credit card details
       description: Returns details for a specific credit card.
       operationId: get_credit_card
@@ -115,7 +132,7 @@ paths:
                 $ref: './components.yaml#/components/schemas/error'
     delete:
       tags:
-        - Credit Cards
+        - UcreditUcards
       summary: Delete credit card
       description: Deletes a credit card from the account.
       operationId: delete_credit_card
@@ -145,7 +162,7 @@ paths:
   /credit-cards/{id}/verify:
     patch:
       tags:
-        - Credit Cards
+        - UcreditUcards
       summary: Verify credit card
       description: Verifies a credit card with verification code.
       operationId: verify_credit_card

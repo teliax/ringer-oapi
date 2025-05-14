@@ -28,19 +28,16 @@ The OpenAPI specification for the Ringer Business API is split into multiple fil
    - Parameter definitions
    - Response definitions
 
-3. **Individual path files**: Each resource has its own file containing path objects:
-   - Contains operations for specific endpoints (GET, POST, etc.)
-   - References schemas from components.yaml
-   - Has minimal OpenAPI structure to be valid standalone (for validation)
-   - Contains clear comments explaining its partial nature and relationship to main.yaml
+3. **Individual path files**: Each resource has its own file that is:
+   - A valid standalone OpenAPI document (for validation purposes)
+   - Referenced by main.yaml for its paths content
+   - Contains a complete OpenAPI structure with proper metadata
+   - Includes tags, security schemes, and minimal components
 
 ## Path File Structure
 
-Each path file has been structured to be both:
-1. A valid reference for the main document
-2. A valid standalone OpenAPI document for CI validation
+Each path file is structured as a complete OpenAPI document to pass validation:
 
-The files include a minimal OpenAPI structure at the top:
 ```yaml
 # THIS IS A PARTIAL OPENAPI FILE
 # This file contains path objects intended to be referenced by main.yaml
@@ -48,21 +45,42 @@ The files include a minimal OpenAPI structure at the top:
 
 openapi: 3.0.3
 info:
-  title: Partial OpenAPI Document
+  title: IVY API - Resource Name
   description: This is a partial file containing path objects for the IVY API.
   version: 1.0.0
   contact:
     name: IVY API Support
     url: https://ivy.teliax.com/
     email: support@ivy.teliax.com
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
   x-partial-file: true
 servers:
   - url: http://ivy-api.teliax.com
     description: Production server
-# Below is the actual content referenced by main.yaml
+tags:
+  - name: Resource Name
+    description: Operations related to Resource Name
+security:
+  - apiKey: []
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: Authorization
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
 
 paths:
-  # Path definitions...
+  # Path definitions that will be referenced by main.yaml
 ```
 
 ## Validation
@@ -77,9 +95,14 @@ This script validates:
 - `openapi/ringer/telique.yaml`
 - `openapi/ringer_business/main.yaml`
 
-Individual path files can also be validated directly:
+To validate all files including individual path files:
 ```bash
-npx swagger-cli validate openapi/ringer_business/users.yaml
+./test-all-files.sh
+```
+
+To validate against Spectral rules:
+```bash
+npx @stoplight/spectral-cli lint --ruleset .spectral.yaml openapi/ringer_business/*.yaml
 ```
 
 ## Editing Guidelines
@@ -107,44 +130,13 @@ When modifying the API documentation:
 
 ## Creating New Path Files
 
-When creating a new path file, use the following template:
+When creating a new path file, use our script to generate a compliant file:
 
-```yaml
-# THIS IS A PARTIAL OPENAPI FILE
-# This file contains path objects intended to be referenced by main.yaml
-# The following structure is added for standalone validation purposes only
-
-openapi: 3.0.3
-info:
-  title: Partial OpenAPI Document
-  description: This is a partial file containing path objects for the IVY API.
-  version: 1.0.0
-  contact:
-    name: IVY API Support
-    url: https://ivy.teliax.com/
-    email: support@ivy.teliax.com
-  x-partial-file: true
-servers:
-  - url: http://ivy-api.teliax.com
-    description: Production server
-# Below is the actual content referenced by main.yaml
-
-paths:
-  /your-resource:
-    get:
-      tags:
-        - Your Resource Tag
-      summary: Brief description
-      description: Detailed description of the endpoint
-      operationId: get_your_resource
-      responses:
-        "200":
-          description: Success response
-          content:
-            application/json:
-              schema:
-                $ref: './components.yaml#/components/schemas/YourSchema'
+```bash
+./create-path-file.sh resource-name
 ```
+
+Or manually follow the template shown in the "Path File Structure" section above.
 
 Then add a reference to it in `main.yaml` under the paths section:
 
@@ -152,13 +144,102 @@ Then add a reference to it in `main.yaml` under the paths section:
 # In main.yaml
 paths:
   # Other paths...
-  /your-resource:
-    $ref: './your-resource.yaml#/paths/~1your-resource'
+  /resource-name:
+    $ref: './resource-name.yaml#/paths/~1resource-name'
 ```
 
-## Referencing Schemas
+## Maintenance Scripts
 
-When referencing schemas from path files, use the following format:
-```yaml
-$ref: './components.yaml#/components/schemas/SchemaName'
-``` 
+The repository includes several utility scripts:
+
+1. **validate-openapi.sh**: Validates the main OpenAPI files
+2. **test-all-files.sh**: Tests validation for all files including individual path files
+3. **fix-standalone-validation.sh**: Converts path files to fully compliant standalone OpenAPI documents
+4. **create-path-file.sh**: Creates a new properly structured path file (see below)
+
+## Creating a New Path File Script
+
+Here's a simple example of how to create a new path file:
+
+```bash
+#!/bin/bash
+# create-path-file.sh
+# Usage: ./create-path-file.sh resource-name
+
+if [ -z "$1" ]; then
+  echo "Usage: ./create-path-file.sh resource-name"
+  exit 1
+fi
+
+resource_name=$1
+file_name="openapi/ringer_business/${resource_name}.yaml"
+tag_name=$(echo "$resource_name" | sed -E 's/(^|-)([a-z])/\U\2/g' | sed 's/-/ /g')
+path_name="/${resource_name}"
+
+# Create the file with proper structure
+cat > "$file_name" << EOF
+# THIS IS A PARTIAL OPENAPI FILE
+# This file contains path objects intended to be referenced by main.yaml
+# The following structure is added for standalone validation purposes only
+
+openapi: 3.0.3
+info:
+  title: IVY API - ${tag_name}
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to ${tag_name}.
+  version: 1.0.0
+  contact:
+    name: IVY API Support
+    url: https://ivy.teliax.com/
+    email: support@ivy.teliax.com
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  x-partial-file: true
+servers:
+  - url: http://ivy-api.teliax.com
+    description: Production server
+tags:
+  - name: ${tag_name}
+    description: Operations related to ${tag_name}
+security:
+  - apiKey: []
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: Authorization
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+
+paths:
+  ${path_name}:
+    get:
+      tags:
+        - ${tag_name}
+      summary: List all ${tag_name}
+      description: Returns a list of all ${tag_name}.
+      operationId: list_${resource_name}
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                \$ref: './components.yaml#/components/schemas/YourSchemaName'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                \$ref: './components.yaml#/components/schemas/error'
+EOF
+
+echo "Created ${file_name}"
+echo "Remember to add the path reference to main.yaml and update components.yaml with any new schemas." 

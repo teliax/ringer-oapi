@@ -4,28 +4,45 @@
 
 openapi: 3.0.3
 info:
-  title: Partial OpenAPI Document
-  description: This is a partial file containing path objects for the IVY API.
+  title: IVY API - Upackages
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to Upackages.
   version: 1.0.0
   contact:
     name: IVY API Support
     url: https://ivy.teliax.com/
     email: support@ivy.teliax.com
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
   x-partial-file: true
 servers:
   - url: http://ivy-api.teliax.com
     description: Production server
-# Below is the actual content referenced by main.yaml
-
-# THIS IS A PARTIAL OPENAPI FILE
-# This file contains only path objects and is not meant to be validated standalone.
-# It is referenced by main.yaml which contains the complete OpenAPI document.
+tags:
+  - name: Upackages
+    description: Operations related to Upackages
+security:
+  - apiKey: []
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: Authorization
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
 
 paths:
   /packages:
     get:
       tags:
-        - Packages
+        - Upackages
       summary: List available Packages
       description: A list of packages available for purchase for your account.
       operationId: list_packages
@@ -59,7 +76,7 @@ paths:
   /packages/{id}:
     post:
       tags:
-        - Packages
+        - Upackages
       summary: Purchase a Package
       description: Purchase an add-on package for your account.
       operationId: purchase_package
@@ -98,7 +115,7 @@ paths:
     
     delete:
       tags:
-        - Packages
+        - Upackages
       summary: Remove Package
       description: Remove an add-on package from your account.
       operationId: remove_package

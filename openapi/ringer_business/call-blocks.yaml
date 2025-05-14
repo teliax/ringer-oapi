@@ -4,28 +4,45 @@
 
 openapi: 3.0.3
 info:
-  title: Partial OpenAPI Document
-  description: This is a partial file containing path objects for the IVY API.
+  title: IVY API - UcallUblocks
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to UcallUblocks.
   version: 1.0.0
   contact:
     name: IVY API Support
     url: https://ivy.teliax.com/
     email: support@ivy.teliax.com
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
   x-partial-file: true
 servers:
   - url: http://ivy-api.teliax.com
     description: Production server
-# Below is the actual content referenced by main.yaml
-
-# THIS IS A PARTIAL OPENAPI FILE
-# This file contains only path objects and is not meant to be validated standalone.
-# It is referenced by main.yaml which contains the complete OpenAPI document.
+tags:
+  - name: UcallUblocks
+    description: Operations related to UcallUblocks
+security:
+  - apiKey: []
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: Authorization
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
 
 paths:
   /call-blocks:
     get:
       tags:
-        - Call Blocks
+        - UcallUblocks
       summary: List Call Blocks
       description: Retrieve a list of call blocks for your account.
       operationId: list_call_blocks
@@ -58,7 +75,7 @@ paths:
     
     post:
       tags:
-        - Call Blocks
+        - UcallUblocks
       summary: Create Call Block
       description: Create a new call block for your account.
       operationId: create_call_block
@@ -99,7 +116,7 @@ paths:
   /call-blocks/{id}:
     delete:
       tags:
-        - Call Blocks
+        - UcallUblocks
       summary: Delete Call Block
       description: Delete a call block from your account.
       operationId: delete_call_block

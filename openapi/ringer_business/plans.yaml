@@ -4,28 +4,45 @@
 
 openapi: 3.0.3
 info:
-  title: Partial OpenAPI Document
-  description: This is a partial file containing path objects for the IVY API.
+  title: IVY API - Uplans
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to Uplans.
   version: 1.0.0
   contact:
     name: IVY API Support
     url: https://ivy.teliax.com/
     email: support@ivy.teliax.com
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
   x-partial-file: true
 servers:
   - url: http://ivy-api.teliax.com
     description: Production server
-# Below is the actual content referenced by main.yaml
-
-# THIS IS A PARTIAL OPENAPI FILE
-# This file contains only path objects and is not meant to be validated standalone.
-# It is referenced by main.yaml which contains the complete OpenAPI document.
+tags:
+  - name: Uplans
+    description: Operations related to Uplans
+security:
+  - apiKey: []
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: Authorization
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
 
 paths:
   /plans:
     get:
       tags:
-        - Plans
+        - Uplans
       summary: List all plans
       description: Returns a list of all available plans.
       operationId: list_plans
@@ -51,7 +68,7 @@ paths:
   /plans/{id}:
     get:
       tags:
-        - Plans
+        - Uplans
       summary: Get plan details
       description: Returns details for a specific plan.
       operationId: get_plan
@@ -83,7 +100,7 @@ paths:
                 $ref: './components.yaml#/components/schemas/error'
     post:
       tags:
-        - Plans
+        - Uplans
       summary: Add plan to account
       description: Adds the specified plan to the account.
       operationId: add_plan
@@ -121,7 +138,7 @@ paths:
                 $ref: './components.yaml#/components/schemas/error'
     delete:
       tags:
-        - Plans
+        - Uplans
       summary: Remove plan from account
       description: Removes the specified plan from the account.
       operationId: remove_plan

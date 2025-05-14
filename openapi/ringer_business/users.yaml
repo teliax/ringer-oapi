@@ -4,28 +4,45 @@
 
 openapi: 3.0.3
 info:
-  title: Partial OpenAPI Document
-  description: This is a partial file containing path objects for the IVY API.
+  title: IVY API - Uusers
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to Uusers.
   version: 1.0.0
   contact:
     name: IVY API Support
     url: https://ivy.teliax.com/
     email: support@ivy.teliax.com
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
   x-partial-file: true
 servers:
   - url: http://ivy-api.teliax.com
     description: Production server
-# Below is the actual content referenced by main.yaml
-
-# THIS IS A PARTIAL OPENAPI FILE
-# This file contains only path objects and is not meant to be validated standalone.
-# It is referenced by main.yaml which contains the complete OpenAPI document.
+tags:
+  - name: Uusers
+    description: Operations related to Uusers
+security:
+  - apiKey: []
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: Authorization
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
 
 paths:
   /users:
     get:
       tags:
-        - Users
+        - Uusers
       summary: List all users
       description: Returns a list of all users for the account.
       operationId: list_users
@@ -44,7 +61,7 @@ paths:
                 $ref: './components.yaml#/components/schemas/error'
     post:
       tags:
-        - Users
+        - Uusers
       summary: Create a new user
       description: Creates a new user for the account.
       operationId: create_user
@@ -78,7 +95,7 @@ paths:
   /users/{id}:
     get:
       tags:
-        - Users
+        - Uusers
       summary: Get user details
       description: Returns details for a specific user.
       operationId: get_user
@@ -110,7 +127,7 @@ paths:
                 $ref: './components.yaml#/components/schemas/error'
     put:
       tags:
-        - Users
+        - Uusers
       summary: Update user
       description: Updates an existing user.
       operationId: update_user
@@ -155,7 +172,7 @@ paths:
                 $ref: './components.yaml#/components/schemas/error'
     delete:
       tags:
-        - Users
+        - Uusers
       summary: Delete user
       description: Deletes a user.
       operationId: delete_user
