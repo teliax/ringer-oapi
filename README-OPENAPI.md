@@ -22,11 +22,12 @@ The OpenAPI specification for the Ringer Business API is split into multiple fil
    - Tag definitions
    - References to path files using `$ref` syntax
 
-2. **components.yaml**: Contains all reusable components:
+2. **components.yaml**: Contains all reusable components while being a valid standalone document:
    - Schema definitions
    - Security schemes
    - Parameter definitions
    - Response definitions
+   - Minimal OpenAPI structure for validation
 
 3. **Individual path files**: Each resource has its own file that is:
    - A valid standalone OpenAPI document (for validation purposes)
@@ -81,6 +82,43 @@ components:
 
 paths:
   # Path definitions that will be referenced by main.yaml
+```
+
+## Components File Structure
+
+The components.yaml file is structured as a complete OpenAPI document to pass validation:
+
+```yaml
+# THIS IS A PARTIAL OPENAPI FILE
+# This file contains only component definitions intended to be referenced by path files
+# The following structure is added for standalone validation purposes only
+
+openapi: 3.0.3
+info:
+  title: IVY API - Components
+  description: This file contains reusable components for the IVY API.
+  version: 1.0.0
+  contact:
+    name: IVY API Support
+    url: https://ivy.teliax.com/
+    email: support@ivy.teliax.com
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+servers:
+  - url: http://ivy-api.teliax.com
+    description: Production server
+paths: {}
+tags:
+  - name: Components
+    description: Common component definitions
+
+# The actual components definitions
+components:
+  schemas:
+    # Schema definitions
+  securitySchemes:
+    # Security scheme definitions
 ```
 
 ## Validation
@@ -155,7 +193,8 @@ The repository includes several utility scripts:
 1. **validate-openapi.sh**: Validates the main OpenAPI files
 2. **test-all-files.sh**: Tests validation for all files including individual path files
 3. **fix-standalone-validation.sh**: Converts path files to fully compliant standalone OpenAPI documents
-4. **create-path-file.sh**: Creates a new properly structured path file (see below)
+4. **fix-components-file.sh**: Converts components.yaml to a valid standalone OpenAPI document
+5. **create-path-file.sh**: Creates a new properly structured path file
 
 ## Creating a New Path File Script
 
@@ -242,4 +281,13 @@ paths:
 EOF
 
 echo "Created ${file_name}"
-echo "Remember to add the path reference to main.yaml and update components.yaml with any new schemas." 
+echo ""
+echo "Remember to:"
+echo "1. Add the path reference to main.yaml:"
+echo ""
+echo "  # In main.yaml under paths section"
+echo "  ${path_name}:"
+echo "    \$ref: './${resource_name}.yaml#/paths~1${resource_name}'"
+echo ""
+echo "2. Update components.yaml with any new schemas needed"
+echo "3. Replace 'YourSchemaName' with an actual schema name in the new file" 

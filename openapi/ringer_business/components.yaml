@@ -1,3 +1,28 @@
+# THIS IS A PARTIAL OPENAPI FILE
+# This file contains only component definitions intended to be referenced by path files
+# The following structure is added for standalone validation purposes only
+
+openapi: 3.0.3
+info:
+  title: IVY API - Components
+  description: This file contains reusable components for the IVY API.
+  version: 1.0.0
+  contact:
+    name: IVY API Support
+    url: https://ivy.teliax.com/
+    email: support@ivy.teliax.com
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+servers:
+  - url: http://ivy-api.teliax.com
+    description: Production server
+paths: {}
+tags:
+  - name: Components
+    description: Common component definitions
+
+# Below is the actual content referenced by other files
 components:
   securitySchemes:
     password:
