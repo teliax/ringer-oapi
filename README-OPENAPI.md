@@ -14,7 +14,7 @@ This directory contains the OpenAPI specifications for Ringer's APIs. The specif
 
 The OpenAPI specification for the Ringer Business API is split into multiple files for easier maintenance:
 
-1. **main.yaml**: This is the entry point and the only complete OpenAPI document. It contains:
+1. **main.yaml**: This is the entry point and the complete OpenAPI document. It contains:
    - OpenAPI version
    - API information (title, description, version)
    - Server configurations
@@ -28,10 +28,42 @@ The OpenAPI specification for the Ringer Business API is split into multiple fil
    - Parameter definitions
    - Response definitions
 
-3. **Individual path files**: Each resource has its own file containing only path objects:
+3. **Individual path files**: Each resource has its own file containing path objects:
    - Contains operations for specific endpoints (GET, POST, etc.)
    - References schemas from components.yaml
-   - Not valid standalone OpenAPI documents
+   - Has minimal OpenAPI structure to be valid standalone (for validation)
+   - Contains clear comments explaining its partial nature and relationship to main.yaml
+
+## Path File Structure
+
+Each path file has been structured to be both:
+1. A valid reference for the main document
+2. A valid standalone OpenAPI document for CI validation
+
+The files include a minimal OpenAPI structure at the top:
+```yaml
+# THIS IS A PARTIAL OPENAPI FILE
+# This file contains path objects intended to be referenced by main.yaml
+# The following structure is added for standalone validation purposes only
+
+openapi: 3.0.3
+info:
+  title: Partial OpenAPI Document
+  description: This is a partial file containing path objects for the IVY API.
+  version: 1.0.0
+  contact:
+    name: IVY API Support
+    url: https://ivy.teliax.com/
+    email: support@ivy.teliax.com
+  x-partial-file: true
+servers:
+  - url: http://ivy-api.teliax.com
+    description: Production server
+# Below is the actual content referenced by main.yaml
+
+paths:
+  # Path definitions...
+```
 
 ## Validation
 
@@ -41,11 +73,14 @@ To validate the OpenAPI specifications, use the provided validation script:
 ./validate-openapi.sh
 ```
 
-This script validates only the main entry point files:
+This script validates:
 - `openapi/ringer/telique.yaml`
 - `openapi/ringer_business/main.yaml`
 
-**Note**: Individual path files are not meant to be validated standalone as they are partial OpenAPI documents. They contain appropriate header comments indicating this.
+Individual path files can also be validated directly:
+```bash
+npx swagger-cli validate openapi/ringer_business/users.yaml
+```
 
 ## Editing Guidelines
 
@@ -63,11 +98,63 @@ When modifying the API documentation:
 3. Use individual path files to:
    - Add or modify endpoints for specific resources
    - Reference components using `$ref: './components.yaml#/components/schemas/SchemaName'`
+   - Maintain the existing OpenAPI header structure
 
 4. Keep consistent formatting:
    - Use 2-space indentation
    - Add appropriate descriptions for endpoints and schemas
    - Follow existing patterns for consistency
+
+## Creating New Path Files
+
+When creating a new path file, use the following template:
+
+```yaml
+# THIS IS A PARTIAL OPENAPI FILE
+# This file contains path objects intended to be referenced by main.yaml
+# The following structure is added for standalone validation purposes only
+
+openapi: 3.0.3
+info:
+  title: Partial OpenAPI Document
+  description: This is a partial file containing path objects for the IVY API.
+  version: 1.0.0
+  contact:
+    name: IVY API Support
+    url: https://ivy.teliax.com/
+    email: support@ivy.teliax.com
+  x-partial-file: true
+servers:
+  - url: http://ivy-api.teliax.com
+    description: Production server
+# Below is the actual content referenced by main.yaml
+
+paths:
+  /your-resource:
+    get:
+      tags:
+        - Your Resource Tag
+      summary: Brief description
+      description: Detailed description of the endpoint
+      operationId: get_your_resource
+      responses:
+        "200":
+          description: Success response
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/YourSchema'
+```
+
+Then add a reference to it in `main.yaml` under the paths section:
+
+```yaml
+# In main.yaml
+paths:
+  # Other paths...
+  /your-resource:
+    $ref: './your-resource.yaml#/paths/~1your-resource'
+```
 
 ## Referencing Schemas
 
