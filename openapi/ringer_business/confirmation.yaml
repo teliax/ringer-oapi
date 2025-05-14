@@ -1,38 +1,44 @@
-/confirmation:
-  post:
-    tags:
-      - Confirmation
-    summary: Confirm user account
-    description: Once a user account registers in IVY, their account needs to be confirmed. A user account can be confirmed by passing the confirmation token. If a valid token is passed the account will be confirmed.
-    operationId: confirm_user_account
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ConfirmationParams'
-    responses:
-      "201":
-        description: User confirmation message
+openapi: 3.0.3
+info:
+  title: IVY API - Confirmation
+  description: Confirmation endpoints for the IVY API
+  version: 1.0.0
+paths:
+  /confirmation:
+    post:
+      tags:
+        - Confirmation
+      summary: Confirm user account
+      description: Once a user account registers in IVY, their account needs to be confirmed. A user account can be confirmed by passing the confirmation token. If a valid token is passed the account will be confirmed.
+      operationId: confirm_user_account
+      requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Confirmation'
-      "400":
-        description: Bad Request Parameters or Validation Errors
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error'
-      "401":
-        description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error'
-      "404":
-        description: Couldn't find account record
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error' 
+              $ref: './components.yaml#/components/schemas/ConfirmationParams'
+      responses:
+        "201":
+          description: User confirmation message
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/Confirmation'
+        "400":
+          description: Bad Request Parameters or Validation Errors
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
+        "401":
+          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
+        "404":
+          description: Couldn't find account record
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error' 

@@ -1,3 +1,9 @@
+openapi: 3.0.3
+info:
+  title: IVY API - Sites
+  description: Sites management endpoints for the IVY API
+  version: 1.0.0
+paths:
 /sites:
   get:
     tags:
@@ -18,19 +24,19 @@
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SiteList'
+              $ref: './components.yaml#/components/schemas/SiteList'
       "400":
         description: Bad Request Parameters or Validation Errors
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/error'
+              $ref: './components.yaml#/components/schemas/error'
       "401":
         description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/error'
+              $ref: './components.yaml#/components/schemas/error'
 
 /sites/{id}:
   get:
@@ -58,22 +64,22 @@
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Site'
+              $ref: './components.yaml#/components/schemas/Site'
       "400":
         description: Bad Request Parameters or Validation Errors
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/error'
+              $ref: './components.yaml#/components/schemas/error'
       "401":
         description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/error'
+              $ref: './components.yaml#/components/schemas/error'
       "404":
         description: Couldn't find site record
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/error' 
+              $ref: './components.yaml#/components/schemas/error' 

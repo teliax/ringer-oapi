@@ -69,30 +69,9 @@ tags:
       If you add a new plan at any time in your billing cycle your account will be charged the full amount of the plan. If you're changing a plan, it's best to change it just before the end of your billing cycle.
       Some plans and add-on packages can be removed at any time. Others can only be removed by Customer Support. The resources provided will remain on your account until the next billing cycle. Removing a plan only removes associated resources at the next billing cycle and not the calling features themselves.
 
-# Reference paths
-paths:
-  $ref: ./oauth.yaml
-  $ref: ./sign-up.yaml
-  $ref: ./confirmation.yaml
-  $ref: ./password.yaml
-  $ref: ./account.yaml
-  $ref: ./addresses.yaml
-  $ref: ./users.yaml
-  $ref: ./statements.yaml
-  $ref: ./credit-cards.yaml
-  $ref: ./payments.yaml
-  $ref: ./plans.yaml
-  $ref: ./items.yaml
-  $ref: ./packages.yaml
-  $ref: ./timezones.yaml
-  $ref: ./country-codes.yaml
-  $ref: ./call-records.yaml
-  $ref: ./thin-clients.yaml
-  $ref: ./phone-numbers.yaml
-  $ref: ./templates.yaml
-  $ref: ./sites.yaml
-  $ref: ./call-blocks.yaml
+# Instead of $ref path references, we'll need to combine files during deployment
+# or use a bundling tool like swagger-cli combine
+paths: {}
 
-# Reference components
 components:
-  $ref: ./components.yaml 
+  $ref: './components.yaml#/components' 

@@ -1,40 +1,46 @@
-/payments:
-  post:
-    tags:
-      - Payments
-    summary: Make a Payment
-    description: Make a one-time payment to your account.
-    operationId: make_payment
-    parameters:
-      - name: Authorization
-        in: header
-        description: This token is used to authenticate a particular account.
-        required: true
-        schema:
-          type: string
-    requestBody:
-      description: Payment Attributes
-      required: true
-      content:
-        application/json:
+openapi: 3.0.3
+info:
+  title: IVY API - Payments
+  description: Payment management endpoints for the IVY API
+  version: 1.0.0
+paths:
+  /payments:
+    post:
+      tags:
+        - Payments
+      summary: Make a Payment
+      description: Make a one-time payment to your account.
+      operationId: make_payment
+      parameters:
+        - name: Authorization
+          in: header
+          description: This token is used to authenticate a particular account.
+          required: true
           schema:
-            $ref: '#/components/schemas/PaymentParams'
-    responses:
-      "201":
-        description: Payment Created
+            type: string
+      requestBody:
+        description: Payment Attributes
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Payment'
-      "400":
-        description: Bad Request Parameters or Validation Errors
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error'
-      "401":
-        description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error' 
+              $ref: './components.yaml#/components/schemas/PaymentParams'
+      responses:
+        "201":
+          description: Payment Created
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/Payment'
+        "400":
+          description: Bad Request Parameters or Validation Errors
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
+        "401":
+          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error' 

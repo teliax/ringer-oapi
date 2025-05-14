@@ -1,3 +1,9 @@
+openapi: 3.0.3
+info:
+  title: IVY API - Call Blocks
+  description: Call Blocks management endpoints for the IVY API
+  version: 1.0.0
+paths:
 /call-blocks:
   get:
     tags:
@@ -18,19 +24,19 @@
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CallBlockList'
+              $ref: './components.yaml#/components/schemas/CallBlockList'
       "400":
         description: Bad Request Parameters or Validation Errors
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/error'
+              $ref: './components.yaml#/components/schemas/error'
       "401":
         description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/error'
+              $ref: './components.yaml#/components/schemas/error'
   
   post:
     tags:
@@ -51,26 +57,26 @@
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/CallBlockParams'
+            $ref: './components.yaml#/components/schemas/CallBlockParams'
     responses:
       "201":
         description: Call Block Created
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CallBlock'
+              $ref: './components.yaml#/components/schemas/CallBlock'
       "400":
         description: Bad Request Parameters or Validation Errors
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/error'
+              $ref: './components.yaml#/components/schemas/error'
       "401":
         description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/error'
+              $ref: './components.yaml#/components/schemas/error'
 
 /call-blocks/{id}:
   delete:
@@ -100,16 +106,16 @@
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/error'
+              $ref: './components.yaml#/components/schemas/error'
       "401":
         description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/error'
+              $ref: './components.yaml#/components/schemas/error'
       "404":
         description: Couldn't find call block record
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/error' 
+              $ref: './components.yaml#/components/schemas/error' 

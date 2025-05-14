@@ -1,71 +1,76 @@
-/oauth/token:
-  post:
-    tags:
-      - Authentication
-    summary: Fetch the access token
-    description: |-
-      To access the IVY API the client needs to be authenticated first. The authentication happens through OAuth 2.0 using the `password` and `client_credentilas` grant flows:
-      -- `grant_type` - `password`-- The OAuth2.0 authentication scheme is Grant Type: Resource Owner Password Credentials or Refresh Token With the resource owner password credentials grant type, the user provides their service credentials (username and password) directly to the application, which uses the credentials to obtain an access token from the service. This method is basically the sign in endpoint.
-      The attributes passed for fetching the access token will be:
-        => grant_type Value: password
-        => username
-        => password
-        => client_id
-        => client_secret
+openapi: 3.0.3
+info:
+  title: IVY API - Authentication
+  description: Authentication endpoints for the IVY API
+  version: 1.0.0
+paths:
+  /oauth/token:
+    post:
+      tags:
+        - Authentication
+      summary: Fetch the access token
+      description: |-
+        To access the IVY API the client needs to be authenticated first. The authentication happens through OAuth 2.0 using the `password` and `client_credentilas` grant flows:
+        -- `grant_type` - `password`-- The OAuth2.0 authentication scheme is Grant Type: Resource Owner Password Credentials or Refresh Token With the resource owner password credentials grant type, the user provides their service credentials (username and password) directly to the application, which uses the credentials to obtain an access token from the service. This method is basically the sign in endpoint.
+        The attributes passed for fetching the access token will be:
+          => grant_type Value: password
+          => username
+          => password
+          => client_id
+          => client_secret
 
-      The obtained access token will be valid only for 2 hours. Then the new access_token can be obtained by refresh_token. The attributes passed for fetching the new access_token using refresh_token are:
-        => grant_type Value: refresh_token
-        => refresh_token
-        => client_id
-        => client_secret
+        The obtained access token will be valid only for 2 hours. Then the new access_token can be obtained by refresh_token. The attributes passed for fetching the new access_token using refresh_token are:
+          => grant_type Value: refresh_token
+          => refresh_token
+          => client_id
+          => client_secret
 
-      ------------
-      -- `grant_type` - `client_credentials`-- The OAuth2.0 authentication scheme is Grant Type: Resource Client Credentials. The client application provides the `client_id` and `client_secret` and the user is issued a token. Please note that the refresh token is not issued in the response once the token expires.
-    operationId: fetch_access_token
-    requestBody:
-      description: OAuth2.0 Params
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/LoginParams'
-    responses:
-      "200":
-        description: OK
+        ------------
+        -- `grant_type` - `client_credentials`-- The OAuth2.0 authentication scheme is Grant Type: Resource Client Credentials. The client application provides the `client_id` and `client_secret` and the user is issued a token. Please note that the refresh token is not issued in the response once the token expires.
+      operationId: fetch_access_token
+      requestBody:
+        description: OAuth2.0 parameters
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AccessToken'
-      "401":
-        description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+              $ref: './components.yaml#/components/schemas/LoginParams'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/AccessToken'
+        "401":
+          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
+  
+  /oauth/revoke:
+    post:
+      tags:
+        - Authentication
+      summary: Logout
+      description: |-
+        To access the IVY API the client needs to be authenticated first. The authentication happens through OAuth 2.0.
+        To sign-out this can be the sign-out endpoint.
+      operationId: Logout
+      requestBody:
+        description: Logout parameters
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/error'
-    security: []
-
-/oauth/revoke:
-  post:
-    tags:
-      - Authentication
-    summary: Logout
-    description: |-
-      To access the IVY API the client needs to be authenticated first. The authentication happens through OAuth 2.0.
-      To sign-out this can be the sign-out endpoint.
-    operationId: Logout
-    requestBody:
-      description: Logout Params
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/LogoutParams'
-    responses:
-      "200":
-        description: Logout Consumer. No Content
-      "401":
-        description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error' 
+              $ref: './components.yaml#/components/schemas/LogoutParams'
+      responses:
+        "200":
+          description: Logout Consumer. No Content
+        "401":
+          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error' 

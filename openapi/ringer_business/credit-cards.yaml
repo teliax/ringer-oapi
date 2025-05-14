@@ -1,261 +1,267 @@
-/credit-cards:
-  get:
-    tags:
-      - Credit Cards
-    summary: List Credit Cards
-    description: Retrieve information about all Credit Cards currently for your Customer account.
-    operationId: list_credit_cards
-    parameters:
-      - name: Authorization
-        in: header
-        description: This token is used to authenticate a particular account.
-        required: true
-        schema:
-          type: string
-    responses:
-      "200":
-        description: Array of Credit Cards
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreditCardList'
-      "400":
-        description: Bad Request Parameters or Validation Errors
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error'
-      "401":
-        description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error'
-  post:
-    tags:
-      - Credit Cards
-    summary: Create a new Credit Card
-    description: Add a new Credit Card to the Account
-    operationId: create_credit_card
-    parameters:
-      - name: Authorization
-        in: header
-        description: This token is used to authenticate a particular account.
-        required: true
-        schema:
-          type: string
-    requestBody:
-      description: Credit Card Attributes
-      required: true
-      content:
-        application/json:
+openapi: 3.0.3
+info:
+  title: IVY API - Credit Cards
+  description: Credit card management endpoints for the IVY API
+  version: 1.0.0
+paths:
+  /credit-cards:
+    get:
+      tags:
+        - Credit Cards
+      summary: List Credit Cards
+      description: Retrieve information about all Credit Cards currently for your Customer account.
+      operationId: list_credit_cards
+      parameters:
+        - name: Authorization
+          in: header
+          description: This token is used to authenticate a particular account.
+          required: true
           schema:
-            $ref: '#/components/schemas/CreditCardParams'
-    responses:
-      "201":
-        description: Credit Card Created
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreditCard'
-      "400":
-        description: Bad Request Parameters or Validation Errors
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error'
-      "401":
-        description: Unauthorized request.  This error will occur if the SecurityContext header is not provided or does not include a party_id.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error'
-
-/credit-cards/{id}:
-  get:
-    tags:
-      - Credit Cards
-    summary: Credit Card Details
-    description: "Retrieve information about a Credit Card. The information returned is: 1. name 2. priority 3. active 4. expired 5. verified"
-    operationId: show_credit_card
-    parameters:
-      - name: Authorization
-        in: header
-        description: This token is used to authenticate a particular account.
-        required: true
-        schema:
-          type: string
-      - name: id
-        in: path
-        description: ID of the credit card
-        required: true
-        schema:
-          type: integer
-    responses:
-      "200":
-        description: Credit Card Detail
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreditCard'
-      "400":
-        description: Bad Request Parameters or Validation Errors
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error'
-      "401":
-        description: Unauthorized request.  This error will occur if the SecurityContext header is not provided or does not include a party_id.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error'
-      "404":
-        description: Couldn't find site record
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error'
-  put:
-    tags:
-      - Credit Cards
-    summary: Update Credit Card
-    description: Update Credit Card
-    operationId: update_credit_card
-    parameters:
-      - name: Authorization
-        in: header
-        description: This token is used to authenticate a particular account.
-        required: true
-        schema:
-          type: string
-      - name: id
-        in: path
-        description: ID of Credit Card
-        required: true
-        schema:
-          type: integer
-    requestBody:
-      description: Credit Card Attributes
-      required: true
-      content:
-        application/json:
+            type: string
+      responses:
+        "200":
+          description: Array of Credit Cards
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/CreditCardList'
+        "400":
+          description: Bad Request Parameters or Validation Errors
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
+        "401":
+          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
+    post:
+      tags:
+        - Credit Cards
+      summary: Create a new Credit Card
+      description: Add a new Credit Card to the Account
+      operationId: create_credit_card
+      parameters:
+        - name: Authorization
+          in: header
+          description: This token is used to authenticate a particular account.
+          required: true
           schema:
-            $ref: '#/components/schemas/CreditCardUpdateParams'
-    responses:
-      "200":
-        description: Credit Card Updated
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreditCard'
-      "400":
-        description: Bad Request Parameters or Validation Errors
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error'
-      "401":
-        description: Unauthorized request.  This error will occur if the SecurityContext header is not provided or does not include a party_id.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error'
-      "404":
-        description: Couldn't find site record
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error'
-  delete:
-    tags:
-      - Credit Cards
-    summary: Delete Credit Card
-    description: Delete Credit Card
-    operationId: delete_credit_card
-    parameters:
-      - name: Authorization
-        in: header
-        description: This token is used to authenticate a particular account.
+            type: string
+      requestBody:
+        description: Credit Card Attributes
         required: true
-        schema:
-          type: string
-      - name: id
-        in: path
-        description: ID of the Credit Card
-        required: true
-        schema:
-          type: integer
-    responses:
-      "204":
-        description: Credit Card Deleted. No Content
-      "400":
-        description: Bad Request Parameters or Validation Errors
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/error'
-      "401":
-        description: Unauthorized request.  This error will occur if the SecurityContext header is not provided or does not include a party_id.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error'
-      "404":
-        description: Couldn't find site record
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error'
+              $ref: './components.yaml#/components/schemas/CreditCardParams'
+      responses:
+        "201":
+          description: Credit Card Created
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/CreditCard'
+        "400":
+          description: Bad Request Parameters or Validation Errors
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
+        "401":
+          description: Unauthorized request.  This error will occur if the SecurityContext header is not provided or does not include a party_id.
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
 
-/credit-cards/{id}/verify:
-  patch:
-    tags:
-      - Credit Cards
-    summary: Verify Credit Card
-    description: "When a credit card is added to your account, a small amount will be charged to the card. To verify that you are the owner of the credit card. The amount should match the amount charged."
-    operationId: verify_credit_card
-    parameters:
-      - name: Authorization
-        in: header
-        description: This token is used to authenticate a particular account.
+  /credit-cards/{id}:
+    get:
+      tags:
+        - Credit Cards
+      summary: Credit Card Details
+      description: "Retrieve information about a Credit Card. The information returned is: 1. name 2. priority 3. active 4. expired 5. verified"
+      operationId: show_credit_card
+      parameters:
+        - name: Authorization
+          in: header
+          description: This token is used to authenticate a particular account.
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          description: ID of the credit card
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Credit Card Detail
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/CreditCard'
+        "400":
+          description: Bad Request Parameters or Validation Errors
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
+        "401":
+          description: Unauthorized request.  This error will occur if the SecurityContext header is not provided or does not include a party_id.
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
+        "404":
+          description: Couldn't find site record
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
+    put:
+      tags:
+        - Credit Cards
+      summary: Update Credit Card
+      description: Update Credit Card
+      operationId: update_credit_card
+      parameters:
+        - name: Authorization
+          in: header
+          description: This token is used to authenticate a particular account.
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          description: ID of Credit Card
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Credit Card Attributes
         required: true
-        schema:
-          type: string
-      - name: id
-        in: path
-        description: ID of the credit card
-        required: true
-        schema:
-          type: integer
-      - name: amount_in_dollars
-        in: query
-        description: "When a credit card is added to your account, a small amount will be charged to the card. Enter that amount here to verify that you are the owner of the credit card."
-        required: true
-        schema:
-          type: integer
-    responses:
-      "200":
-        description: Credit Card Detail
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreditCard'
-      "400":
-        description: Bad Request Parameters or Validation Errors
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error'
-      "401":
-        description: Unauthorized request.  This error will occur if the SecurityContext header is not provided or does not include a party_id.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error'
-      "404":
-        description: Couldn't find site record
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error' 
+              $ref: './components.yaml#/components/schemas/CreditCardUpdateParams'
+      responses:
+        "200":
+          description: Credit Card Updated
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/CreditCard'
+        "400":
+          description: Bad Request Parameters or Validation Errors
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
+        "401":
+          description: Unauthorized request.  This error will occur if the SecurityContext header is not provided or does not include a party_id.
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
+        "404":
+          description: Couldn't find site record
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
+    delete:
+      tags:
+        - Credit Cards
+      summary: Delete Credit Card
+      description: Delete Credit Card
+      operationId: delete_credit_card
+      parameters:
+        - name: Authorization
+          in: header
+          description: This token is used to authenticate a particular account.
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          description: ID of the Credit Card
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Credit Card Deleted. No Content
+        "400":
+          description: Bad Request Parameters or Validation Errors
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
+        "401":
+          description: Unauthorized request.  This error will occur if the SecurityContext header is not provided or does not include a party_id.
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
+        "404":
+          description: Couldn't find site record
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
+
+  /credit-cards/{id}/verify:
+    patch:
+      tags:
+        - Credit Cards
+      summary: Verify Credit Card
+      description: "When a credit card is added to your account, a small amount will be charged to the card. To verify that you are the owner of the credit card. The amount should match the amount charged."
+      operationId: verify_credit_card
+      parameters:
+        - name: Authorization
+          in: header
+          description: This token is used to authenticate a particular account.
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          description: ID of the credit card
+          required: true
+          schema:
+            type: integer
+        - name: amount_in_dollars
+          in: query
+          description: "When a credit card is added to your account, a small amount will be charged to the card. Enter that amount here to verify that you are the owner of the credit card."
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Credit Card Detail
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/CreditCard'
+        "400":
+          description: Bad Request Parameters or Validation Errors
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
+        "401":
+          description: Unauthorized request.  This error will occur if the SecurityContext header is not provided or does not include a party_id.
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
+        "404":
+          description: Couldn't find site record
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error' 

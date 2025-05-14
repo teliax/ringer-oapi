@@ -1,46 +1,52 @@
-/addresses/{id}:
-  put:
-    tags:
-      - Account
-    summary: Update Account Address
-    description: Update the contact settings for your account. This includes your contact emails and address. If you are in the user role, this operation is not permitted.
-    operationId: update_account_address
-    parameters:
-      - name: id
-        in: path
-        description: ID of the Address
-        required: true
-        schema:
-          type: integer
-    requestBody:
-      description: Address Attributes
-      required: true
-      content:
-        application/json:
+openapi: 3.0.3
+info:
+  title: IVY API - Addresses
+  description: Address management endpoints for the IVY API
+  version: 1.0.0
+paths:
+  /addresses/{id}:
+    put:
+      tags:
+        - Account
+      summary: Update Account Address
+      description: Update the contact settings for your account. This includes your contact emails and address. If you are in the user role, this operation is not permitted.
+      operationId: update_account_address
+      parameters:
+        - name: id
+          in: path
+          description: ID of the Address
+          required: true
           schema:
-            $ref: '#/components/schemas/AddressParams'
-    responses:
-      "200":
-        description: Update Contact Settings.
+            type: integer
+      requestBody:
+        description: Address Attributes
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Address'
-      "400":
-        description: Bad Request Parameters or Validation Errors
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error'
-      "401":
-        description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error'
-      "404":
-        description: Couldn't find account record
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error' 
+              $ref: './components.yaml#/components/schemas/AddressParams'
+      responses:
+        "200":
+          description: Update Contact Settings.
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/Address'
+        "400":
+          description: Bad Request Parameters or Validation Errors
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
+        "401":
+          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
+        "404":
+          description: Couldn't find account record
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error' 
