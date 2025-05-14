@@ -28,7 +28,7 @@ tags:
   - name: Portability
     description: Endpoints for phone number portability information
   - name: ROR
-    description: Operations for Route of Record
+    description: Operations for Responsible Organization
 paths:
   /telique/cnam/{phoneNumber}:
     get:
@@ -162,7 +162,7 @@ paths:
     get:
       tags:
         - Portability
-      summary: Retrieve LRN information for a phone number
+      summary: Retrieve LRN for a phone number
       description: |
         Returns the Local Routing Number (LRN) and Service Provider ID (SPID) 
         for a specified 10-digit North American phone number. This information 
@@ -364,7 +364,7 @@ paths:
   /telique/cicror/{crn}/{ani}/{lata}:
     get:
       summary: Get CIC information with ROR
-      description: Retrieve Carrier Identification Code (CIC) information including Route of Record (ROR) data.
+      description: Retrieve Carrier Identification Code (CIC) information including Responsible Organization (ROR) data.
       operationId: getCicRorInfo
       tags:
         - CIC
@@ -423,7 +423,7 @@ paths:
   /telique/cicror/{crn}/{ani}/{lata}/plain:
     get:
       summary: Get CIC information with ROR (plain text)
-      description: Retrieve Carrier Identification Code (CIC) and Route of Record (ROR) information in plain text format.
+      description: Retrieve Carrier Identification Code (CIC) and Responsible Organization (ROR) information in plain text format.
       operationId: getCicRorInfoPlainText
       tags:
         - CIC
@@ -485,7 +485,7 @@ paths:
   /telique/ror/{crn}:
     get:
       summary: Get ROR information
-      description: Retrieve Route of Record (ROR) information for the specified CRN.
+      description: Retrieve Responsible Organization (ROR) information for the specified CRN.
       operationId: getRorInfo
       tags:
         - ROR
@@ -527,7 +527,7 @@ paths:
   /telique/ror/{crn}/plain:
     get:
       summary: Get ROR information (plain text)
-      description: Retrieve Route of Record (ROR) information in plain text format.
+      description: Retrieve Responsible Organization (ROR) information in plain text format.
       operationId: getRorInfoPlainText
       tags:
         - ROR
@@ -548,7 +548,7 @@ paths:
             text/plain:
               schema:
                 type: string
-                description: Route of Record
+                description: Responsible Organization
                 example: "ROUTE1234"
         '400':
           description: Bad request
@@ -668,7 +668,7 @@ components:
       properties:
         ror:
           type: string
-          description: Route of Record
+          description: Responsible Organization
           example: "ROUTE1234"
       required:
         - ror
@@ -681,7 +681,7 @@ components:
           example: "0123"
         ror:
           type: string
-          description: Route of Record
+          description: Responsible Organization
           example: "ROUTE1234"
         data:
           type: object
