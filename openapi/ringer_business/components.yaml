@@ -281,6 +281,8 @@ components:
             type: integer
           links:
             type: array
+            items:
+              $ref: '#/components/schemas/linkDescription'
       example:
         id: 671
         email: email@example.com
@@ -355,8 +357,10 @@ components:
             type: integer
             example: 1
           features:
-            description: If existing set of calling features need to be assigned the to the user then various features can be assigned to a user. If new set of features need to be assigned then please pass the site_id and template_id. If the user is being updated then site_id and template_id will be ignored.
-            $ref: '#/components/schemas/UserFeatures'
+            type: object
+            description: "If existing set of calling features need to be assigned the to the user then various features can be assigned to a user. If new set of features need to be assigned then please pass the site_id and template_id. If the user is being updated then site_id and template_id will be ignored."
+            allOf:
+              - $ref: '#/components/schemas/UserFeatures'
           links:
             type: array
             example:

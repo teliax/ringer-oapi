@@ -123,25 +123,48 @@ components:
 
 ## Validation
 
-To validate the OpenAPI specifications, use the provided validation script:
+All files are designed to be valid both individually and as part of the modular structure. Each path file is a complete OpenAPI document with proper metadata, tags, and security schemes.
+
+### Common Validation Issues Fixed
+
+1. **Unused Components**: Path files include Error schema components that are properly referenced in error responses.
+2. **Missing Tags**: All operation tags used in path files are defined globally in main.yaml.
+3. **Schema Errors**: 
+   - Added missing "items" field for array types
+   - Fixed $ref being used alongside other properties
+   - Made schema examples match their defined types
+
+## Scripts
+
+The following scripts are provided to maintain validation compliance:
+
+- `fix-all-openapi-files.sh`: Runs all fix scripts and validates the result
+- `fix-components-file.sh`: Makes components.yaml a valid standalone document
+- `fix-standalone-validation.sh`: Makes path files into valid standalone documents
+- `fix-components-validation.sh`: Fixes specific errors in components.yaml
+- `fix-validation-issues.sh`: Fixes common validation issues like unused components and missing tags
+- `test-all-files.sh`: Validates all OpenAPI files
+- `create-path-file.sh`: Template for creating new path files
+
+## Creating New Files
+
+When creating a new path file, use the `create-path-file.sh` script to ensure it follows the established structure and validation pattern:
 
 ```bash
-./validate-openapi.sh
+./create-path-file.sh my-new-resource "My New Resource"
 ```
 
-This script validates:
-- `openapi/ringer/telique.yaml`
-- `openapi/ringer_business/main.yaml`
+This will create a template file at `openapi/ringer_business/my-new-resource.yaml` with the proper structure.
 
-To validate all files including individual path files:
+## Usage
+
+To ensure all files are valid after making changes:
+
 ```bash
-./test-all-files.sh
+./fix-all-openapi-files.sh
 ```
 
-To validate against Spectral rules:
-```bash
-npx @stoplight/spectral-cli lint --ruleset .spectral.yaml openapi/ringer_business/*.yaml
-```
+This will automatically fix common issues and validate all files.
 
 ## Editing Guidelines
 
