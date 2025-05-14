@@ -62,7 +62,7 @@ components:
       example:
         access_token: d79d9eadabfcbd3f2eb9455986c2bd70bc8523f4629825d33060649045a313e6
         token_type: bearer
-        expires_in: "7200"
+        expires_in: 7200
         refresh_token: 128f825fbd91b1b23a10c0e3f408ea6d70163b299d6f579fdc6ed68d690f03cb
         created_at: 1519714076
     LogoutParams:
@@ -511,22 +511,6 @@ components:
           active: true
           expired: false
           verified: true
-        - href: /credit-cards/1
-          rel: self
-          title: Credit Card Details
-          method: GET
-        - href: /credit-cards/1
-          rel: Delete
-          title: Delete Credit Card
-          method: DELETE
-        - href: /credit-cards/1
-          rel: Edit
-          title: Edit Credit Card
-          method: PUT
-        - href: /credit-cards/1
-          rel: Verify
-          title: Verify Credit Card
-          method: PATCH
         links:
         - href: /credit-cards
           rel: Self
@@ -577,7 +561,7 @@ components:
           rel: Edit
           title: Edit Credit Card
           method: PUT
-        - href: /credit-cards/1/verify
+        - href: /credit-cards/1
           rel: Verify
           title: Verify Credit Card
           method: PATCH
@@ -732,8 +716,8 @@ components:
           - href: /statements/1
             rel: self
             method: GET
-        total_items: 350
-        total_pages: 7
+        total_items: "350"
+        total_pages: "7"
         links:
         - href: /statements?page_size=50&page=3
           rel: self

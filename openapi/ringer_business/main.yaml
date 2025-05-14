@@ -26,6 +26,10 @@ security:
     - read
     - write
 tags:
+  - name: Account
+    description: "Manage account details and configurations."
+  - name: Addresses
+    description: "Manage address information for accounts and contacts."
   - name: Authentication
     description: |-
       To authenticate the client applications IVY API uses OAtuh 2.0. The Grant Flow that are allowed are:
@@ -33,6 +37,32 @@ tags:
         - client_credentials
       OAuth 2 is an authorization framework that enables applications to obtain limited access to user accounts on an HTTP service, such as Google, Facebook and GitHub.OAuth 2 provides authorization flows for web and desktop applications, and mobile devices. The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure! Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, and so forth. IVY API follows https://tools.ietf.org/html/rfc6749 RFC.
       P.S. The authentication using the `grant_flow` - `client_credentials` is used only in sepcial cases and is controlled by the System Administrator.
+  - name: Call Blocks
+    description: "Manage call blocking settings."
+  - name: Call Records
+    description: "View call records and history."
+  - name: Confirmation
+    description: Once a Customer registers or is added to the IVY Platform the user of the account needs to confirmed before their account becomes operational. After registration the confirmation_token can be passed on to the customer. Once the account is confirmed through the account becomes operational.
+  - name: Country Codes
+    description: "Reference list of country codes."
+  - name: Credit Cards
+    description: "Manage credit cards used for account payments."
+  - name: Forgot Password
+    description: "To sign in the user needs to supply the username and password. If the user forgets their password they can reset their password. To reset the password the user can supply their email and the API emails a password reset link. One can simply use the password reset link in their email to change their password. Otherwise, one can grab the token from the url and submit it in the PUT route."
+  - name: Items
+    description: "View available items for purchase."
+  - name: Packages
+    description: "View and manage packages available for your account."
+  - name: Payments
+    description: "Make and manage payments on your account."
+  - name: Phone Numbers
+    description: "Manage phone numbers associated with your account."
+  - name: Plans
+    description: |-
+      All accounts have a plan, even if it's just the default "tryout" plan. Your plan, included packages, add-on packages, usage, and monthly pricing are displayed here. Plans are made up of included and optional packages. The price you set on a plan will cover all included packages. Optional packages can be added or removed at any time and each optional package has its own cost, separate from the plan price.
+      Plans usually provide you with additional calling features or calling minute usage for a lower price than what you would pay individually. Since plans allow a certain amount of features or minutes to be used during your billing cycle you should analyze your usage and select a plan that best suits your needs. In some cases it could make more sense to use your account without a plan and instead be charged the individual rates.
+      If you add a new plan at any time in your billing cycle your account will be charged the full amount of the plan. If you're changing a plan, it's best to change it just before the end of your billing cycle.
+      Some plans and add-on packages can be removed at any time. Others can only be removed by Customer Support. The resources provided will remain on your account until the next billing cycle. Removing a plan only removes associated resources at the next billing cycle and not the calling features themselves.
   - name: Sign Up
     description: |-
       To use the IVY system the Customers could directly register with the system. Customers can register with their basic information like:
@@ -45,10 +75,16 @@ tags:
           State/Province
           Postal Code
           Contact Number
-  - name: Confirmation
-    description: Once a Customer registers or is added to the IVY Platform the user of the account needs to confirmed before their account becomes operational. After registration the confirmation_token can be passed on to the customer. Once the account is confirmed through the account becomes operational.
-  - name: Forgot Password
-    description: "To sign in the user needs to supply the username and password. If the user forgets their password they can reset their password. To reset the password the user can supply their email and the API emails a password reset link. One can simply use the password reset link in their email to change their password. Otherwise, one can grab the token from the url and submit it in the PUT route."
+  - name: Sites
+    description: "Manage sites associated with your account."
+  - name: Statements
+    description: "You can view your account statements (receipts) here. Statements are generated at the end of your previous service interval (e.g., 2014-11-25 to 2014-12-25)."
+  - name: Templates
+    description: "View and manage templates."
+  - name: Thin Clients
+    description: "Manage thin client configurations."
+  - name: Timezones
+    description: "Reference list of available timezones."
   - name: Users
     description: |-
       Users are the people who interact with the IVY system. Users have predefined roles with different permissions.
@@ -60,38 +96,6 @@ tags:
       Users can
         View account activity
         View existing price decks
-  - name: Statements
-    description: "You can view your account statements (receipts) here. Statements are generated at the end of your previous service interval (e.g., 2014-11-25 to 2014-12-25)."
-  - name: Plans
-    description: |-
-      All accounts have a plan, even if it's just the default "tryout" plan. Your plan, included packages, add-on packages, usage, and monthly pricing are displayed here. Plans are made up of included and optional packages. The price you set on a plan will cover all included packages. Optional packages can be added or removed at any time and each optional package has its own cost, separate from the plan price.
-      Plans usually provide you with additional calling features or calling minute usage for a lower price than what you would pay individually. Since plans allow a certain amount of features or minutes to be used during your billing cycle you should analyze your usage and select a plan that best suits your needs. In some cases it could make more sense to use your account without a plan and instead be charged the individual rates.
-      If you add a new plan at any time in your billing cycle your account will be charged the full amount of the plan. If you're changing a plan, it's best to change it just before the end of your billing cycle.
-      Some plans and add-on packages can be removed at any time. Others can only be removed by Customer Support. The resources provided will remain on your account until the next billing cycle. Removing a plan only removes associated resources at the next billing cycle and not the calling features themselves.
-  - name: Credit Cards
-    description: "Manage credit cards used for account payments."
-  - name: Items
-    description: "View available items for purchase."
-  - name: Packages
-    description: "View and manage packages available for your account."
-  - name: Payments
-    description: "Make and manage payments on your account."
-  - name: Phone Numbers
-    description: "Manage phone numbers associated with your account."
-  - name: Country Codes
-    description: "Reference list of country codes."
-  - name: Call Records
-    description: "View call records and history."
-  - name: Call Blocks
-    description: "Manage call blocking settings."
-  - name: Thin Clients
-    description: "Manage thin client configurations."
-  - name: Templates
-    description: "View and manage templates."
-  - name: Timezones
-    description: "Reference list of available timezones."
-  - name: Sites
-    description: "Manage sites associated with your account."
 
 # Reference all path files
 paths:
@@ -194,4 +198,20 @@ paths:
     $ref: './call-blocks.yaml#/paths/~1call-blocks'
 
 components:
-  $ref: './components.yaml#/components'
+  securitySchemes:
+    password:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: http://ivy-web-5.den.teliax.com/oauth/token
+          scopes:
+            write: allows modifying resources
+            read: allows reading resources
+    client_credentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: http://ivy-web-5.den.teliax.com/oauth/token
+          scopes:
+            write: allows modifying resources
+            read: allows reading resources
