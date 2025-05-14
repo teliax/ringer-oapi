@@ -1,0 +1,153 @@
+/account:
+  get:
+    tags:
+      - Account
+    summary: Account Details
+    description: Details of your account
+    operationId: account_details
+    parameters:
+      - name: Authorization
+        in: header
+        description: This token is used to authenticate a particular account.
+        required: true
+        schema:
+          type: string
+    responses:
+      "200":
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Account'
+      "401":
+        description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+  
+  put:
+    tags:
+      - Account
+    summary: Update Account
+    description: Update Account Information. This operation is only allowed if you are in the administrator role.
+    operationId: update_account
+    parameters:
+      - name: Authorization
+        in: header
+        description: This token is used to authenticate a particular account.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      description: Account Attributes
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AccountParams'
+    responses:
+      "200":
+        description: Update Account Information and Organization Details
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Account'
+      "400":
+        description: Bad Request Parameters or Validation Errors
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+      "401":
+        description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+      "404":
+        description: Couldn't find account record
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+  
+  delete:
+    tags:
+      - Account
+    summary: Close an Account
+    description: Close Account. This operation is only allowed if you are in the administrator role.
+    operationId: close_account
+    parameters:
+      - name: Authorization
+        in: header
+        description: This token is used to authenticate a particular account.
+        required: true
+        schema:
+          type: string
+    responses:
+      "204":
+        description: Account Closed. No Content
+      "400":
+        description: Bad Request Parameters or Validation Errors
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+      "401":
+        description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+      "404":
+        description: Couldn't find site record
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+  
+  patch:
+    tags:
+      - Account
+    summary: Activate Account
+    description: Activate Account. This operation is only allowed if you are in the administrator role.
+    operationId: activate_account
+    parameters:
+      - name: Authorization
+        in: header
+        description: This token is used to authenticate a particular account.
+        required: true
+        schema:
+          type: string
+    responses:
+      "200":
+        description: Activate an Inactive account once the account is ready for operation.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Account'
+      "400":
+        description: Bad Request Parameters or Validation Errors
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+      "401":
+        description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+      "403":
+        description: Forbidden request. This error will occur if the Activation is tried on an Active account
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+      "404":
+        description: Couldn't find account record
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error' 

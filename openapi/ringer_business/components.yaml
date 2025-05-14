@@ -1,0 +1,875 @@
+securitySchemes:
+  password:
+    type: oauth2
+    flows:
+      password:
+        tokenUrl: http://ivy-web-5.den.teliax.com/oauth/token
+        scopes:
+          write: allows modifying resources
+          read: allows reading resources
+  client_credentials:
+    type: oauth2
+    flows:
+      clientCredentials:
+        tokenUrl: http://ivy-web-5.den.teliax.com/oauth/token
+        scopes:
+          write: allows modifying resources
+          read: allows reading resources
+schemas:
+  LoginParams:
+    required:
+    - client_id
+    - client_secret
+    - grant_type
+    properties:
+      grant_type:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+      client_id:
+        type: string
+      client_secret:
+        type: string
+      refresh_token:
+        type: string
+    example:
+      grant_type: password
+      password: ADfmcsnf3f34nAD
+      username: john.doe@teliax.com
+      client_id: 4153c85d80d957c09a8a5360f1a80ff6051c68f0e03c4e453f9845d07d8f9921
+      client_secret: 371c5c5ec5a42bcb258a8b0c7ef8d0c9de5daa123270cc96605f3f973e22a391
+  AccessToken:
+    required:
+    - access_token
+    - created_at
+    - expires_in
+    - refresh_token
+    - token_type
+    properties:
+      access_token:
+        type: string
+      token_type:
+        type: string
+      expires_in:
+        type: integer
+      refresh_token:
+        type: string
+      created_at:
+        type: integer
+    example:
+      access_token: d79d9eadabfcbd3f2eb9455986c2bd70bc8523f4629825d33060649045a313e6
+      token_type: bearer
+      expires_in: "7200"
+      refresh_token: 128f825fbd91b1b23a10c0e3f408ea6d70163b299d6f579fdc6ed68d690f03cb
+      created_at: 1519714076
+  LogoutParams:
+    required:
+    - client_id
+    - client_secret
+    - token
+    properties:
+      token:
+        type: string
+      client_id:
+        type: string
+      client_secret:
+        type: string
+    example:
+      token: 6d242680a6eaa70cf76debf05d9774e2f27d2bd4416bff9bc145f9dddde71728
+      client_id: 579ab02e9c1126e44a5b09b31d409c90ade335615bc408235f5a170f4cc70fdc
+      client_secret: bcf5a592c9dc65f905e6d816f9d8b4203c62657b56ff153d7f4a7c4b7a9aa0d3
+  
+  # Customer Registration schemas
+  CustomerRegistration:
+    allOf:
+    - $ref: '#/schemas/CustomerRegistrationParams'
+    - required:
+      - id
+      properties:
+        id:
+          type: integer
+        confirmation_token:
+          type: string
+        links:
+          type: array
+          items:
+            $ref: '#/schemas/linkDescription'
+      example:
+        id: 122
+        name: Teliax Telecommunications
+        active: true
+        locale: English
+        international_enabled: true
+        price_deck: Sample Price Deck
+        balance_preference_in_dollars: 100.0
+        recharge_preference_in_dollars: 200.0
+        address:
+          id: 671
+          email: john.doe@example.com
+          street_address: "233 E Wacker Drive, Suite #1106"
+          country: US
+          city: Chicago
+          state_province: IL
+          postal_code: "60601"
+          contact_number: "3125233844"
+        links:
+        - herf: /confirmation
+          rel: confirmation
+          title: Confirm Account
+          method: POST
+  CustomerRegistrationParams:
+    required:
+    - name
+    properties:
+      name:
+        type: string
+        example: Teliax Telecommunications
+      address:
+        $ref: '#/schemas/AddressParams'
+  
+  # Password reset schemas
+  ForgotPassword:
+    properties:
+      reset_password_token:
+        type: string
+      links:
+        type: array
+        items:
+          $ref: '#/schemas/linkDescription'
+    example:
+      message: An email has been sent with instructions to reset your password
+  ForgotPasswordParams:
+    required:
+    - email
+    properties:
+      email:
+        type: string
+        example: john.doe@teliax.com
+  ResetPassword:
+    properties:
+      message:
+        type: string
+    example:
+      message: Password updated successfully
+  ResetPasswordParams:
+    properties:
+      password:
+        type: string
+        example: new_password
+      password_confirmation:
+        type: string
+        example: new_password
+      reset_password_token:
+        type: string
+        example: U6z9TxNd7xQBJcDF
+  
+  # Confirmation schemas
+  Confirmation:
+    required:
+    - message
+    properties:
+      message:
+        type: string
+    example:
+      message: Account confirmed
+  ConfirmationParams:
+    required:
+    - confirmation_token
+    properties:
+      confirmation_token:
+        type: string
+        example: i2W9OXLqCaKNHoQY07lVAkgPVaI
+  
+  # Account schemas
+  Account:
+    allOf:
+    - $ref: '#/schemas/AccountParams'
+    - required:
+      - id
+      properties:
+        id:
+          type: integer
+          example: 1
+        balance:
+          type: string
+          example: "4276.85"
+        current_user:
+          $ref: '#/schemas/Account_current_user'
+        address:
+          $ref: '#/schemas/Address'
+        links:
+          type: array
+          example:
+          - href: /account
+            rel: self
+            title: Account Details
+            method: GET
+          - href: /account
+            rel: edit
+            title: Edit Account
+            method: PUT
+          - href: /account
+            rel: delete
+            title: Delete Account
+            method: DELETE
+          - href: "/addresses/{id}"
+            rel: edit
+            title: Update Address
+            method: PUT
+          items:
+            $ref: '#/schemas/linkDescription'
+  AccountParams:
+    required:
+    - balance_preference_in_dollars
+    - locale
+    - maximum_recharge_preference_in_dollars
+    - name
+    - recharge_preference_in_dollars
+    properties:
+      name:
+        type: string
+        example: Leap Tel
+      locale:
+        type: string
+        example: English
+      balance_preference_in_dollars:
+        type: string
+        example: "100.0"
+      recharge_preference_in_dollars:
+        type: string
+        example: "200.0"
+      maximum_recharge_preference_in_dollars:
+        type: string
+        example: "1000.0"
+  
+  # Address schemas
+  Address:
+    allOf:
+    - $ref: '#/schemas/AddressParams'
+    - required:
+      - id
+      properties:
+        id:
+          type: integer
+        links:
+          type: array
+      example:
+        id: 671
+        email: email@example.com
+        street_address: "233 E Wacker Drive, Suite #1106"
+        country: US
+        city: Chicago
+        state_province: IL
+        postal_code: "60601"
+        contact_number: "3125233844"
+        links:
+        - href: /addresses/671
+          rel: self
+          title: Update Address
+          method: PUT
+        - href: /account
+          rel: account
+          title: Account Details
+          method: GET
+  AddressParams:
+    required:
+    - city
+    - contact_number
+    - country
+    - email
+    - postal_code
+    - state_province
+    - street_address
+    properties:
+      email:
+        type: string
+        example: email@example.com
+      street_address:
+        type: string
+        example: "233 E Wacker Drive, Suite #1106"
+      country:
+        $ref: '#/schemas/country_code'
+      city:
+        type: string
+        example: Chicago
+      state_province:
+        type: string
+        example: IL
+      postal_code:
+        type: string
+        example: "60601"
+      contact_number:
+        type: string
+        example: "3125233844"
+    example:
+      email: email@example.com
+      street_address: "233 E Wacker Drive, Suite #1106"
+      country: US
+      city: Chicago
+      state_province: IL
+      postal_code: "60601"
+      contact_number: "3125233844"
+
+  # User schemas
+  UserList:
+    properties:
+      users:
+        type: array
+        items:
+          $ref: '#/schemas/User'
+  User:
+    allOf:
+    - $ref: '#/schemas/UserCommonAttributes'
+    - required:
+      - id
+      properties:
+        id:
+          type: integer
+          example: 1
+        features:
+          description: If existing set of calling features need to be assigned the to the user then various features can be assigned to a user. If new set of features need to be assigned then please pass the site_id and template_id. If the user is being updated then site_id and template_id will be ignored.
+          $ref: '#/schemas/UserFeatures'
+        links:
+          type: array
+          example:
+          - href: /users/1
+            rel: self
+            title: User Details
+            method: GET
+          - href: /users/1
+            rel: Delete
+            title: Delele User
+            method: DELETE
+          - href: /users/1
+            rel: Edit
+            title: Edit User
+            method: PUT
+          - href: /account
+            rel: account
+            title: Account
+            method: GET
+          items:
+            $ref: '#/schemas/linkDescription'
+  UserParams:
+    allOf:
+    - $ref: '#/schemas/UserCommonAttributes'
+    - properties:
+        features:
+          $ref: '#/schemas/UserFeatureParams'
+        site_id:
+          type: integer
+          example: 6
+        template_id:
+          type: string
+          example: "1"
+  UserCommonAttributes:
+    required:
+    - active
+    - email
+    - first_name
+    - last_name
+    - locale
+    - role
+    properties:
+      active:
+        type: boolean
+        example: true
+      first_name:
+        type: string
+        example: Jane
+      last_name:
+        type: string
+        example: Doe
+      email:
+        type: string
+        example: jane.doe@gmail.com
+      role:
+        type: string
+        example: administrator
+      locale:
+        type: string
+        example: en
+  UserFeatureName:
+    type: object
+    properties:
+      name:
+        type: string
+  UserFeatures:
+    properties:
+      devices:
+        type: array
+        items:
+          $ref: '#/schemas/Device'
+      voice_mail_boxes:
+        type: array
+        items:
+          $ref: '#/schemas/VoiceMailBox'
+      ring_groups:
+        type: array
+        items:
+          $ref: '#/schemas/RingGroup'
+      extensions:
+        type: array
+        items:
+          $ref: '#/schemas/Extension'
+      phone_numbers:
+        type: array
+        items:
+          $ref: '#/schemas/PhoneNumber'
+      conference_rooms:
+        type: array
+        items:
+          $ref: '#/schemas/ConferenceRoom'
+      fax_machines:
+        type: array
+        items:
+          $ref: '#/schemas/FaxMachine'
+      forwards:
+        type: array
+        items:
+          $ref: '#/schemas/Forward'
+      schedules:
+        type: array
+        items:
+          $ref: '#/schemas/Schedule'
+  UserFeatureParams:
+    type: object
+    properties:
+      devices:
+        type: array
+        example:
+        - 10
+        items:
+          $ref: '#/schemas/SwitchableId'
+      voice_mail_boxes:
+        type: array
+        example:
+        - 123
+        items:
+          $ref: '#/schemas/SwitchableId'
+      ring_groups:
+        type: array
+        example:
+        - 43
+        items:
+          $ref: '#/schemas/SwitchableId'
+      extensions:
+        type: array
+        example:
+        - 42
+        items:
+          $ref: '#/schemas/SwitchableId'
+      phone_numbers:
+        type: array
+        example:
+        - 43
+        items:
+          $ref: '#/schemas/SwitchableId'
+      conference_rooms:
+        type: array
+        example:
+        - 43
+        items:
+          $ref: '#/schemas/SwitchableId'
+      fax_machines:
+        type: array
+        example:
+        - 43
+        items:
+          $ref: '#/schemas/SwitchableId'
+      forwards:
+        type: array
+        example:
+        - 43
+        items:
+          $ref: '#/schemas/SwitchableId'
+      schedules:
+        type: array
+        example:
+        - 43
+        items:
+          $ref: '#/schemas/SwitchableId'
+  SwitchableId:
+    type: integer
+    description: This is id of switchable
+  
+  # Credit Card schemas
+  CreditCardList:
+    properties:
+      credit_cards:
+        type: array
+        items:
+          $ref: '#/schemas/CreditCard'
+    example:
+      credit_cards:
+      - id: 1
+        name: Primary Credit Card
+        priority: 1
+        active: true
+        expired: false
+        verified: true
+      - href: /credit-cards/1
+        rel: self
+        title: Credit Card Details
+        method: GET
+      - href: /credit-cards/1
+        rel: Delete
+        title: Delete Credit Card
+        method: DELETE
+      - href: /credit-cards/1
+        rel: Edit
+        title: Edit Credit Card
+        method: PUT
+      - href: /credit-cards/1/verify
+        rel: Verify
+        title: Verify Credit Card
+        method: PATCH
+      links:
+      - href: /credit-cards
+        rel: Self
+        title: Credit Cards
+        method: GET
+  CreditCard:
+    required:
+    - active
+    - expired
+    - id
+    - name
+    - priority
+    - verified
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      priority:
+        type: integer
+      active:
+        type: boolean
+      expired:
+        type: boolean
+      verified:
+        type: boolean
+      links:
+        type: array
+        items:
+          $ref: '#/schemas/linkDescription'
+    example:
+      id: 1
+      name: Primary Credit Card
+      priority: 1
+      active: true
+      expired: false
+      verified: true
+      links:
+      - href: /credit-cards/1
+        rel: self
+        title: Credit Card Details
+        method: GET
+      - href: /credit-cards/1
+        rel: Delete
+        title: Delete Credit Card
+        method: DELETE
+      - href: /credit-cards/1
+        rel: Edit
+        title: Edit Credit Card
+        method: PUT
+      - href: /credit-cards/1/verify
+        rel: Verify
+        title: Verify Credit Card
+        method: PATCH
+  CreditCardParams:
+    required:
+    - active
+    - addr1
+    - cardexpmonth
+    - cardexpyear
+    - cardnumber
+    - cardtype
+    - city
+    - country
+    - cvv
+    - fname
+    - lname
+    - name
+    - postalcode
+    - priority
+    properties:
+      name:
+        type: string
+        example: Main Credit Card
+      active:
+        type: boolean
+        example: true
+        description: Inactive cards will not be charged when a payment is made.
+      priority:
+        type: integer
+        example: 100
+        description: "When you make a payment, we will attempt to charge payment methods in order from highest priority (closest to 100) to lowest."
+        minimum: 0
+        maximum: 100
+      fname:
+        type: string
+        example: John
+        description: The card holder's first name.
+      lname:
+        type: string
+        example: Doe
+        description: The card holder's last name.
+      addr1:
+        type: string
+        example: 233 E Wacker Drive
+        description: Card holder\'s street address.
+      addr2:
+        type: string
+        example: "Suite #1106"
+        description: "Apartment or suite number, if applicable."
+      country:
+        type: string
+        example: US
+        description: Country where card holder resides.
+      state:
+        type: string
+        example: IL
+        description: "State where card holder resides, if applicable."
+      city:
+        type: string
+        example: Chicago
+        description: City where card holder resides.
+      postalcode:
+        type: string
+        example: "60601"
+        description: Postal/ZIP code where card holder resides.
+      email:
+        type: string
+        example: john.doe@teliax.com
+        description: Contact email of card holder.
+      dayphone:
+        type: string
+        description: Daytime phone number of card holder.
+      eveningphone:
+        type: string
+        description: Evening phone number of card holder.
+      cardtype:
+        type: string
+        example: Visa
+        description: Type of credit card.
+        enum:
+        - Visa
+        - Mastercard
+        - American Express
+        - Discover
+      cardnumber:
+        type: string
+        example: "4111111111111111"
+        description: Credit card number.
+      cardexpmonth:
+        type: string
+        example: "02"
+        description: Month of credit card's expiration date.
+      cardexpyear:
+        type: string
+        example: "2024"
+        description: Year of credit card\'s expiration date.
+      cvv:
+        type: string
+        example: "786"
+        description: CVV on back of credit card.
+  CreditCardUpdateParams:
+    required:
+    - active
+    - name
+    - priority
+    properties:
+      name:
+        type: string
+        example: Main Credit Card
+      active:
+        type: boolean
+        example: true
+      priority:
+        type: integer
+        example: 99
+        description: "When you make a payment, we will attempt to charge payment methods in order from highest priority (closest to 100) to lowest."
+        minimum: 0
+        maximum: 100
+  
+  # Statement schemas
+  StatementList:
+    type: object
+    properties:
+      statements:
+        type: array
+        description: Array of Statements
+        items:
+          $ref: '#/schemas/Statement'
+      total_items:
+        type: string
+        example: "350"
+        description: Total numnber of items
+        readOnly: true
+      total_pages:
+        type: string
+        example: "7"
+        description: Total number of pages
+        readOnly: true
+      links:
+        type: array
+        items:
+          $ref: '#/schemas/linkDescription'
+    example:
+      statements:
+      - id: 1
+        created_at: 02/02/2018
+        closed_at: 02/02/2018
+        image: http://example.com/image.jpg
+        export: http://example.com/image.pdf
+        cdr: http://example.com/cdr/export.csv
+        links:
+        - href: /statements/1
+          rel: self
+          method: GET
+      total_items: 350
+      total_pages: 7
+      links:
+      - href: /statements?page_size=50&page=3
+        rel: self
+        title: Self
+      - href: /statements?page_size=50&page=1
+        rel: first
+        title: First Page
+      - href: /statements?page_size=50&page=4
+        rel: next
+        title: Next Page
+      - href: /statements?page_size=50&page=2
+        rel: prev
+        title: Previous Page
+      - href: /statements?page_size=50&page=5
+        rel: last
+        title: Last Page
+  Statement:
+    properties:
+      id:
+        type: integer
+      created_at:
+        type: string
+      closed_at:
+        type: string
+      image:
+        type: string
+      export:
+        type: string
+      cdr:
+        type: string
+      links:
+        type: array
+        items:
+          $ref: '#/schemas/linkDescription'
+    example:
+      id: 1
+      created_at: 02/02/2018
+      closed_at: 02/02/2018
+      image: http://example.com/image.jpg
+      export: http://example.com/export.csv
+      cdr: http://example.com/cdr/export.csv
+      links:
+      - href: /statements/1
+        rel: self
+        title: Self
+        method: GET
+
+  # Add more schema definitions as needed...
+  
+  # Common schema definitions
+  error:
+    type: object
+    required:
+    - debug_id
+    - message
+    - name
+    properties:
+      name:
+        type: string
+        description: "Human readable, unique name of the error. It is recommended that this value is streamed out in error response from catalog's error_spec.json#name."
+      debug_id:
+        type: string
+        description: Internal identifier used for correlation purposes.
+      message:
+        type: string
+        description: Message describing the error. It is recommended that this value is streamed out in error response from catalog's error_spec.json#message.
+      information_link:
+        type: string
+        description: URI for detailed information related to this error for the developer. It is recommended that this value is streamed out in error response from one of the links from catalog's error_spec.json#links.
+      details:
+        type: array
+        description: Additional details for the error. Mandatory for client side 4xx errors.
+        items:
+          $ref: '#/schemas/error_detail'
+      links:
+        type: array
+        description: Error context specific HATEOAS links
+        items:
+          $ref: '#/schemas/linkDescription'
+  
+  error_detail:
+    type: object
+    required:
+    - issue
+    properties:
+      field:
+        type: string
+        description: "The field that caused the error. If the field is in the body, set this value to the JSON pointer to that field. Required for client-side errors."
+      value:
+        type: string
+        description: The value of the field that caused the error.
+      location:
+        type: string
+        description: "The location of the field that caused the error. A valid value is `body`, `path`, or `query`. Default is `body`."
+      issue:
+        type: string
+        description: The reason for the error.
+  
+  linkDescription:
+    type: object
+    required:
+    - href
+    - rel
+    properties:
+      href:
+        type: string
+        description: "a URI template, as defined by RFC 6570, with the addition of the $, ( and ) characters for pre-processing"
+      rel:
+        type: string
+        description: relation to the target resource of the link
+      title:
+        type: string
+        description: a title for the link
+      targetSchema:
+        description: JSON Schema describing the link target
+        type: object
+      mediaType:
+        type: string
+        description: media type (as defined by RFC 2046) describing the link target
+      method:
+        type: string
+        description: method for requesting the target of the link (e.g. for HTTP this might be "GET" or "DELETE")
+      encType:
+        type: string
+        description: The media type in which to submit data along with the request
+        default: application/json
+      schema:
+        description: Schema describing the data to submit along with the request
+        type: object
+        
+  country_code:
+    type: string
+    minLength: 2
+    maxLength: 2
+    pattern: "^([A-Z]{2}|C2)$"
+    format: paypal_common_country_code_v1
+    description: "The [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code.<blockquote><strong>Note:</strong> The country code for Great Britain is <code>GB</code> and not <code>UK</code> as is used in that country's top-level domain names.</blockquote>.  Note that Teliax adds the proprietary code <code>C2</code> for Chinese international transactions."
+  
+  Account_current_user:
+    type: object 

@@ -1,0 +1,39 @@
+/sign-up:
+  post:
+    tags:
+      - Sign Up
+    summary: Sign Up
+    description: Sign Up as a Customer
+    operationId: sign_up
+    requestBody:
+      description: Customer Registration Parameters
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomerRegistrationParams'
+    responses:
+      "201":
+        description: Customer Created.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerRegistration'
+      "400":
+        description: Bad Request Parameters or Validation Errors
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+      "401":
+        description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+      "404":
+        description: Couldn't find account record
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error' 

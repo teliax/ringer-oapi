@@ -1,0 +1,33 @@
+/timezones:
+  get:
+    tags:
+      - Timezones
+    summary: List of Timezones
+    description: A list of time zones and offsets from GMT.
+    operationId: list_timezones
+    parameters:
+      - name: Authorization
+        in: header
+        description: This token is used to authenticate a particular account.
+        required: true
+        schema:
+          type: string
+    responses:
+      "200":
+        description: Array of Timezones
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimezoneList'
+      "400":
+        description: Bad Request Parameters or Validation Errors
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+      "401":
+        description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error' 

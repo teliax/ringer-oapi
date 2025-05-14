@@ -1,0 +1,115 @@
+/call-blocks:
+  get:
+    tags:
+      - Call Blocks
+    summary: List Call Blocks
+    description: Retrieve a list of call blocks for your account.
+    operationId: list_call_blocks
+    parameters:
+      - name: Authorization
+        in: header
+        description: This token is used to authenticate a particular account.
+        required: true
+        schema:
+          type: string
+    responses:
+      "200":
+        description: Array of Call Blocks
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CallBlockList'
+      "400":
+        description: Bad Request Parameters or Validation Errors
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+      "401":
+        description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+  
+  post:
+    tags:
+      - Call Blocks
+    summary: Create Call Block
+    description: Create a new call block for your account.
+    operationId: create_call_block
+    parameters:
+      - name: Authorization
+        in: header
+        description: This token is used to authenticate a particular account.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      description: Call Block Attributes
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CallBlockParams'
+    responses:
+      "201":
+        description: Call Block Created
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CallBlock'
+      "400":
+        description: Bad Request Parameters or Validation Errors
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+      "401":
+        description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+
+/call-blocks/{id}:
+  delete:
+    tags:
+      - Call Blocks
+    summary: Delete Call Block
+    description: Delete a call block from your account.
+    operationId: delete_call_block
+    parameters:
+      - name: Authorization
+        in: header
+        description: This token is used to authenticate a particular account.
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        description: ID of the call block
+        required: true
+        schema:
+          type: integer
+    responses:
+      "204":
+        description: Call Block Deleted. No Content
+      "400":
+        description: Bad Request Parameters or Validation Errors
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+      "401":
+        description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+      "404":
+        description: Couldn't find call block record
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error' 

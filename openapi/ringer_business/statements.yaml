@@ -1,0 +1,73 @@
+/statements:
+  get:
+    tags:
+      - Statements
+    summary: List of Statements
+    description: "You can view your account statements (receipts) here. Statements are generated at the end of your previous service interval (e.g., 2014-11-25 to 2014-12-25)."
+    operationId: list_statements
+    parameters:
+      - name: Authorization
+        in: header
+        description: This token is used to authenticate a particular account.
+        required: true
+        schema:
+          type: string
+    responses:
+      "200":
+        description: Array of Statements
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatementList'
+      "400":
+        description: Bad Request Parameters or Validation Errors
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+      "401":
+        description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+
+/statements/{id}:
+  get:
+    tags:
+      - Statements
+    summary: Statement Details
+    description: "You can view your account statement detail. Statement is generated at the end of your previous service interval (e.g., 2014-11-25 to 2014-12-25)."
+    operationId: show_statement
+    parameters:
+      - name: Authorization
+        in: header
+        description: This token is used to authenticate a particular account.
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        description: ID of the Statement
+        required: true
+        schema:
+          type: integer
+    responses:
+      "200":
+        description: Statement Detail
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Statement'
+      "400":
+        description: Bad Request Parameters or Validation Errors
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+      "401":
+        description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error' 

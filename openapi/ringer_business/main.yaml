@@ -1,0 +1,98 @@
+openapi: 3.0.3
+info:
+  title: IVY API
+  description: |-
+    IVY is a turnkey, private-label solution that enables resellers and integrators to sell both SIP trunks and Hosted PBX features to their customers. IVY is unique in that the reseller is able to set prices and create plans while IVY does all of the billing.
+    
+    The IVY Customer API is organized around REST. The API uses resource-oriented URLs, and uses HTTP response codes to indicate API errors. We use built-in HTTP features, like HTTP authentication and HTTP verbs, which are understood by off-the-shelf HTTP clients. We support cross-origin resource sharing, allowing you to interact securely with our API from a client-side web application (though you should never expose your secret API key in any public website's client-side code). JSON is returned by all API responses, including errors.
+  version: 1.0.0
+  contact:
+    name: IVY API Support
+    url: https://ivy.teliax.com/
+    email: support@ivy.teliax.com
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+servers:
+  - url: http://ivy-web-5.den.teliax.com
+    description: Development server
+  - url: http://ivy-api.teliax.com
+    description: Production server
+security:
+  - password:
+    - read
+    - write
+  - client_credentials:
+    - read
+    - write
+tags:
+  - name: Authentication
+    description: |-
+      To authenticate the client applications IVY API uses OAtuh 2.0. The Grant Flow that are allowed are:
+        - password
+        - client_credentials
+      OAuth 2 is an authorization framework that enables applications to obtain limited access to user accounts on an HTTP service, such as Google, Facebook and GitHub.OAuth 2 provides authorization flows for web and desktop applications, and mobile devices. The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure! Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, and so forth. IVY API follows https://tools.ietf.org/html/rfc6749 RFC.
+      P.S. The authentication using the `grant_flow` - `client_credentials` is used only in sepcial cases and is controlled by the System Administrator.
+  - name: Sign Up
+    description: |-
+      To use the IVY system the Customers could directly register with the system. Customers can register with their basic information like:
+        Company Name
+        Contact Information like:
+          Email
+          Street Address
+          Country
+          City
+          State/Province
+          Postal Code
+          Contact Number
+  - name: Confirmation
+    description: Once a Customer registers or is added to the IVY Platform the user of the account needs to confirmed before their account becomes operational. After registration the confirmation_token can be passed on to the customer. Once the account is confirmed through the account becomes operational.
+  - name: Forgot Password
+    description: "To sign in the user needs to supply the username and password. If the user forgets their password they can reset their password. To reset the password the user can supply their email and the API emails a password reset link. One can simply use the password reset link in their email to change their password. Otherwise, one can grab the token from the url and submit it in the PUT route."
+  - name: Users
+    description: |-
+      Users are the people who interact with the IVY system. Users have predefined roles with different permissions.
+      Administrators can
+        Access billing information
+        Request payouts
+        Add or change price decks and plans
+        Manage users
+      Users can
+        View account activity
+        View existing price decks
+  - name: Statements
+    description: "You can view your account statements (receipts) here. Statements are generated at the end of your previous service interval (e.g., 2014-11-25 to 2014-12-25)."
+  - name: Plans
+    description: |-
+      All accounts have a plan, even if it's just the default "tryout" plan. Your plan, included packages, add-on packages, usage, and monthly pricing are displayed here. Plans are made up of included and optional packages. The price you set on a plan will cover all included packages. Optional packages can be added or removed at any time and each optional package has its own cost, separate from the plan price.
+      Plans usually provide you with additional calling features or calling minute usage for a lower price than what you would pay individually. Since plans allow a certain amount of features or minutes to be used during your billing cycle you should analyze your usage and select a plan that best suits your needs. In some cases it could make more sense to use your account without a plan and instead be charged the individual rates.
+      If you add a new plan at any time in your billing cycle your account will be charged the full amount of the plan. If you're changing a plan, it's best to change it just before the end of your billing cycle.
+      Some plans and add-on packages can be removed at any time. Others can only be removed by Customer Support. The resources provided will remain on your account until the next billing cycle. Removing a plan only removes associated resources at the next billing cycle and not the calling features themselves.
+
+# Reference paths
+paths:
+  $ref: ./oauth.yaml
+  $ref: ./sign-up.yaml
+  $ref: ./confirmation.yaml
+  $ref: ./password.yaml
+  $ref: ./account.yaml
+  $ref: ./addresses.yaml
+  $ref: ./users.yaml
+  $ref: ./statements.yaml
+  $ref: ./credit-cards.yaml
+  $ref: ./payments.yaml
+  $ref: ./plans.yaml
+  $ref: ./items.yaml
+  $ref: ./packages.yaml
+  $ref: ./timezones.yaml
+  $ref: ./country-codes.yaml
+  $ref: ./call-records.yaml
+  $ref: ./thin-clients.yaml
+  $ref: ./phone-numbers.yaml
+  $ref: ./templates.yaml
+  $ref: ./sites.yaml
+  $ref: ./call-blocks.yaml
+
+# Reference components
+components:
+  $ref: ./components.yaml 

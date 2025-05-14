@@ -1,0 +1,33 @@
+/templates:
+  get:
+    tags:
+      - Templates
+    summary: List Templates
+    description: Retrieve a list of available templates for your account.
+    operationId: list_templates
+    parameters:
+      - name: Authorization
+        in: header
+        description: This token is used to authenticate a particular account.
+        required: true
+        schema:
+          type: string
+    responses:
+      "200":
+        description: Array of Templates
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplateList'
+      "400":
+        description: Bad Request Parameters or Validation Errors
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+      "401":
+        description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error' 

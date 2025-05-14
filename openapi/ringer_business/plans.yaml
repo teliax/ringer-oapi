@@ -1,0 +1,118 @@
+/plans:
+  get:
+    tags:
+      - Plans
+    summary: List available Plans
+    description: |-
+      All accounts have a plan, even if it's just the default "tryout" plan. Your plan, included packages, add-on packages, usage, and monthly pricing are displayed here. Plans are made up of included and optional packages. The price you set on a plan will cover all included packages. Optional packages can be added or removed at any time and each optional package has its own cost, separate from the plan price.
+      Plans usually provide you with additional calling features or calling minute usage for a lower price than what you would pay individually. Since plans allow a certain amount of features or minutes to be used during your billing cycle you should analyze your usage and select a plan that best suits your needs. In some cases it could make more sense to use your account without a plan and instead be charged the individual rates.
+      If you add a new plan at any time in your billing cycle your account will be charged the full amount of the plan. If you're changing a plan, it's best to change it just before the end of your billing cycle.
+      Some plans and add-on packages can be removed at any time. Others can only be removed by Customer Support. The resources provided will remain on your account until the next billing cycle. Removing a plan only removes associated resources at the next billing cycle and not the calling features themselves.
+    operationId: list_plans
+    parameters:
+      - name: Authorization
+        in: header
+        description: This token is used to authenticate a particular account.
+        required: true
+        schema:
+          type: string
+    responses:
+      "200":
+        description: Array of Plans for your Organization
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanList'
+      "400":
+        description: Bad Request Parameters or Validation Errors
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+      "401":
+        description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+
+/plans/{id}:
+  post:
+    tags:
+      - Plans
+    summary: Purchase a Plan
+    description: Purchase a plan for your account.
+    operationId: purchase_plan
+    parameters:
+      - name: Authorization
+        in: header
+        description: This token is used to authenticate a particular account.
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        description: ID of Plan
+        required: true
+        schema:
+          type: integer
+    responses:
+      "201":
+        description: Plan purchased
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanPurchase'
+      "400":
+        description: Bad Request Parameters or Validation Errors
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+      "401":
+        description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+  
+  delete:
+    tags:
+      - Plans
+    summary: Remove Plan
+    description: Remove the plan from your account.
+    operationId: remove_plan
+    parameters:
+      - name: Authorization
+        in: header
+        description: This token is used to authenticate a particular account.
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        description: ID of the Plan
+        required: true
+        schema:
+          type: integer
+    responses:
+      "204":
+        description: Plan Deleted. No Content
+      "400":
+        description: Bad Request Parameters or Validation Errors
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+      "401":
+        description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+      "404":
+        description: Couldn't find site record
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error' 
