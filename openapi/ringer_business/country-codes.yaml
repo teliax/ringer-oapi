@@ -1,14 +1,3 @@
-openapi: 3.0.3
-info:
-  title: IVY API - Country Codes
-  description: Country Codes management endpoints for the IVY API
-  version: 1.0.0
-paths:
-openapi: 3.0.3
-info:
-  title: IVY API - Country Codes
-  description: Country Codes endpoints for the IVY API
-  version: 1.0.0
 paths:
   /country-codes:
     get:

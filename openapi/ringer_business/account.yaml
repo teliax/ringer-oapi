@@ -1,153 +1,148 @@
-openapi: 3.0.3
-info:
-  title: IVY API - Account
-  description: Account management endpoints for the IVY API
-  version: 1.0.0
 paths:
   /account:
-    get:
-      tags:
-        - Account
-      summary: Account Details
-      description: Details of your account
-      operationId: account_details
-      parameters:
-        - name: Authorization
-          in: header
-          description: This token is used to authenticate a particular account.
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
+        get:
+          tags:
+            - Account
+          summary: Account Details
+          description: Details of your account
+          operationId: account_details
+          parameters:
+            - name: Authorization
+              in: header
+              description: This token is used to authenticate a particular account.
+              required: true
               schema:
-                $ref: './components.yaml#/components/schemas/Account'
-        "401":
-          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-          content:
-            application/json:
+                type: string
+          responses:
+            "200":
+              description: OK
+              content:
+                application/json:
+                  schema:
+                    $ref: './components.yaml#/components/schemas/Account'
+            "401":
+              description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+              content:
+                application/json:
+                  schema:
+                    $ref: './components.yaml#/components/schemas/error'
+      
+        put:
+          tags:
+            - Account
+          summary: Update Account
+          description: Update your account. This includes your name and contact info.
+          operationId: update_account
+          parameters:
+            - name: Authorization
+              in: header
+              description: This token is used to authenticate a particular account.
+              required: true
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-  
-    put:
-      tags:
-        - Account
-      summary: Update Account
-      description: Update your account. This includes your name and contact info.
-      operationId: update_account
-      parameters:
-        - name: Authorization
-          in: header
-          description: This token is used to authenticate a particular account.
-          required: true
-          schema:
-            type: string
-      requestBody:
-        description: Account Attributes
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: './components.yaml#/components/schemas/AccountParams'
-      responses:
-        "200":
-          description: Update account.
-          content:
-            application/json:
+                type: string
+          requestBody:
+            description: Account Attributes
+            required: true
+            content:
+              application/json:
+                schema:
+                  $ref: './components.yaml#/components/schemas/AccountParams'
+          responses:
+            "200":
+              description: Update account.
+              content:
+                application/json:
+                  schema:
+                    $ref: './components.yaml#/components/schemas/Account'
+            "400":
+              description: Bad Request Parameters or Validation Errors
+              content:
+                application/json:
+                  schema:
+                    $ref: './components.yaml#/components/schemas/error'
+            "401":
+              description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+              content:
+                application/json:
+                  schema:
+                    $ref: './components.yaml#/components/schemas/error'
+            "404":
+              description: Couldn't find account record
+              content:
+                application/json:
+                  schema:
+                    $ref: './components.yaml#/components/schemas/error'
+      
+        delete:
+          tags:
+            - Account
+          summary: Delete Account
+          description: Delete your account
+          operationId: delete_account
+          parameters:
+            - name: Authorization
+              in: header
+              description: This token is used to authenticate a particular account.
+              required: true
               schema:
-                $ref: './components.yaml#/components/schemas/Account'
-        "400":
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
+                type: string
+          responses:
+            "204":
+              description: Account Deleted
+            "401":
+              description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+              content:
+                application/json:
+                  schema:
+                    $ref: './components.yaml#/components/schemas/error'
+            "404":
+              description: Couldn't find account record
+              content:
+                application/json:
+                  schema:
+                    $ref: './components.yaml#/components/schemas/error'
+      
+        patch:
+          tags:
+            - Account
+          summary: Activate Account
+          description: Activate Account. This operation is only allowed if you are in the administrator role.
+          operationId: activate_account
+          parameters:
+            - name: Authorization
+              in: header
+              description: This token is used to authenticate a particular account.
+              required: true
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "401":
-          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-          content:
-            application/json:
-              schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "404":
-          description: Couldn't find account record
-          content:
-            application/json:
-              schema:
-                $ref: './components.yaml#/components/schemas/error'
-  
-    delete:
-      tags:
-        - Account
-      summary: Delete Account
-      description: Delete your account
-      operationId: delete_account
-      parameters:
-        - name: Authorization
-          in: header
-          description: This token is used to authenticate a particular account.
-          required: true
-          schema:
-            type: string
-      responses:
-        "204":
-          description: Account Deleted
-        "401":
-          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-          content:
-            application/json:
-              schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "404":
-          description: Couldn't find account record
-          content:
-            application/json:
-              schema:
-                $ref: './components.yaml#/components/schemas/error'
-  
-    patch:
-      tags:
-        - Account
-      summary: Activate Account
-      description: Activate Account. This operation is only allowed if you are in the administrator role.
-      operationId: activate_account
-      parameters:
-        - name: Authorization
-          in: header
-          description: This token is used to authenticate a particular account.
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Activate an Inactive account once the account is ready for operation.
-          content:
-            application/json:
-              schema:
-                $ref: './components.yaml#/components/schemas/Account'
-        "400":
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "401":
-          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-          content:
-            application/json:
-              schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "403":
-          description: Forbidden request. This error will occur if the Activation is tried on an Active account
-          content:
-            application/json:
-              schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "404":
-          description: Couldn't find account record
-          content:
-            application/json:
-              schema:
-                $ref: './components.yaml#/components/schemas/error' 
+                type: string
+          responses:
+            "200":
+              description: Activate an Inactive account once the account is ready for operation.
+              content:
+                application/json:
+                  schema:
+                    $ref: './components.yaml#/components/schemas/Account'
+            "400":
+              description: Bad Request Parameters or Validation Errors
+              content:
+                application/json:
+                  schema:
+                    $ref: './components.yaml#/components/schemas/error'
+            "401":
+              description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+              content:
+                application/json:
+                  schema:
+                    $ref: './components.yaml#/components/schemas/error'
+            "403":
+              description: Forbidden request. This error will occur if the Activation is tried on an Active account
+              content:
+                application/json:
+                  schema:
+                    $ref: './components.yaml#/components/schemas/error'
+            "404":
+              description: Couldn't find account record
+              content:
+                application/json:
+                  schema:
+                    $ref: './components.yaml#/components/schemas/error' 

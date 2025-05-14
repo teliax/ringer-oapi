@@ -1,39 +1,34 @@
-openapi: 3.0.3
-info:
-  title: IVY API - Thin Clients
-  description: Thin Clients management endpoints for the IVY API
-  version: 1.0.0
 paths:
-/thin-clients:
-  get:
-    tags:
-      - Thin Clients
-    summary: List of Thin Clients
-    description: List of thin clients available for your account.
-    operationId: list_thin_clients
-    parameters:
-      - name: Authorization
-        in: header
-        description: This token is used to authenticate a particular account.
-        required: true
-        schema:
-          type: string
-    responses:
-      "200":
-        description: Array of Thin Clients
-        content:
-          application/json:
-            schema:
-              $ref: './components.yaml#/components/schemas/ThinClientList'
-      "400":
-        description: Bad Request Parameters or Validation Errors
-        content:
-          application/json:
-            schema:
-              $ref: './components.yaml#/components/schemas/error'
-      "401":
-        description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-        content:
-          application/json:
-            schema:
-              $ref: './components.yaml#/components/schemas/error' 
+  /thin-clients:
+    get:
+      tags:
+        - Thin Clients
+      summary: List of Thin Clients
+      description: List of thin clients available for your account.
+      operationId: list_thin_clients
+      parameters:
+        - name: Authorization
+          in: header
+          description: This token is used to authenticate a particular account.
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Array of Thin Clients
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/ThinClientList'
+        "400":
+          description: Bad Request Parameters or Validation Errors
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
+        "401":
+          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error' 

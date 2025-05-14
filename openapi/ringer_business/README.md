@@ -1,31 +1,43 @@
 # IVY API Documentation
 
-This directory contains the OpenAPI specification for the IVY API, split into multiple files for maintainability.
+This directory contains the OpenAPI 3.0.3 specification for the IVY API, split into a modular structure for better maintainability.
 
-## File Structure
+## Structure Overview
 
-- `main.yaml`: The main entry point for the API specification
+- `main.yaml`: The root document that contains all OpenAPI metadata and references to path files
 - `components.yaml`: Contains all schema definitions and security schemes
-- Individual endpoint files (e.g., `oauth.yaml`, `users.yaml`): Each contains paths for a specific API area
+- Individual path files (e.g., `users.yaml`, `account.yaml`): Each contains API operations for a specific resource
 
-## Working with the Split Files
+## Working with the Files
 
-Each file is designed to be a standalone OpenAPI document that can be edited and validated individually.
+### Adding or Updating API Endpoints
 
-To combine all files into a single OpenAPI document for validation or deployment, use the provided script:
+1. Find the appropriate path file or create a new one
+2. Each path file should follow this structure:
+   ```yaml
+   paths:
+     /resource-name:
+       get:
+         # operation details...
+       post:
+         # operation details...
+   ```
+3. Reference schemas from components.yaml using `$ref: './components.yaml#/components/schemas/SchemaName'`
 
-```bash
-./combine-api-docs.sh
-```
+### Adding New Schemas
 
-This will create `ivy-combined.yaml` which contains the complete API specification.
+Add new schema definitions to `components.yaml` under the `components.schemas` section.
 
-## Updating the API
+### Important Considerations
 
-1. To add a new endpoint, create or edit the appropriate path file
-2. To add new schema definitions, edit the `components.yaml` file
-3. Run the combine script to validate the complete API
+- Don't add OpenAPI metadata (`openapi:`, `info:`, etc.) to the individual path files - these belong only in `main.yaml`
+- Always add tags for new endpoints in the `tags` section of `main.yaml`
+- Add new path references to the `paths` section in `main.yaml` when creating new path files
 
-## References
+## Validation
 
-All references use the format `./components.yaml#/components/schemas/SchemaName` to reference schemas from the components file. 
+Our CI/CD pipeline validates the OpenAPI specification. To pass validation, ensure:
+
+1. All path files contain only path objects and operations
+2. All references are correct and point to existing objects
+3. All operations are properly tagged with tags defined in main.yaml 

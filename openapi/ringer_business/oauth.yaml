@@ -1,8 +1,3 @@
-openapi: 3.0.3
-info:
-  title: IVY API - Authentication
-  description: Authentication endpoints for the IVY API
-  version: 1.0.0
 paths:
   /oauth/token:
     post:
@@ -73,4 +68,4 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error' 
+                $ref: './components.yaml#/components/schemas/error'

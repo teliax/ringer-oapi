@@ -1,60 +1,32 @@
-openapi: 3.0.3
-info:
-  title: IVY API - Users
-  description: User management endpoints for the IVY API
-  version: 1.0.0
 paths:
   /users:
     get:
       tags:
         - Users
-      summary: List Users for a Partnership or a User Account
-      description: Returns a list of Users for your account. The Users are returned in sorted order by name.
+      summary: List all users
+      description: Returns a list of all users for the account.
       operationId: list_users
-      parameters:
-        - name: Authorization
-          in: header
-          description: This token is used to authenticate a particular account.
-          required: true
-          schema:
-            type: string
       responses:
         "200":
-          description: Array of Users for your Organization
+          description: OK
           content:
             application/json:
               schema:
                 $ref: './components.yaml#/components/schemas/UserList'
-        "400":
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: './components.yaml#/components/schemas/error'
         "401":
-          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+          description: Unauthorized request
           content:
             application/json:
               schema:
                 $ref: './components.yaml#/components/schemas/error'
-  
     post:
       tags:
         - Users
-      summary: Add a User to your Organization
-      description: |-
-        To configure your Account. You can add your organizations' team members can be added to make the configuration changes.
-        Users have predefined roles with different permissions. Administrator and User permissions can be assigned appropriately. Once the User is created. The User will receive an email confirming their account and the account can be confirmed by making appropriate web service calls.
-      operationId: add_partnership_user
-      parameters:
-        - name: Authorization
-          in: header
-          description: This token is used to authenticate a particular account.
-          required: true
-          schema:
-            type: string
+      summary: Create a new user
+      description: Creates a new user for the account.
+      operationId: create_user
       requestBody:
-        description: User Attributes
+        description: User information
         required: true
         content:
           application/json:
@@ -62,91 +34,72 @@ paths:
               $ref: './components.yaml#/components/schemas/UserParams'
       responses:
         "201":
-          description: User Created
+          description: Created
           content:
             application/json:
               schema:
                 $ref: './components.yaml#/components/schemas/User'
         "400":
-          description: Bad Request Parameters or Validation Errors
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: './components.yaml#/components/schemas/error'
         "401":
-          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-          content:
-            application/json:
-              schema:
-                $ref: './components.yaml#/components/schemas/error'
-
-  /users/{id}:
-    get:
-      tags:
-        - Users
-      summary: User Details
-      description: Retrieves the details of a user that has been added. Supply the unique user_id that belong to a organization. The same information is returned when creating a User.
-      operationId: show_user
-      parameters:
-        - name: Authorization
-          in: header
-          description: This token is used to authenticate a particular account.
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          description: ID of the User
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: User Detail
-          content:
-            application/json:
-              schema:
-                $ref: './components.yaml#/components/schemas/User'
-        "400":
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "401":
-          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-          content:
-            application/json:
-              schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "404":
-          description: Couldn't find site record
+          description: Unauthorized request
           content:
             application/json:
               schema:
                 $ref: './components.yaml#/components/schemas/error'
   
+  /users/{id}:
+    get:
+      tags:
+        - Users
+      summary: Get user details
+      description: Returns details for a specific user.
+      operationId: get_user
+      parameters:
+        - name: id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/User'
+        "401":
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
     put:
       tags:
         - Users
-      summary: Update a User
-      description: Updates the specified user by setting the values of the parameters passed. Any parameters not provided will be left unchanged.
+      summary: Update user
+      description: Updates an existing user.
       operationId: update_user
       parameters:
-        - name: Authorization
-          in: header
-          description: This token is used to authenticate a particular account.
-          required: true
-          schema:
-            type: string
         - name: id
           in: path
-          description: ID of User
+          description: User ID
           required: true
           schema:
             type: integer
       requestBody:
-        description: User Attributes
+        description: User information
         required: true
         content:
           application/json:
@@ -154,67 +107,54 @@ paths:
               $ref: './components.yaml#/components/schemas/UserParams'
       responses:
         "200":
-          description: User Updated
+          description: OK
           content:
             application/json:
               schema:
                 $ref: './components.yaml#/components/schemas/User'
         "400":
-          description: Bad Request Parameters or Validation Errors
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: './components.yaml#/components/schemas/error'
         "401":
-          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+          description: Unauthorized request
           content:
             application/json:
               schema:
                 $ref: './components.yaml#/components/schemas/error'
         "404":
-          description: Couldn't find site record
+          description: User not found
           content:
             application/json:
               schema:
                 $ref: './components.yaml#/components/schemas/error'
-  
     delete:
       tags:
         - Users
-      summary: Delete User
-      description: Permanently deletes a user. This action cannot be undone.
+      summary: Delete user
+      description: Deletes a user.
       operationId: delete_user
       parameters:
-        - name: Authorization
-          in: header
-          description: This token is used to authenticate a particular account.
-          required: true
-          schema:
-            type: string
         - name: id
           in: path
-          description: ID of the User
+          description: User ID
           required: true
           schema:
             type: integer
       responses:
         "204":
-          description: User Deleted. No Content
-        "400":
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: './components.yaml#/components/schemas/error'
+          description: No Content
         "401":
-          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+          description: Unauthorized request
           content:
             application/json:
               schema:
                 $ref: './components.yaml#/components/schemas/error'
         "404":
-          description: Couldn't find site record
+          description: User not found
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error' 
+                $ref: './components.yaml#/components/schemas/error'

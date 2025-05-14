@@ -1,25 +1,37 @@
-openapi: 3.0.3
-info:
-  title: IVY API - Payments
-  description: Payment management endpoints for the IVY API
-  version: 1.0.0
 paths:
   /payments:
+    get:
+      tags:
+        - Payments
+      summary: List all payments
+      description: Returns a list of all payments made on the account.
+      operationId: list_payments
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  payments:
+                    type: array
+                    items:
+                      $ref: './components.yaml#/components/schemas/Payment'
+        "401":
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/error'
     post:
       tags:
         - Payments
-      summary: Make a Payment
-      description: Make a one-time payment to your account.
+      summary: Make a payment
+      description: Makes a payment on the account.
       operationId: make_payment
-      parameters:
-        - name: Authorization
-          in: header
-          description: This token is used to authenticate a particular account.
-          required: true
-          schema:
-            type: string
       requestBody:
-        description: Payment Attributes
+        description: Payment information
         required: true
         content:
           application/json:
@@ -27,20 +39,20 @@ paths:
               $ref: './components.yaml#/components/schemas/PaymentParams'
       responses:
         "201":
-          description: Payment Created
+          description: Created
           content:
             application/json:
               schema:
                 $ref: './components.yaml#/components/schemas/Payment'
         "400":
-          description: Bad Request Parameters or Validation Errors
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: './components.yaml#/components/schemas/error'
         "401":
-          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+          description: Unauthorized request
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error' 
+                $ref: './components.yaml#/components/schemas/error'

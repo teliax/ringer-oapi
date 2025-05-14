@@ -1,85 +1,80 @@
-openapi: 3.0.3
-info:
-  title: IVY API - Sites
-  description: Sites management endpoints for the IVY API
-  version: 1.0.0
 paths:
-/sites:
-  get:
-    tags:
-      - Sites
-    summary: List Sites
-    description: Retrieve a list of sites for your account.
-    operationId: list_sites
-    parameters:
-      - name: Authorization
-        in: header
-        description: This token is used to authenticate a particular account.
-        required: true
-        schema:
-          type: string
-    responses:
-      "200":
-        description: Array of Sites
-        content:
-          application/json:
+  /sites:
+      get:
+        tags:
+          - Sites
+        summary: List Sites
+        description: Retrieve a list of sites for your account.
+        operationId: list_sites
+        parameters:
+          - name: Authorization
+            in: header
+            description: This token is used to authenticate a particular account.
+            required: true
             schema:
-              $ref: './components.yaml#/components/schemas/SiteList'
-      "400":
-        description: Bad Request Parameters or Validation Errors
-        content:
-          application/json:
+              type: string
+        responses:
+          "200":
+            description: Array of Sites
+            content:
+              application/json:
+                schema:
+                  $ref: './components.yaml#/components/schemas/SiteList'
+          "400":
+            description: Bad Request Parameters or Validation Errors
+            content:
+              application/json:
+                schema:
+                  $ref: './components.yaml#/components/schemas/error'
+          "401":
+            description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+            content:
+              application/json:
+                schema:
+                  $ref: './components.yaml#/components/schemas/error'
+    
+  /sites/{id}:
+      get:
+        tags:
+          - Sites
+        summary: Site Details
+        description: Retrieve detailed information about a specific site.
+        operationId: show_site
+        parameters:
+          - name: Authorization
+            in: header
+            description: This token is used to authenticate a particular account.
+            required: true
             schema:
-              $ref: './components.yaml#/components/schemas/error'
-      "401":
-        description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-        content:
-          application/json:
+              type: string
+          - name: id
+            in: path
+            description: ID of the site
+            required: true
             schema:
-              $ref: './components.yaml#/components/schemas/error'
-
-/sites/{id}:
-  get:
-    tags:
-      - Sites
-    summary: Site Details
-    description: Retrieve detailed information about a specific site.
-    operationId: show_site
-    parameters:
-      - name: Authorization
-        in: header
-        description: This token is used to authenticate a particular account.
-        required: true
-        schema:
-          type: string
-      - name: id
-        in: path
-        description: ID of the site
-        required: true
-        schema:
-          type: integer
-    responses:
-      "200":
-        description: Site Detail
-        content:
-          application/json:
-            schema:
-              $ref: './components.yaml#/components/schemas/Site'
-      "400":
-        description: Bad Request Parameters or Validation Errors
-        content:
-          application/json:
-            schema:
-              $ref: './components.yaml#/components/schemas/error'
-      "401":
-        description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-        content:
-          application/json:
-            schema:
-              $ref: './components.yaml#/components/schemas/error'
-      "404":
-        description: Couldn't find site record
-        content:
-          application/json:
-            schema:
-              $ref: './components.yaml#/components/schemas/error' 
+              type: integer
+        responses:
+          "200":
+            description: Site Detail
+            content:
+              application/json:
+                schema:
+                  $ref: './components.yaml#/components/schemas/Site'
+          "400":
+            description: Bad Request Parameters or Validation Errors
+            content:
+              application/json:
+                schema:
+                  $ref: './components.yaml#/components/schemas/error'
+          "401":
+            description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+            content:
+              application/json:
+                schema:
+                  $ref: './components.yaml#/components/schemas/error'
+          "404":
+            description: Couldn't find site record
+            content:
+              application/json:
+                schema:
+                  $ref: './components.yaml#/components/schemas/error' 

@@ -1,18 +1,13 @@
-openapi: 3.0.3
-info:
-  title: IVY API - Sign Up
-  description: Sign Up endpoints for the IVY API
-  version: 1.0.0
 paths:
   /sign-up:
     post:
       tags:
         - Sign Up
-      summary: Sign Up
-      description: Sign Up as a Customer
-      operationId: sign_up
+      summary: Register a new account
+      description: Creates a new customer account in the system.
+      operationId: register_account
       requestBody:
-        description: Customer Registration Parameters
+        description: Account registration information
         required: true
         content:
           application/json:
@@ -20,26 +15,14 @@ paths:
               $ref: './components.yaml#/components/schemas/CustomerRegistrationParams'
       responses:
         "201":
-          description: Customer Created.
+          description: Created
           content:
             application/json:
               schema:
                 $ref: './components.yaml#/components/schemas/CustomerRegistration'
         "400":
-          description: Bad Request Parameters or Validation Errors
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: './components.yaml#/components/schemas/error'
-        "401":
-          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-          content:
-            application/json:
-              schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "404":
-          description: Couldn't find account record
-          content:
-            application/json:
-              schema:
-                $ref: './components.yaml#/components/schemas/error' 

@@ -1,39 +1,34 @@
-openapi: 3.0.3
-info:
-  title: IVY API - Items
-  description: Item management endpoints for the IVY API
-  version: 1.0.0
 paths:
   /items:
-    get:
-      tags:
-        - Items
-      summary: List of Items
-      description: A list of items available to purchase for your account.
-      operationId: list_items
-      parameters:
-        - name: Authorization
-          in: header
-          description: This token is used to authenticate a particular account.
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Array of Items
-          content:
-            application/json:
+        get:
+          tags:
+            - Items
+          summary: List of Items
+          description: A list of items available to purchase for your account.
+          operationId: list_items
+          parameters:
+            - name: Authorization
+              in: header
+              description: This token is used to authenticate a particular account.
+              required: true
               schema:
-                $ref: './components.yaml#/components/schemas/ItemList'
-        "400":
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "401":
-          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-          content:
-            application/json:
-              schema:
-                $ref: './components.yaml#/components/schemas/error' 
+                type: string
+          responses:
+            "200":
+              description: Array of Items
+              content:
+                application/json:
+                  schema:
+                    $ref: './components.yaml#/components/schemas/ItemList'
+            "400":
+              description: Bad Request Parameters or Validation Errors
+              content:
+                application/json:
+                  schema:
+                    $ref: './components.yaml#/components/schemas/error'
+            "401":
+              description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+              content:
+                application/json:
+                  schema:
+                    $ref: './components.yaml#/components/schemas/error' 

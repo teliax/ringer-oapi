@@ -68,10 +68,130 @@ tags:
       Plans usually provide you with additional calling features or calling minute usage for a lower price than what you would pay individually. Since plans allow a certain amount of features or minutes to be used during your billing cycle you should analyze your usage and select a plan that best suits your needs. In some cases it could make more sense to use your account without a plan and instead be charged the individual rates.
       If you add a new plan at any time in your billing cycle your account will be charged the full amount of the plan. If you're changing a plan, it's best to change it just before the end of your billing cycle.
       Some plans and add-on packages can be removed at any time. Others can only be removed by Customer Support. The resources provided will remain on your account until the next billing cycle. Removing a plan only removes associated resources at the next billing cycle and not the calling features themselves.
+  - name: Credit Cards
+    description: "Manage credit cards used for account payments."
+  - name: Items
+    description: "View available items for purchase."
+  - name: Packages
+    description: "View and manage packages available for your account."
+  - name: Payments
+    description: "Make and manage payments on your account."
+  - name: Phone Numbers
+    description: "Manage phone numbers associated with your account."
+  - name: Country Codes
+    description: "Reference list of country codes."
+  - name: Call Records
+    description: "View call records and history."
+  - name: Call Blocks
+    description: "Manage call blocking settings."
+  - name: Thin Clients
+    description: "Manage thin client configurations."
+  - name: Templates
+    description: "View and manage templates."
+  - name: Timezones
+    description: "Reference list of available timezones."
+  - name: Sites
+    description: "Manage sites associated with your account."
 
-# Instead of $ref path references, we'll need to combine files during deployment
-# or use a bundling tool like swagger-cli combine
-paths: {}
+# Reference all path files
+paths:
+  # OAuth paths
+  /oauth/token:
+    $ref: './oauth.yaml#/paths/~1oauth~1token'
+  /oauth/revoke:
+    $ref: './oauth.yaml#/paths/~1oauth~1revoke'
+  
+  # Sign-up paths
+  /sign-up:
+    $ref: './sign-up.yaml#/paths/~1sign-up'
+  
+  # Confirmation paths
+  /confirmation:
+    $ref: './confirmation.yaml#/paths/~1confirmation'
+  
+  # Password paths
+  /password:
+    $ref: './password.yaml#/paths/~1password'
+  /password/reset:
+    $ref: './password.yaml#/paths/~1password~1reset'
+  
+  # Account paths
+  /account:
+    $ref: './account.yaml#/paths/~1account'
+  
+  # Addresses paths
+  /addresses/{id}:
+    $ref: './addresses.yaml#/paths/~1addresses~1{id}'
+  
+  # Users paths
+  /users:
+    $ref: './users.yaml#/paths/~1users'
+  /users/{id}:
+    $ref: './users.yaml#/paths/~1users~1{id}'
+  
+  # Statements paths
+  /statements:
+    $ref: './statements.yaml#/paths/~1statements'
+  /statements/{id}:
+    $ref: './statements.yaml#/paths/~1statements~1{id}'
+  
+  # Credit cards paths
+  /credit-cards:
+    $ref: './credit-cards.yaml#/paths/~1credit-cards'
+  /credit-cards/{id}:
+    $ref: './credit-cards.yaml#/paths/~1credit-cards~1{id}'
+  /credit-cards/{id}/verify:
+    $ref: './credit-cards.yaml#/paths/~1credit-cards~1{id}~1verify'
+  
+  # Payments paths
+  /payments:
+    $ref: './payments.yaml#/paths/~1payments'
+  
+  # Plans paths
+  /plans:
+    $ref: './plans.yaml#/paths/~1plans'
+  /plans/{id}:
+    $ref: './plans.yaml#/paths/~1plans~1{id}'
+  
+  # Items paths
+  /items:
+    $ref: './items.yaml#/paths/~1items'
+  
+  # Packages paths
+  /packages:
+    $ref: './packages.yaml#/paths/~1packages'
+  
+  # Timezones paths
+  /timezones:
+    $ref: './timezones.yaml#/paths/~1timezones'
+  
+  # Country codes paths
+  /country-codes:
+    $ref: './country-codes.yaml#/paths/~1country-codes'
+  
+  # Call records paths
+  /call-records:
+    $ref: './call-records.yaml#/paths/~1call-records'
+  
+  # Thin clients paths
+  /thin-clients:
+    $ref: './thin-clients.yaml#/paths/~1thin-clients'
+  
+  # Phone numbers paths
+  /phone-numbers:
+    $ref: './phone-numbers.yaml#/paths/~1phone-numbers'
+  
+  # Templates paths
+  /templates:
+    $ref: './templates.yaml#/paths/~1templates'
+  
+  # Sites paths
+  /sites:
+    $ref: './sites.yaml#/paths/~1sites'
+  
+  # Call blocks paths
+  /call-blocks:
+    $ref: './call-blocks.yaml#/paths/~1call-blocks'
 
 components:
-  $ref: './components.yaml#/components' 
+  $ref: './components.yaml#/components'
