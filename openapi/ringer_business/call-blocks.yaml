@@ -4,8 +4,8 @@
 
 openapi: 3.0.3
 info:
-  title: IVY API - UcallUblocks
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to UcallUblocks.
+  title: callBlocks
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to callBlocks.
   version: 1.0.0
   contact:
     name: IVY API Support
@@ -19,8 +19,8 @@ servers:
   - url: http://ivy-api.teliax.com
     description: Production server
 tags:
-  - name: UcallUblocks
-    description: Operations related to UcallUblocks
+  - name: callBlocks
+    description: Operations related to callBlocks
 security:
   - apiKey: []
 components:
@@ -42,7 +42,7 @@ paths:
   /call-blocks:
     get:
       tags:
-        - UcallUblocks
+        - callBlocks
       summary: List Call Blocks
       description: Retrieve a list of call blocks for your account.
       operationId: list_call_blocks
@@ -75,7 +75,7 @@ paths:
     
     post:
       tags:
-        - UcallUblocks
+        - callBlocks
       summary: Create Call Block
       description: Create a new call block for your account.
       operationId: create_call_block
@@ -116,7 +116,7 @@ paths:
   /call-blocks/{id}:
     delete:
       tags:
-        - UcallUblocks
+        - callBlocks
       summary: Delete Call Block
       description: Delete a call block from your account.
       operationId: delete_call_block

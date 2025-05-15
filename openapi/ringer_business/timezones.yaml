@@ -4,8 +4,8 @@
 
 openapi: 3.0.3
 info:
-  title: IVY API - Utimezones
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to Utimezones.
+  title: Timezones
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to Timezones.
   version: 1.0.0
   contact:
     name: IVY API Support
@@ -19,8 +19,8 @@ servers:
   - url: http://ivy-api.teliax.com
     description: Production server
 tags:
-  - name: Utimezones
-    description: Operations related to Utimezones
+  - name: Timezones
+    description: Operations related to Timezones
 security:
   - apiKey: []
 components:
@@ -42,7 +42,7 @@ paths:
   /timezones:
       get:
         tags:
-          - Utimezones
+          - Timezones
         summary: List of Timezones
         description: A list of time zones and offsets from GMT.
         operationId: list_timezones

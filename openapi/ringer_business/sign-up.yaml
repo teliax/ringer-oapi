@@ -4,8 +4,8 @@
 
 openapi: 3.0.3
 info:
-  title: IVY API - UsignUup
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to UsignUup.
+  title: signUp
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to signUp.
   version: 1.0.0
   contact:
     name: IVY API Support
@@ -19,8 +19,8 @@ servers:
   - url: http://ivy-api.teliax.com
     description: Production server
 tags:
-  - name: UsignUup
-    description: Operations related to UsignUup
+  - name: signUp
+    description: Operations related to signUp
 security:
   - apiKey: []
 components:
@@ -42,7 +42,7 @@ paths:
   /sign-up:
     post:
       tags:
-        - UsignUup
+        - signUp
       summary: Register a new account
       description: Creates a new customer account in the system.
       operationId: register_account

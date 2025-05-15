@@ -4,8 +4,8 @@
 
 openapi: 3.0.3
 info:
-  title: IVY API - UphoneUnumbers
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to UphoneUnumbers.
+  title: phoneNumbers
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to phoneNumbers.
   version: 1.0.0
   contact:
     name: IVY API Support
@@ -19,8 +19,8 @@ servers:
   - url: http://ivy-api.teliax.com
     description: Production server
 tags:
-  - name: UphoneUnumbers
-    description: Operations related to UphoneUnumbers
+  - name: phoneNumbers
+    description: Operations related to phoneNumbers
 security:
   - apiKey: []
 components:
@@ -42,7 +42,7 @@ paths:
   /phone-numbers:
       get:
         tags:
-          - UphoneUnumbers
+          - phoneNumbers
         summary: List Phone Numbers
         description: Retrieve information about all phone numbers for your account.
         operationId: list_phone_numbers
@@ -76,7 +76,7 @@ paths:
   /phone-numbers/available:
       get:
         tags:
-          - UphoneUnumbers
+          - phoneNumbers
         summary: List Available Phone Numbers
         description: Retrieve a list of available phone numbers for your account.
         operationId: list_available_phone_numbers
@@ -128,7 +128,7 @@ paths:
   /phone-numbers/{id}:
       get:
         tags:
-          - UphoneUnumbers
+          - phoneNumbers
         summary: Phone Number Details
         description: Retrieve detailed information about a specific phone number.
         operationId: show_phone_number

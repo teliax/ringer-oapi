@@ -4,8 +4,8 @@
 
 openapi: 3.0.3
 info:
-  title: IVY API - UcallUrecords
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to UcallUrecords.
+  title: callRecords
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to callRecords.
   version: 1.0.0
   contact:
     name: IVY API Support
@@ -19,8 +19,8 @@ servers:
   - url: http://ivy-api.teliax.com
     description: Production server
 tags:
-  - name: UcallUrecords
-    description: Operations related to UcallUrecords
+  - name: callRecords
+    description: Operations related to callRecords
 security:
   - apiKey: []
 components:
@@ -42,7 +42,7 @@ paths:
   /call-records:
     get:
       tags:
-        - UcallUrecords
+        - callRecords
       summary: List of Call Records
       description: A list of call records for your account.
       operationId: list_call_records

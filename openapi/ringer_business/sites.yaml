@@ -4,8 +4,8 @@
 
 openapi: 3.0.3
 info:
-  title: IVY API - Usites
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to Usites.
+  title: Sites
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to Sites.
   version: 1.0.0
   contact:
     name: IVY API Support
@@ -19,8 +19,8 @@ servers:
   - url: http://ivy-api.teliax.com
     description: Production server
 tags:
-  - name: Usites
-    description: Operations related to Usites
+  - name: Sites
+    description: Operations related to Sites
 security:
   - apiKey: []
 components:
@@ -42,7 +42,7 @@ paths:
   /sites:
       get:
         tags:
-          - Usites
+          - Sites
         summary: List Sites
         description: Retrieve a list of sites for your account.
         operationId: list_sites
@@ -76,7 +76,7 @@ paths:
   /sites/{id}:
       get:
         tags:
-          - Usites
+          - Sites
         summary: Site Details
         description: Retrieve detailed information about a specific site.
         operationId: show_site

@@ -4,8 +4,8 @@
 
 openapi: 3.0.3
 info:
-  title: IVY API - Uaddresses
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to Uaddresses.
+  title: Addresses
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to Addresses.
   version: 1.0.0
   contact:
     name: IVY API Support
@@ -19,8 +19,8 @@ servers:
   - url: http://ivy-api.teliax.com
     description: Production server
 tags:
-  - name: Uaddresses
-    description: Operations related to Uaddresses
+  - name: Addresses
+    description: Operations related to Addresses
 security:
   - apiKey: []
 components:
@@ -42,7 +42,7 @@ paths:
   /addresses/{id}:
     put:
       tags:
-        - Uaddresses
+        - Addresses
       summary: Update address
       description: Updates an existing address.
       operationId: update_address

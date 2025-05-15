@@ -4,8 +4,8 @@
 
 openapi: 3.0.3
 info:
-  title: IVY API - Upackages
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to Upackages.
+  title: Packages
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to Packages.
   version: 1.0.0
   contact:
     name: IVY API Support
@@ -19,8 +19,8 @@ servers:
   - url: http://ivy-api.teliax.com
     description: Production server
 tags:
-  - name: Upackages
-    description: Operations related to Upackages
+  - name: Packages
+    description: Operations related to Packages
 security:
   - apiKey: []
 components:
@@ -42,7 +42,7 @@ paths:
   /packages:
     get:
       tags:
-        - Upackages
+        - Packages
       summary: List available Packages
       description: A list of packages available for purchase for your account.
       operationId: list_packages
@@ -76,7 +76,7 @@ paths:
   /packages/{id}:
     post:
       tags:
-        - Upackages
+        - Packages
       summary: Purchase a Package
       description: Purchase an add-on package for your account.
       operationId: purchase_package
@@ -115,7 +115,7 @@ paths:
     
     delete:
       tags:
-        - Upackages
+        - Packages
       summary: Remove Package
       description: Remove an add-on package from your account.
       operationId: remove_package

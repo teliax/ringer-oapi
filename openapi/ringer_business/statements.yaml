@@ -4,8 +4,8 @@
 
 openapi: 3.0.3
 info:
-  title: IVY API - Ustatements
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to Ustatements.
+  title: Statements
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to Statements.
   version: 1.0.0
   contact:
     name: IVY API Support
@@ -19,8 +19,8 @@ servers:
   - url: http://ivy-api.teliax.com
     description: Production server
 tags:
-  - name: Ustatements
-    description: Operations related to Ustatements
+  - name: Statements
+    description: Operations related to Statements
 security:
   - apiKey: []
 components:
@@ -42,7 +42,7 @@ paths:
   /statements:
     get:
       tags:
-        - Ustatements
+        - Statements
       summary: List all statements
       description: Returns a list of all account statements.
       operationId: list_statements
@@ -68,7 +68,7 @@ paths:
   /statements/{id}:
     get:
       tags:
-        - Ustatements
+        - Statements
       summary: Get statement details
       description: Returns details for a specific statement.
       operationId: get_statement

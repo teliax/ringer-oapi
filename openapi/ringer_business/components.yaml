@@ -4,7 +4,7 @@
 
 openapi: 3.0.3
 info:
-  title: IVY API - Components
+  title: Components
   description: This file contains reusable components for the IVY API.
   version: 1.0.0
   contact:

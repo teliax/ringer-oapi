@@ -4,8 +4,8 @@
 
 openapi: 3.0.3
 info:
-  title: IVY API - UcountryUcodes
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to UcountryUcodes.
+  title: countryCodes
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to countryCodes.
   version: 1.0.0
   contact:
     name: IVY API Support
@@ -19,8 +19,8 @@ servers:
   - url: http://ivy-api.teliax.com
     description: Production server
 tags:
-  - name: UcountryUcodes
-    description: Operations related to UcountryUcodes
+  - name: countryCodes
+    description: Operations related to countryCodes
 security:
   - apiKey: []
 components:
@@ -42,7 +42,7 @@ paths:
   /country-codes:
     get:
       tags:
-        - UcountryUcodes
+        - countryCodes
       summary: List of Country Codes
       description: A list of country codes.
       operationId: list_country_codes

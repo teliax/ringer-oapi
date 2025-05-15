@@ -4,8 +4,8 @@
 
 openapi: 3.0.3
 info:
-  title: IVY API - Uitems
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to Uitems.
+  title: Items
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to Items.
   version: 1.0.0
   contact:
     name: IVY API Support
@@ -19,8 +19,8 @@ servers:
   - url: http://ivy-api.teliax.com
     description: Production server
 tags:
-  - name: Uitems
-    description: Operations related to Uitems
+  - name: Items
+    description: Operations related to Items
 security:
   - apiKey: []
 components:
@@ -42,7 +42,7 @@ paths:
   /items:
         get:
           tags:
-            - Uitems
+            - Items
           summary: List of Items
           description: A list of items available to purchase for your account.
           operationId: list_items

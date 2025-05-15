@@ -4,8 +4,8 @@
 
 openapi: 3.0.3
 info:
-  title: IVY API - Uaccount
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to Uaccount.
+  title: Account
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to Account.
   version: 1.0.0
   contact:
     name: IVY API Support
@@ -19,8 +19,8 @@ servers:
   - url: http://ivy-api.teliax.com
     description: Production server
 tags:
-  - name: Uaccount
-    description: Operations related to Uaccount
+  - name: Account
+    description: Operations related to Account
 security:
   - apiKey: []
 components:
@@ -42,7 +42,7 @@ paths:
   /account:
         get:
           tags:
-            - Uaccount
+            - Account
           summary: Account Details
           description: Details of your account
           operationId: account_details
@@ -69,7 +69,7 @@ paths:
       
         put:
           tags:
-            - Uaccount
+            - Account
           summary: Update Account
           description: Update your account. This includes your name and contact info.
           operationId: update_account
@@ -115,7 +115,7 @@ paths:
       
         delete:
           tags:
-            - Uaccount
+            - Account
           summary: Delete Account
           description: Delete your account
           operationId: delete_account
@@ -144,7 +144,7 @@ paths:
       
         patch:
           tags:
-            - Uaccount
+            - Account
           summary: Activate Account
           description: Activate Account. This operation is only allowed if you are in the administrator role.
           operationId: activate_account

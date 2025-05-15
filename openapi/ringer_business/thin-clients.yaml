@@ -4,8 +4,8 @@
 
 openapi: 3.0.3
 info:
-  title: IVY API - UthinUclients
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to UthinUclients.
+  title: thinClients
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to thinClients.
   version: 1.0.0
   contact:
     name: IVY API Support
@@ -19,8 +19,8 @@ servers:
   - url: http://ivy-api.teliax.com
     description: Production server
 tags:
-  - name: UthinUclients
-    description: Operations related to UthinUclients
+  - name: thinClients
+    description: Operations related to thinClients
 security:
   - apiKey: []
 components:
@@ -42,7 +42,7 @@ paths:
   /thin-clients:
     get:
       tags:
-        - UthinUclients
+        - thinClients
       summary: List of Thin Clients
       description: List of thin clients available for your account.
       operationId: list_thin_clients

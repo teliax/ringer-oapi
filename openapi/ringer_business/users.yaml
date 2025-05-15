@@ -4,8 +4,8 @@
 
 openapi: 3.0.3
 info:
-  title: IVY API - Uusers
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to Uusers.
+  title: Users
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to Users.
   version: 1.0.0
   contact:
     name: IVY API Support
@@ -19,8 +19,8 @@ servers:
   - url: http://ivy-api.teliax.com
     description: Production server
 tags:
-  - name: Uusers
-    description: Operations related to Uusers
+  - name: Users
+    description: Operations related to Users
 security:
   - apiKey: []
 components:
@@ -42,7 +42,7 @@ paths:
   /users:
     get:
       tags:
-        - Uusers
+        - Users
       summary: List all users
       description: Returns a list of all users for the account.
       operationId: list_users
@@ -61,7 +61,7 @@ paths:
                 $ref: './components.yaml#/components/schemas/error'
     post:
       tags:
-        - Uusers
+        - Users
       summary: Create a new user
       description: Creates a new user for the account.
       operationId: create_user
@@ -95,7 +95,7 @@ paths:
   /users/{id}:
     get:
       tags:
-        - Uusers
+        - Users
       summary: Get user details
       description: Returns details for a specific user.
       operationId: get_user
@@ -127,7 +127,7 @@ paths:
                 $ref: './components.yaml#/components/schemas/error'
     put:
       tags:
-        - Uusers
+        - Users
       summary: Update user
       description: Updates an existing user.
       operationId: update_user
@@ -172,7 +172,7 @@ paths:
                 $ref: './components.yaml#/components/schemas/error'
     delete:
       tags:
-        - Uusers
+        - Users
       summary: Delete user
       description: Deletes a user.
       operationId: delete_user

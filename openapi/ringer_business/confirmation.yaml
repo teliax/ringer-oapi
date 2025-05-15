@@ -4,8 +4,8 @@
 
 openapi: 3.0.3
 info:
-  title: IVY API - Uconfirmation
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to Uconfirmation.
+  title: Confirmation
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to Confirmation.
   version: 1.0.0
   contact:
     name: IVY API Support
@@ -19,8 +19,8 @@ servers:
   - url: http://ivy-api.teliax.com
     description: Production server
 tags:
-  - name: Uconfirmation
-    description: Operations related to Uconfirmation
+  - name: Confirmation
+    description: Operations related to Confirmation
 security:
   - apiKey: []
 components:
@@ -42,7 +42,7 @@ paths:
   /confirmation:
     post:
       tags:
-        - Uconfirmation
+        - Confirmation
       summary: Confirm a new account
       description: Confirms a newly created account using a confirmation token.
       operationId: confirm_account

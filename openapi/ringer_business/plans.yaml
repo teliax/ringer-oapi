@@ -4,8 +4,8 @@
 
 openapi: 3.0.3
 info:
-  title: IVY API - Uplans
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to Uplans.
+  title: Plans
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to Plans.
   version: 1.0.0
   contact:
     name: IVY API Support
@@ -19,8 +19,8 @@ servers:
   - url: http://ivy-api.teliax.com
     description: Production server
 tags:
-  - name: Uplans
-    description: Operations related to Uplans
+  - name: Plans
+    description: Operations related to Plans
 security:
   - apiKey: []
 components:
@@ -42,7 +42,7 @@ paths:
   /plans:
     get:
       tags:
-        - Uplans
+        - Plans
       summary: List all plans
       description: Returns a list of all available plans.
       operationId: list_plans
@@ -68,7 +68,7 @@ paths:
   /plans/{id}:
     get:
       tags:
-        - Uplans
+        - Plans
       summary: Get plan details
       description: Returns details for a specific plan.
       operationId: get_plan
@@ -100,7 +100,7 @@ paths:
                 $ref: './components.yaml#/components/schemas/error'
     post:
       tags:
-        - Uplans
+        - Plans
       summary: Add plan to account
       description: Adds the specified plan to the account.
       operationId: add_plan
@@ -138,7 +138,7 @@ paths:
                 $ref: './components.yaml#/components/schemas/error'
     delete:
       tags:
-        - Uplans
+        - Plans
       summary: Remove plan from account
       description: Removes the specified plan from the account.
       operationId: remove_plan

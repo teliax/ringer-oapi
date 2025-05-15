@@ -4,8 +4,8 @@
 
 openapi: 3.0.3
 info:
-  title: IVY API - Utemplates
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to Utemplates.
+  title: Templates
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to Templates.
   version: 1.0.0
   contact:
     name: IVY API Support
@@ -19,8 +19,8 @@ servers:
   - url: http://ivy-api.teliax.com
     description: Production server
 tags:
-  - name: Utemplates
-    description: Operations related to Utemplates
+  - name: Templates
+    description: Operations related to Templates
 security:
   - apiKey: []
 components:
@@ -42,7 +42,7 @@ paths:
   /templates:
       get:
         tags:
-          - Utemplates
+          - Templates
         summary: List Templates
         description: Retrieve a list of available templates for your account.
         operationId: list_templates

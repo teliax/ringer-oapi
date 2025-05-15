@@ -4,8 +4,8 @@
 
 openapi: 3.0.3
 info:
-  title: IVY API - UcreditUcards
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to UcreditUcards.
+  title: creditCards
+  description: This is a partial file containing path objects for the IVY API. It defines operations related to creditCards.
   version: 1.0.0
   contact:
     name: IVY API Support
@@ -19,8 +19,8 @@ servers:
   - url: http://ivy-api.teliax.com
     description: Production server
 tags:
-  - name: UcreditUcards
-    description: Operations related to UcreditUcards
+  - name: creditCards
+    description: Operations related to creditCards
 security:
   - apiKey: []
 components:
@@ -42,7 +42,7 @@ paths:
   /credit-cards:
     get:
       tags:
-        - UcreditUcards
+        - creditCards
       summary: List all credit cards
       description: Returns a list of all credit cards associated with the account.
       operationId: list_credit_cards
@@ -66,7 +66,7 @@ paths:
                 $ref: './components.yaml#/components/schemas/error'
     post:
       tags:
-        - UcreditUcards
+        - creditCards
       summary: Add a new credit card
       description: Adds a new credit card to the account.
       operationId: add_credit_card
@@ -100,7 +100,7 @@ paths:
   /credit-cards/{id}:
     get:
       tags:
-        - UcreditUcards
+        - creditCards
       summary: Get credit card details
       description: Returns details for a specific credit card.
       operationId: get_credit_card
@@ -132,7 +132,7 @@ paths:
                 $ref: './components.yaml#/components/schemas/error'
     delete:
       tags:
-        - UcreditUcards
+        - creditCards
       summary: Delete credit card
       description: Deletes a credit card from the account.
       operationId: delete_credit_card
@@ -162,7 +162,7 @@ paths:
   /credit-cards/{id}/verify:
     patch:
       tags:
-        - UcreditUcards
+        - creditCards
       summary: Verify credit card
       description: Verifies a credit card with verification code.
       operationId: verify_credit_card
