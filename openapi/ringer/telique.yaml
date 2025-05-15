@@ -4,6 +4,10 @@ info:
   description: |
     The Ringer Telique API provides access to telecommunications data, 
     including caller name (CNAM) data, line type information, and more.
+    
+    The API also includes services for checking phone numbers against 
+    Do Not Originate (DNO) and Do Not Call (DNC) databases, as well as 
+    STIR/SHAKEN call authentication validation.
   version: 1.0.0
   license:
     name: MIT License
@@ -24,11 +28,19 @@ tags:
   - name: CIC
     description: Operations for Carrier Identification Code
   - name: Lookup
-    description: Endpoints for looking up phone number information
+    description: Operations for looking up phone number information
   - name: Portability
-    description: Endpoints for phone number portability information
+    description: Operations for phone number portability information
   - name: ROR
     description: Operations for Responsible Organization
+  - name: DNO
+    description: Operations for Do Not Originate database lookups
+  - name: DNC
+    description: Operations for Do Not Call database lookups
+  - name: DNX
+    description: Combined DNO and DNC lookup operations
+  - name: STIR/SHAKEN
+    description: Operations for call authentication validation
 paths:
   /telique/cnam/{phoneNumber}:
     get:
@@ -569,6 +581,324 @@ paths:
             text/plain:
               schema:
                 type: string
+  /telique/dno/{num}:
+    get:
+      tags:
+        - DNO
+      summary: DNO Lookup
+      description: |
+        Check if a phone number is in the Do Not Originate (DNO) database.
+        Returns a JSON response indicating whether the number exists in the database.
+      operationId: getDno
+      parameters:
+        - name: num
+          in: path
+          description: 10-digit phone number to check
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9]{10}$'
+            example: "5551234567"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DnoResponse'
+        '400':
+          description: Bad request - Invalid phone number format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /telique/dno/{num}/xml:
+    get:
+      tags:
+        - DNO
+      summary: DNO Lookup (XML)
+      description: |
+        Check if a phone number is in the Do Not Originate (DNO) database.
+        Returns an XML response indicating whether the number exists in the database.
+      operationId: getDnoXml
+      parameters:
+        - name: num
+          in: path
+          description: 10-digit phone number to check
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9]{10}$'
+            example: "5551234567"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/DnoResponse'
+        '400':
+          description: Bad request - Invalid phone number format
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Too many requests
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /telique/dnc/{num}:
+    get:
+      tags:
+        - DNC
+      summary: DNC Lookup
+      description: |
+        Check if a phone number is in the Do Not Call (DNC) database.
+        Returns a JSON response indicating whether the number exists in the database.
+      operationId: getDnc
+      parameters:
+        - name: num
+          in: path
+          description: 10-digit phone number to check
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9]{10}$'
+            example: "5551234567"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DnoResponse'
+        '400':
+          description: Bad request - Invalid phone number format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /telique/dnc/{num}/xml:
+    get:
+      tags:
+        - DNC
+      summary: DNC Lookup (XML)
+      description: |
+        Check if a phone number is in the Do Not Call (DNC) database.
+        Returns an XML response indicating whether the number exists in the database.
+      operationId: getDncXml
+      parameters:
+        - name: num
+          in: path
+          description: 10-digit phone number to check
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9]{10}$'
+            example: "5551234567"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/DnoResponse'
+        '400':
+          description: Bad request - Invalid phone number format
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Too many requests
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /telique/dncreport:
+    get:
+      tags:
+        - DNC
+      summary: DNC Update Report
+      description: |
+        Retrieve a report of DNC updates by area code (NPA).
+      operationId: getDncReport
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DncUpdateReport'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /telique/dnx:
+    get:
+      tags:
+        - DNX
+      summary: Combined DNO/DNC Lookup
+      description: |
+        Check if phone numbers are in both DNO and DNC databases with a single request.
+      operationId: getDnx
+      parameters:
+        - name: dno
+          in: query
+          description: 10-digit phone number to check against DNO database
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9]{10}$'
+            example: "5551234567"
+        - name: dnc
+          in: query
+          description: 10-digit phone number to check against DNC database
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9]{10}$'
+            example: "5551234567"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DnxResponse'
+        '400':
+          description: Bad request - Invalid phone number format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /telique/stirshaken/validate:
+    post:
+      tags:
+        - STIR/SHAKEN
+      summary: Validate STIR/SHAKEN Identity
+      description: |
+        Validates STIR/SHAKEN call authentication by checking the provided identity token.
+      operationId: validateStirShaken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StirShakenRequest'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StirShakenResponse'
+        '400':
+          description: Bad request - Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 components:
   securitySchemes:
     BearerAuth:
@@ -691,4 +1021,86 @@ components:
           description: Interpretation result data structure
       required:
         - carrier
-        - ror 
+        - ror
+    DnoResponse:
+      type: object
+      properties:
+        phoneNumber:
+          type: string
+          description: The phone number that was looked up
+          example: "5551234567"
+        recordExists:
+          type: boolean
+          description: Indicates whether the number exists in the database
+          example: true
+      required:
+        - phoneNumber
+        - recordExists
+    DnxResponse:
+      type: object
+      properties:
+        dnc:
+          type: boolean
+          description: Indicates whether the number exists in the DNC database
+          example: true
+        dno:
+          type: boolean
+          description: Indicates whether the number exists in the DNO database
+          example: false
+      required:
+        - dnc
+        - dno
+    DncUpdateReport:
+      type: array
+      items:
+        type: object
+        properties:
+          npa:
+            type: integer
+            description: Area code (NPA)
+            example: 555
+          oldCount:
+            type: integer
+            description: Previous count of numbers in this NPA
+            example: 1200
+          newCount:
+            type: integer
+            description: Current count of numbers in this NPA
+            example: 1235
+        required:
+          - npa
+          - oldCount
+          - newCount
+    StirShakenRequest:
+      type: object
+      properties:
+        token:
+          type: string
+          description: The identity token to validate
+          example: "eyJhbGciOiJSUzI1NiIsInR5cCI6InBhc3Nwb3J0Iiwic3R..."
+        certUrl:
+          type: string
+          description: URL of the certificate
+          example: "https://cert.example.org/cert.pem"
+        algorithm:
+          type: string
+          description: Signature algorithm used
+          example: "RS256"
+        ppt:
+          type: string
+          description: PASSporT Token Type
+          example: "shaken"
+      required:
+        - token
+        - certUrl
+        - algorithm
+        - ppt
+    StirShakenResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+          description: Whether the provided identity is valid
+          example: true
+      required:
+        - valid 
