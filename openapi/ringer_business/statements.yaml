@@ -4,75 +4,91 @@
 
 openapi: 3.0.3
 info:
-  title: Statements
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to Statements.
+  title: Ringer Business API - Statements
+  description: |
+    Access and view your account statements and receipts.
+    
+    You can view your account statements (receipts) here. Statements are generated at the 
+    end of your previous service interval (e.g., 2014-11-25 to 2014-12-25).
+    
+    ## Authentication
+    This API supports OAuth 2.0 authentication using:
+    - Password grant flow
+    - Client credentials grant flow
+    
+    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
+    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
   version: 1.0.0
-  contact:
-    name: IVY API Support
-    url: https://ivy.teliax.com/
-    email: support@ivy.teliax.com
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
-  x-partial-file: true
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.io/
+    email: support@ringer.io
+
 servers:
-  - url: http://ivy-api.teliax.com
+  - url: https://api.ringer.io/v1
     description: Production server
+  - url: https://api.staging.ringer.io/v1
+    description: Staging server
+
+security:
+  - BearerAuth: []
+
 tags:
   - name: Statements
-    description: Operations related to Statements
-security:
-  - apiKey: []
-components:
-  securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: Authorization
-  schemas:
-    Error:
-      type: object
-      properties:
-        code:
-          type: integer
-        message:
-          type: string
+    description: "You can view your account statements (receipts) here. Statements are generated at the end of your previous service interval (e.g., 2014-11-25 to 2014-12-25)."
 
 paths:
   /statements:
     get:
       tags:
         - Statements
-      summary: List all statements
-      description: Returns a list of all account statements.
+      summary: List Statements
+      description: "You can view your account statements (receipts) here. Statements are generated at the end of your previous service interval."
       operationId: list_statements
+      parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
       responses:
-        "200":
-          description: OK
+        '200':
+          description: Array of Statements
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  statements:
-                    type: array
-                    items:
-                      $ref: './components.yaml#/components/schemas/Statement'
-        "401":
-          description: Unauthorized request
+                $ref: '#/components/schemas/StatementList'
+        '400':
+          description: Bad Request Parameters or Validation Errors
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   
   /statements/{id}:
     get:
       tags:
         - Statements
-      summary: Get statement details
-      description: Returns details for a specific statement.
-      operationId: get_statement
+      summary: Statement Details
+      description: "You can view your account statement detail. Statement is generated at the end of your previous service interval (e.g., 2014-11-25 to 2014-12-25)."
+      operationId: show_statement
       parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
         - name: id
           in: path
           description: Statement ID
@@ -80,21 +96,157 @@ paths:
           schema:
             type: integer
       responses:
-        "200":
-          description: OK
+        '200':
+          description: Statement Detail
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/Statement'
-        "401":
-          description: Unauthorized request
+                $ref: '#/components/schemas/Statement'
+        '400':
+          description: Bad Request Parameters or Validation Errors
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "404":
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
           description: Statement not found
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    
+  schemas:
+    StatementList:
+      type: object
+      properties:
+        statements:
+          type: array
+          description: Array of Statements
+          items:
+            $ref: '#/components/schemas/Statement'
+        total_items:
+          type: string
+          example: "350"
+          description: Total number of items
+          readOnly: true
+        total_pages:
+          type: string
+          example: "7"
+          description: Total number of pages
+          readOnly: true
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/linkDescription'
+      example:
+        statements:
+        - id: 1
+          created_at: 02/02/2023
+          closed_at: 02/02/2023
+          image: http://example.com/image.jpg
+          export: http://example.com/image.pdf
+          cdr: http://example.com/cdr/export.csv
+          links:
+          - href: /statements/1
+            rel: self
+            method: GET
+        total_items: 350
+        total_pages: 7
+        links:
+        - href: /statements?page_size=50&page=3
+          rel: self
+          title: Self
+        - href: /statements?page_size=50&page=1
+          rel: first
+          title: First Page
+        - href: /statements?page_size=50&page=4
+          rel: next
+          title: Next Page
+        - href: /statements?page_size=50&page=2
+          rel: prev
+          title: Previous Page
+        - href: /statements?page_size=50&page=5
+          rel: last
+          title: Last Page
+    
+    Statement:
+      properties:
+        id:
+          type: integer
+        created_at:
+          type: string
+        closed_at:
+          type: string
+        image:
+          type: string
+        export:
+          type: string
+        cdr:
+          type: string
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/linkDescription'
+      example:
+        id: 1
+        created_at: 02/02/2023
+        closed_at: 02/02/2023
+        image: http://example.com/image.jpg
+        export: http://example.com/export.csv
+        cdr: http://example.com/cdr/export.csv
+        links:
+        - href: /statements/1
+          rel: self
+          title: Self
+          method: GET
+    
+    linkDescription:
+      type: object
+      required:
+        - href
+        - rel
+      properties:
+        href:
+          type: string
+          description: "URI template, as defined by RFC 6570, with the addition of the $, ( and ) characters for pre-processing"
+        rel:
+          type: string
+          description: Relation to the target resource of the link
+        title:
+          type: string
+          description: A title for the link
+        method:
+          type: string
+          description: HTTP method for requesting the target of the link (e.g. "GET" or "POST")
+    
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Error status
+          example: "error"
+        error:
+          type: string
+          description: Error message
+          example: "Invalid input parameters"
+        error_code:
+          type: string
+          description: Error code for machine processing
+          example: "INVALID_INPUT"
+      required:
+        - status
+        - error

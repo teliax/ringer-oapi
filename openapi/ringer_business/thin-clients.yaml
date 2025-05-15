@@ -4,71 +4,144 @@
 
 openapi: 3.0.3
 info:
-  title: thinClients
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to thinClients.
+  title: Ringer Business API - Thin Clients
+  description: |
+    Access and manage thin clients for Ringer Business services.
+    
+    A thin client is the node that handles call processing for a site. If you're not sure which one to use, contact Support.
+    
+    ## Authentication
+    This API supports OAuth 2.0 authentication using:
+    - Password grant flow
+    - Client credentials grant flow
+    
+    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
+    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
   version: 1.0.0
-  contact:
-    name: IVY API Support
-    url: https://ivy.teliax.com/
-    email: support@ivy.teliax.com
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
-  x-partial-file: true
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.io/
+    email: support@ringer.io
+
 servers:
-  - url: http://ivy-api.teliax.com
+  - url: https://api.ringer.io/v1
     description: Production server
-tags:
-  - name: thinClients
-    description: Operations related to thinClients
+  - url: https://api.staging.ringer.io/v1
+    description: Staging server
+
 security:
-  - apiKey: []
-components:
-  securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: Authorization
-  schemas:
-    Error:
-      type: object
-      properties:
-        code:
-          type: integer
-        message:
-          type: string
+  - BearerAuth: []
+
+tags:
+  - name: Thin Clients
+    description: "A thin client is the node that handles call processing for this site. If you're not sure which one to use, contact Support."
 
 paths:
   /thin-clients:
     get:
       tags:
-        - thinClients
-      summary: List of Thin Clients
-      description: List of thin clients available for your account.
+        - Thin Clients
+      summary: List Thin Clients
+      description: Retrieve a list of thin clients available for your account.
       operationId: list_thin_clients
       parameters:
         - name: Authorization
           in: header
-          description: This token is used to authenticate a particular account.
+          description: Authentication token used to access the API
           required: true
           schema:
             type: string
       responses:
-        "200":
+        '200':
           description: Array of Thin Clients
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/ThinClientList'
-        "400":
+                $ref: '#/components/schemas/ThinClientList'
+        '400':
           description: Bad Request Parameters or Validation Errors
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "401":
-          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error' 
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    
+  schemas:
+    ThinClientList:
+      properties:
+        thin_clients:
+          type: array
+          description: Array of Thin Clients
+          items:
+            $ref: '#/components/schemas/ThinClient'
+    
+    ThinClient:
+      required:
+        - active
+        - category
+        - id
+        - identification
+        - ipv4_address
+        - provider
+      properties:
+        id:
+          type: integer
+        active:
+          type: boolean
+        category:
+          type: string
+        ipv4_address:
+          type: string
+        provider:
+          type: string
+        identification:
+          type: string
+      example:
+        - id: 11
+          active: true
+          category: public
+          ipv4_address: 63.211.239.115
+          provider: Teliax Inc.
+          string: Denver - Bonsai 5
+          identification: 00-21-5e-96-e3-bc
+        - id: 12
+          active: true
+          category: public
+          ipv4_address: 63.211.239.116
+          provider: Teliax Inc.
+          string: Denver - Bonsai 6
+          identification: 00-21-5e-96-fe-6c
+    
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Error status
+          example: "error"
+        error:
+          type: string
+          description: Error message
+          example: "Invalid input parameters"
+        error_code:
+          type: string
+          description: Error code for machine processing
+          example: "INVALID_INPUT"
+      required:
+        - status
+        - error 

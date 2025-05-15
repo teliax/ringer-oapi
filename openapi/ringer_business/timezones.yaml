@@ -4,71 +4,125 @@
 
 openapi: 3.0.3
 info:
-  title: Timezones
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to Timezones.
+  title: Ringer Business API - Timezones
+  description: |
+    A list of timezones and offsets from GMT to configure time-based features within the Ringer Business platform.
+    
+    ## Authentication
+    This API supports OAuth 2.0 authentication using:
+    - Password grant flow
+    - Client credentials grant flow
+    
+    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
+    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
   version: 1.0.0
-  contact:
-    name: IVY API Support
-    url: https://ivy.teliax.com/
-    email: support@ivy.teliax.com
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
-  x-partial-file: true
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.io/
+    email: support@ringer.io
+
 servers:
-  - url: http://ivy-api.teliax.com
+  - url: https://api.ringer.io/v1
     description: Production server
+  - url: https://api.staging.ringer.io/v1
+    description: Staging server
+
+security:
+  - BearerAuth: []
+
 tags:
   - name: Timezones
-    description: Operations related to Timezones
-security:
-  - apiKey: []
-components:
-  securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: Authorization
-  schemas:
-    Error:
-      type: object
-      properties:
-        code:
-          type: integer
-        message:
-          type: string
+    description: |
+      While configuring the phone system to set timezone for an object, the timezone 
+      standards that need to be followed are IANA tz database (https://www.iana.org/time-zones).
+      If you need the timezone collection on the client side there is a utility endpoint for it.
 
 paths:
   /timezones:
-      get:
-        tags:
-          - Timezones
-        summary: List of Timezones
-        description: A list of time zones and offsets from GMT.
-        operationId: list_timezones
-        parameters:
-          - name: Authorization
-            in: header
-            description: This token is used to authenticate a particular account.
-            required: true
-            schema:
-              type: string
-        responses:
-          "200":
-            description: Array of Timezones
-            content:
-              application/json:
-                schema:
-                  $ref: './components.yaml#/components/schemas/TimezoneList'
-          "400":
-            description: Bad Request Parameters or Validation Errors
-            content:
-              application/json:
-                schema:
-                  $ref: './components.yaml#/components/schemas/error'
-          "401":
-            description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-            content:
-              application/json:
-                schema:
-                  $ref: './components.yaml#/components/schemas/error' 
+    get:
+      tags:
+        - Timezones
+      summary: List Timezones
+      description: Retrieve a list of Timezones supported by the system.
+      operationId: list_timezones
+      parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Array of Timezones
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimezoneList'
+        '400':
+          description: Bad Request Parameters or Validation Errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    
+  schemas:
+    TimezoneList:
+      properties:
+        timezones:
+          type: array
+          example:
+          - Pacific/Midway
+          - Pacific/Pago_Pago
+          - Pacific/Honolulu
+          - America/Juneau
+          - America/Los_Angeles
+          - America/Denver
+          - America/Chicago
+          - America/New_York
+          - Europe/London
+          - Etc/UTC
+          items:
+            $ref: '#/components/schemas/Timezone'
+    
+    Timezone:
+      type: string
+      minLength: 1
+      maxLength: 127
+      description: "A time zone, following the format defined in the IANA tz database (https://www.iana.org/time-zones). Valid examples are America/New_York and Etc/UTC. Do not use ambiguous, non-qualified values such as EST or GB."
+      example: "America/New_York"
+    
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Error status
+          example: "error"
+        error:
+          type: string
+          description: Error message
+          example: "Invalid input parameters"
+        error_code:
+          type: string
+          description: Error code for machine processing
+          example: "INVALID_INPUT"
+      required:
+        - status
+        - error 

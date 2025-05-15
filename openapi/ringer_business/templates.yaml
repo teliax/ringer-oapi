@@ -4,71 +4,291 @@
 
 openapi: 3.0.3
 info:
-  title: Templates
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to Templates.
+  title: Ringer Business API - Templates
+  description: |
+    Manage templates used for configuring standard feature sets across multiple users.
+    
+    Templates provide an easy way to configure resources when a new seat needs to be added to customer accounts. 
+    Users can create one or more templates with different types of resources. Examples include:
+    - Normal employee: phone number, ring group, 2 devices, voicemail
+    - Receptionist: 1 device and failover destination
+    - Sales: phone number, ring group, 1 device, voicemail
+    - Common area phone: device
+    
+    ## Authentication
+    This API supports OAuth 2.0 authentication using:
+    - Password grant flow
+    - Client credentials grant flow
+    
+    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
+    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
   version: 1.0.0
-  contact:
-    name: IVY API Support
-    url: https://ivy.teliax.com/
-    email: support@ivy.teliax.com
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
-  x-partial-file: true
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.io/
+    email: support@ringer.io
+
 servers:
-  - url: http://ivy-api.teliax.com
+  - url: https://api.ringer.io/v1
     description: Production server
+  - url: https://api.staging.ringer.io/v1
+    description: Staging server
+
+security:
+  - BearerAuth: []
+
 tags:
   - name: Templates
-    description: Operations related to Templates
-security:
-  - apiKey: []
-components:
-  securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: Authorization
-  schemas:
-    Error:
-      type: object
-      properties:
-        code:
-          type: integer
-        message:
-          type: string
+    description: |
+      Templates provide an easy way to configure resources when a new seat needs to be added to customer accounts.
+      Users can create multiple templates with different types of resources to simplify provisioning.
 
 paths:
   /templates:
-      get:
-        tags:
-          - Templates
-        summary: List Templates
-        description: Retrieve a list of available templates for your account.
-        operationId: list_templates
-        parameters:
-          - name: Authorization
-            in: header
-            description: This token is used to authenticate a particular account.
-            required: true
+    get:
+      tags:
+        - Templates
+      summary: List Templates
+      description: Retrieve information about account's templates. The sort order of the entries in the collection is ordered by name.
+      operationId: list_templates
+      parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
+        - name: page_size
+          in: query
+          description: The number of template entries in the resultset. System default is used unless specified.
+          required: false
+          schema:
+            type: integer
+        - name: page
+          in: query
+          description: The first index of the entire list of template entries to return in the response.
+          required: false
+          schema:
+            type: integer
+        - name: all
+          in: query
+          description: True if fetch all templates in the system. Otherwise just fetch current account's templates.
+          required: false
+          schema:
+            type: boolean
+        - name: q
+          in: query
+          description: Free text search on Template name.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Array of Templates
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateList'
+        '400':
+          description: Bad Request Parameters or Validation Errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    post:
+      tags:
+        - Templates
+      summary: Create Template
+      description: |
+        Templates give an easy way to configure different types of features for users in your system. 
+        Create a template for the most common type of features you want to add to users.
+      operationId: create_template
+      parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
             schema:
+              $ref: '#/components/schemas/TemplateParams'
+      responses:
+        '201':
+          description: Template Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+        '400':
+          description: Bad Request Parameters or Validation Errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    TemplateList:
+      type: object
+      properties:
+        templates:
+          type: array
+          description: Array of templates
+          items:
+            $ref: '#/components/schemas/Template'
+        total_items:
+          type: string
+          example: "350"
+          description: Total number of items
+          readOnly: true
+        total_pages:
+          type: string
+          example: "7"
+          description: Total number of pages
+          readOnly: true
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/linkDescription'
+    
+    Template:
+      allOf:
+        - $ref: '#/components/schemas/TemplateParams'
+        - required:
+          - id
+          properties:
+            id:
+              type: integer
+              example: 1
+            last_updated_by:
               type: string
-        responses:
-          "200":
-            description: Array of Templates
-            content:
-              application/json:
-                schema:
-                  $ref: './components.yaml#/components/schemas/TemplateList'
-          "400":
-            description: Bad Request Parameters or Validation Errors
-            content:
-              application/json:
-                schema:
-                  $ref: './components.yaml#/components/schemas/error'
-          "401":
-            description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-            content:
-              application/json:
-                schema:
-                  $ref: './components.yaml#/components/schemas/error' 
+              example: John Doe
+            owner:
+              type: string
+              example: Leap Tel
+            links:
+              type: array
+              items:
+                $ref: '#/components/schemas/linkDescription'
+    
+    TemplateParams:
+      required:
+        - name
+        - features
+      properties:
+        name:
+          type: string
+          example: Sales Team
+        features:
+          $ref: '#/components/schemas/TemplateSwitchable'
+    
+    TemplateSwitchable:
+      properties:
+        switchable:
+          type: string
+        position:
+          type: integer
+        attrs:
+          type: object
+          properties:
+            name:
+              type: string
+            derivative:
+              type: string
+            default:
+              type: string
+        destinations:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemplateSwitchable'
+        failover:
+          $ref: '#/components/schemas/TemplateSwitchable'
+        target_type:
+          type: string
+      example:
+        switchable: PhoneNumber
+        position: 1
+        attrs:
+          name: name
+          derivative: calculated
+          default: Phone Number
+        destinations:
+          - switchable: RingGroup
+            position: 2
+            target_type: destination
+            attrs:
+              name: name
+              derivative: calculated
+              default: Ring Group
+            destinations:
+              - switchable: Device
+                target_type: destination
+                position: 3
+                attrs:
+                  name: name
+                  derivative: calculated
+                  default: Device
+                  
+    linkDescription:
+      type: object
+      required:
+        - href
+        - rel
+      properties:
+        href:
+          type: string
+          description: "URI template, as defined by RFC 6570, with the addition of the $, ( and ) characters for pre-processing"
+        rel:
+          type: string
+          description: Relation to the target resource of the link
+        title:
+          type: string
+          description: A title for the link
+        method:
+          type: string
+          description: HTTP method for requesting the target of the link (e.g. "GET" or "POST")
+    
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Error status
+          example: "error"
+        error:
+          type: string
+          description: Error message
+          example: "Invalid input parameters"
+        error_code:
+          type: string
+          description: Error code for machine processing
+          example: "INVALID_INPUT"
+      required:
+        - status
+        - error 

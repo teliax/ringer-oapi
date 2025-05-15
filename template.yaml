@@ -1,0 +1,365 @@
+openapi: 3.0.3
+info:
+  title: API Name
+  description: |
+    Comprehensive description of the API.
+    
+    ## Authentication
+    This API supports multiple authentication methods:
+    - Bearer token authentication
+    - API key authentication
+    - IP address validation (for high-volume services)
+    
+    For IP validation, please contact support to get your server's IP address whitelisted.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/yourusername/repo/blob/main/LICENSE
+  contact:
+    name: API Support Team
+    url: https://docs.example.com/
+    email: support@example.com
+
+# Multiple server environments
+servers:
+  - url: https://api.example.com/v1
+    description: Production server
+  - url: https://api.staging.example.com/v1
+    description: Staging server
+
+# Global security definitions - will be applied to all endpoints unless overridden
+# For services like Telique that use IP validation, you'd omit this section or use `security: []`
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+  # - IPValidation: []  # Uncomment for IP validation-based services
+
+# Tags for organizing endpoints in the documentation
+tags:
+  - name: Authentication
+    description: Authentication-related endpoints
+  - name: Users
+    description: User management endpoints
+  - name: Services
+    description: Service-specific operations
+
+paths:
+  # Standard endpoint with path parameter
+  /service/{resourceId}:
+    get:
+      tags:
+        - Services
+      summary: Retrieve resource by ID
+      description: |
+        Detailed explanation of the endpoint.
+        This endpoint performs a lookup for a specified ID.
+      operationId: getResource  # Important for navigation and code generation
+      parameters:
+        - name: resourceId
+          in: path
+          description: Unique identifier for the resource
+          required: true
+          schema:
+            type: string
+            example: "resource123"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceResponse'
+              example:
+                id: "resource123"
+                name: "Example Resource"
+                status: "active"
+        '400':
+          description: Bad request - invalid format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Endpoint with query parameters 
+  /service/search:
+    get:
+      tags:
+        - Services
+      summary: Search for resources
+      description: Search resources using various query parameters
+      operationId: searchResources
+      parameters:
+        - name: query
+          in: query
+          description: Search term
+          required: true
+          schema:
+            type: string
+            example: "example"
+        - name: limit
+          in: query
+          description: Maximum number of results
+          required: false
+          schema:
+            type: integer
+            default: 10
+            example: 25
+        - name: offset
+          in: query
+          description: Number of results to skip
+          required: false
+          schema:
+            type: integer
+            default: 0
+            example: 0
+      responses:
+        '200':
+          description: Successful search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ResourceSummary'
+                  total:
+                    type: integer
+                    description: Total number of matching resources
+                    example: 42
+              example:
+                results:
+                  - id: "resource123"
+                    name: "Example Resource"
+                  - id: "resource456"
+                    name: "Another Resource"
+                total: 2
+        '400':
+          description: Invalid search parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Endpoint with POST request body
+  /service/create:
+    post:
+      tags:
+        - Services
+      summary: Create new resource
+      description: Create a new resource with the provided information
+      operationId: createResource
+      # Example of endpoint-specific security override
+      security:
+        - BearerAuth: []  # Only Bearer auth for this endpoint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResourceCreate'
+            example:
+              name: "New Resource"
+              description: "Description of the new resource"
+              type: "standard"
+      responses:
+        '201':
+          description: Resource created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceResponse'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Endpoint with IP validation (like Telique/DNX)
+  /service/high-volume:
+    get:
+      tags:
+        - Services
+      summary: High-volume endpoint
+      description: |
+        This endpoint handles high-volume requests with IP address validation.
+        No API keys or tokens are required but your server's IP must be whitelisted.
+      operationId: highVolumeOperation
+      # Explicitly override security to empty for IP validation
+      security: []
+      parameters:
+        - name: param1
+          in: query
+          description: First parameter
+          required: true
+          schema:
+            type: integer
+            example: 123
+        - name: param2
+          in: query
+          description: Second parameter
+          required: true
+          schema:
+            type: integer
+            example: 456
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    type: object
+                    properties:
+                      result:
+                        type: string
+                        example: "valid"
+        '400':
+          description: Bad request - Missing or invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Plain text response example
+  /service/plain-text:
+    get:
+      tags:
+        - Services
+      summary: Plain text response
+      description: Returns a plain text response for simple integrations
+      operationId: getPlainText
+      responses:
+        '200':
+          description: Successful response
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Success: Your data is ready"
+
+components:
+  # Security scheme definitions
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT  # Or 'API key' for simple token auth
+    
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    
+    IPValidation:
+      type: apiKey
+      in: x-ip-validation # Custom non-standard field
+      description: Authentication via whitelisted IP address (no tokens/keys required)
+      x-auth-type: ip-validation # Custom extension field
+
+  # Reusable schemas
+  schemas:
+    ResourceSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier
+          example: "resource123"
+        name:
+          type: string
+          description: Resource name
+          example: "Example Resource"
+      required:
+        - id
+        - name
+
+    ResourceResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier
+          example: "resource123"
+        name:
+          type: string
+          description: Resource name
+          example: "Example Resource"
+        status:
+          type: string
+          description: Current status
+          enum: [active, inactive, pending]
+          example: "active"
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp
+          example: "2023-01-01T12:00:00Z"
+      required:
+        - id
+        - name
+        - status
+
+    ResourceCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Resource name
+          example: "New Resource"
+        description:
+          type: string
+          description: Detailed description
+          example: "Description of the new resource"
+        type:
+          type: string
+          description: Resource type
+          enum: [standard, premium, custom]
+          example: "standard"
+      required:
+        - name
+        - type
+
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Error status
+          example: "error"
+        error:
+          type: string
+          description: Error message
+          example: "Invalid input parameters"
+        error_code:
+          type: string
+          description: Error code for machine processing
+          example: "INVALID_INPUT"
+      required:
+        - status
+        - error
