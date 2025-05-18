@@ -4,71 +4,141 @@
 
 openapi: 3.0.3
 info:
-  title: countryCodes
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to countryCodes.
+  title: Ringer Business API - Country Codes
+  description: |
+    Reference list of country codes and their regions for use with Ringer Business services.
+    
+    Country codes are used for configuring permitted outbound dialing destinations.
+    When setting up a Site/PBX the customer can setup Permitted Outbound Country Codes.
+    Outbound Country Codes must be explicitly set, including separate zones
+    for +1 US, +1 Canada, and +1 outside of the US and Canada as specified by area code
+    along with any other international destinations needed.
+    
+    ## Authentication
+    This API supports OAuth 2.0 authentication using:
+    - Password grant flow
+    - Client credentials grant flow
+    
+    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
+    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
   version: 1.0.0
-  contact:
-    name: IVY API Support
-    url: https://ivy.teliax.com/
-    email: support@ivy.teliax.com
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
-  x-partial-file: true
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.io/
+    email: support@ringer.io
+
 servers:
-  - url: http://ivy-api.teliax.com
+  - url: https://api.ringer.io/v1
     description: Production server
-tags:
-  - name: countryCodes
-    description: Operations related to countryCodes
+  - url: https://api.staging.ringer.io/v1
+    description: Staging server
+
 security:
-  - apiKey: []
-components:
-  securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: Authorization
-  schemas:
-    Error:
-      type: object
-      properties:
-        code:
-          type: integer
-        message:
-          type: string
+  - BearerAuth: []
+
+tags:
+  - name: Country Codes
+    description: |
+      While setting up a Site/PBX the customer can setup Permitted Outbound Country Codes. 
+      Outbound Country Codes must be explicitly set, including separate zones for +1 US, +1 Canada, 
+      and +1 outside of the US and Canada as specified by area code along with any other international 
+      destinations you need calling to. It is strongly recommended that you only add destinations you need 
+      to dial to reduce your exposure to international toll fraud.
 
 paths:
   /country-codes:
     get:
       tags:
-        - countryCodes
-      summary: List of Country Codes
-      description: A list of country codes.
+        - Country Codes
+      summary: List Country Codes
+      description: Retrieve a list of country codes available for configuration of outbound dialing.
       operationId: list_country_codes
       parameters:
         - name: Authorization
           in: header
-          description: This token is used to authenticate a particular account.
+          description: Authentication token used to access the API
           required: true
           schema:
             type: string
       responses:
-        "200":
+        '200':
           description: Array of Country Codes
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/CountryCodeList'
-        "400":
+                $ref: '#/components/schemas/CountryCodeList'
+        '400':
           description: Bad Request Parameters or Validation Errors
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "401":
-          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error' 
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    
+  schemas:
+    CountryCodeList:
+      properties:
+        countries:
+          type: array
+          description: Array of Countries
+          items:
+            $ref: '#/components/schemas/CountryCode'
+    
+    CountryCode:
+      required:
+        - code
+        - id
+        - name
+        - region
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        code:
+          type: string
+        region:
+          type: string
+      example:
+        - id: INTERSTATE|INTRASTATE|LOCAL|TOLLFREE
+          name: United States - 1
+          code: INTERSTATE|INTRASTATE|LOCAL|TOLLFREE
+          region: "Zone 1: North America"
+        - id: "20"
+          name: Egypt - 20
+          code: "20"
+          region: "Zone 2: Africa"
+    
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Error status
+          example: "error"
+        error:
+          type: string
+          description: Error message
+          example: "Invalid input parameters"
+        error_code:
+          type: string
+          description: Error code for machine processing
+          example: "INVALID_INPUT"
+      required:
+        - status
+        - error 

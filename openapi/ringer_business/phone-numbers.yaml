@@ -4,169 +4,359 @@
 
 openapi: 3.0.3
 info:
-  title: phoneNumbers
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to phoneNumbers.
+  title: Ringer Business API - Phone Numbers
+  description: |
+    Manage phone numbers for your Ringer Business account.
+    
+    The Phone Numbers API allows you to view and manage your account's phone numbers,
+    search for available numbers, and retrieve details about specific numbers.
+    
+    ## Authentication
+    This API supports OAuth 2.0 authentication using:
+    - Password grant flow
+    - Client credentials grant flow
+    
+    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
+    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
   version: 1.0.0
-  contact:
-    name: IVY API Support
-    url: https://ivy.teliax.com/
-    email: support@ivy.teliax.com
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
-  x-partial-file: true
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.io/
+    email: support@ringer.io
+
 servers:
-  - url: http://ivy-api.teliax.com
+  - url: https://api.ringer.io/v1
     description: Production server
-tags:
-  - name: phoneNumbers
-    description: Operations related to phoneNumbers
+  - url: https://api.staging.ringer.io/v1
+    description: Staging server
+
 security:
-  - apiKey: []
-components:
-  securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: Authorization
-  schemas:
-    Error:
-      type: object
-      properties:
-        code:
-          type: integer
-        message:
-          type: string
+  - BearerAuth: []
+
+tags:
+  - name: Phone Numbers
+    description: "Manage phone numbers associated with your account."
 
 paths:
   /phone-numbers:
-      get:
-        tags:
-          - phoneNumbers
-        summary: List Phone Numbers
-        description: Retrieve information about all phone numbers for your account.
-        operationId: list_phone_numbers
-        parameters:
-          - name: Authorization
-            in: header
-            description: This token is used to authenticate a particular account.
-            required: true
-            schema:
-              type: string
-        responses:
-          "200":
-            description: Array of Phone Numbers
-            content:
-              application/json:
-                schema:
-                  $ref: './components.yaml#/components/schemas/PhoneNumberList'
-          "400":
-            description: Bad Request Parameters or Validation Errors
-            content:
-              application/json:
-                schema:
-                  $ref: './components.yaml#/components/schemas/error'
-          "401":
-            description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-            content:
-              application/json:
-                schema:
-                  $ref: './components.yaml#/components/schemas/error'
-    
+    get:
+      tags:
+        - Phone Numbers
+      summary: List Phone Numbers
+      description: Retrieve information about all phone numbers for your account.
+      operationId: list_phone_numbers
+      parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Array of Phone Numbers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhoneNumberList'
+        '400':
+          description: Bad Request Parameters or Validation Errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
   /phone-numbers/available:
-      get:
-        tags:
-          - phoneNumbers
-        summary: List Available Phone Numbers
-        description: Retrieve a list of available phone numbers for your account.
-        operationId: list_available_phone_numbers
-        parameters:
-          - name: Authorization
-            in: header
-            description: This token is used to authenticate a particular account.
-            required: true
-            schema:
-              type: string
-          - name: area_code
-            in: query
-            description: Filter available numbers by area code
-            required: false
-            schema:
-              type: string
-          - name: prefix
-            in: query
-            description: Filter available numbers by prefix
-            required: false
-            schema:
-              type: string
-          - name: contains
-            in: query
-            description: Filter available numbers by contained digits
-            required: false
-            schema:
-              type: string
-        responses:
-          "200":
-            description: Array of Available Phone Numbers
-            content:
-              application/json:
-                schema:
-                  $ref: './components.yaml#/components/schemas/AvailablePhoneNumberList'
-          "400":
-            description: Bad Request Parameters or Validation Errors
-            content:
-              application/json:
-                schema:
-                  $ref: './components.yaml#/components/schemas/error'
-          "401":
-            description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-            content:
-              application/json:
-                schema:
-                  $ref: './components.yaml#/components/schemas/error'
-    
+    get:
+      tags:
+        - Phone Numbers
+      summary: List Available Phone Numbers
+      description: Retrieve a list of available phone numbers for your account.
+      operationId: list_available_phone_numbers
+      parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
+        - name: area_code
+          in: query
+          description: Filter available numbers by area code
+          required: false
+          schema:
+            type: string
+            example: "303"
+        - name: prefix
+          in: query
+          description: Filter available numbers by prefix
+          required: false
+          schema:
+            type: string
+            example: "555"
+        - name: contains
+          in: query
+          description: Filter available numbers by contained digits
+          required: false
+          schema:
+            type: string
+            example: "1234"
+      responses:
+        '200':
+          description: Array of Available Phone Numbers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailablePhoneNumberList'
+        '400':
+          description: Bad Request Parameters or Validation Errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
   /phone-numbers/{id}:
-      get:
-        tags:
-          - phoneNumbers
-        summary: Phone Number Details
-        description: Retrieve detailed information about a specific phone number.
-        operationId: show_phone_number
-        parameters:
-          - name: Authorization
-            in: header
-            description: This token is used to authenticate a particular account.
-            required: true
-            schema:
-              type: string
-          - name: id
-            in: path
-            description: ID of the phone number
-            required: true
-            schema:
+    get:
+      tags:
+        - Phone Numbers
+      summary: Phone Number Details
+      description: Retrieve detailed information about a specific phone number.
+      operationId: show_phone_number
+      parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          description: ID of the phone number
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Phone Number Detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhoneNumber'
+        '400':
+          description: Bad Request Parameters or Validation Errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Couldn't find phone number record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    PhoneNumberList:
+      type: object
+      properties:
+        phone_numbers:
+          type: array
+          description: Array of Phone Numbers
+          items:
+            $ref: '#/components/schemas/PhoneNumber'
+        total_items:
+          type: string
+          example: "350"
+          description: Total number of items
+          readOnly: true
+        total_pages:
+          type: string
+          example: "7"
+          description: Total number of pages
+          readOnly: true
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/linkDescription'
+    
+    AvailablePhoneNumberList:
+      type: object
+      properties:
+        available_numbers:
+          type: array
+          description: Array of Available Phone Numbers
+          items:
+            $ref: '#/components/schemas/AvailablePhoneNumber'
+        total_items:
+          type: string
+          example: "350"
+          description: Total number of items
+          readOnly: true
+        total_pages:
+          type: string
+          example: "7"
+          description: Total number of pages
+          readOnly: true
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/linkDescription'
+    
+    PhoneNumber:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12345
+        number:
+          type: string
+          example: "+13035551234"
+        formatted_number:
+          type: string
+          example: "(303) 555-1234"
+        status:
+          type: string
+          enum: [active, inactive, pending, disconnected]
+          example: "active"
+        type:
+          type: string
+          enum: [local, tollfree, international]
+          example: "local"
+        region:
+          type: string
+          example: "US-CO"
+        available_features:
+          type: array
+          items:
+            type: string
+            enum: [voice, sms, fax, e911]
+          example: ["voice", "sms"]
+        assigned_to:
+          type: object
+          properties:
+            id:
               type: integer
-        responses:
-          "200":
-            description: Phone Number Detail
-            content:
-              application/json:
-                schema:
-                  $ref: './components.yaml#/components/schemas/PhoneNumber'
-          "400":
-            description: Bad Request Parameters or Validation Errors
-            content:
-              application/json:
-                schema:
-                  $ref: './components.yaml#/components/schemas/error'
-          "401":
-            description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-            content:
-              application/json:
-                schema:
-                  $ref: './components.yaml#/components/schemas/error'
-          "404":
-            description: Couldn't find phone number record
-            content:
-              application/json:
-                schema:
-                  $ref: './components.yaml#/components/schemas/error' 
+              example: 5678
+            type:
+              type: string
+              enum: [user, site, ring_group, ivr]
+              example: "user"
+            name:
+              type: string
+              example: "John Doe"
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/linkDescription'
+      required:
+        - id
+        - number
+        - status
+        - type
+    
+    AvailablePhoneNumber:
+      type: object
+      properties:
+        number:
+          type: string
+          example: "+13035551234"
+        formatted_number:
+          type: string
+          example: "(303) 555-1234"
+        type:
+          type: string
+          enum: [local, tollfree, international]
+          example: "local"
+        region:
+          type: string
+          example: "US-CO"
+        available_features:
+          type: array
+          items:
+            type: string
+            enum: [voice, sms, fax, e911]
+          example: ["voice", "sms"]
+        cost:
+          type: object
+          properties:
+            setup:
+              type: number
+              format: float
+              example: 0.99
+            monthly:
+              type: number
+              format: float
+              example: 1.99
+            currency:
+              type: string
+              example: "USD"
+      required:
+        - number
+        - type
+        - region
+    
+    linkDescription:
+      type: object
+      required:
+        - href
+        - rel
+      properties:
+        href:
+          type: string
+          description: "URI template, as defined by RFC 6570, with the addition of the $, ( and ) characters for pre-processing"
+        rel:
+          type: string
+          description: Relation to the target resource of the link
+        title:
+          type: string
+          description: A title for the link
+        method:
+          type: string
+          description: HTTP method for requesting the target of the link (e.g. "GET" or "POST")
+    
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Error status
+          example: "error"
+        error:
+          type: string
+          description: Error message
+          example: "Invalid input parameters"
+        error_code:
+          type: string
+          description: Error code for machine processing
+          example: "INVALID_INPUT"
+      required:
+        - status
+        - error 

@@ -4,39 +4,33 @@
 
 openapi: 3.0.3
 info:
-  title: Confirmation
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to Confirmation.
+  title: Ringer Business API - Confirmation
+  description: |
+    Account confirmation API for Ringer Business.
+    
+    The Confirmation API allows new users to confirm their account using a confirmation token
+    that was sent to them when they first signed up. This confirmation process activates
+    the account and enables users to access the full set of features.
+    
+    Account confirmation is a one-time process that occurs after account creation.
   version: 1.0.0
-  contact:
-    name: IVY API Support
-    url: https://ivy.teliax.com/
-    email: support@ivy.teliax.com
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
-  x-partial-file: true
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.io/
+    email: support@ringer.io
+
 servers:
-  - url: http://ivy-api.teliax.com
+  - url: https://api.ringer.io/v1
     description: Production server
+  - url: https://api.staging.ringer.io/v1
+    description: Staging server
+
 tags:
   - name: Confirmation
-    description: Operations related to Confirmation
-security:
-  - apiKey: []
-components:
-  securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: Authorization
-  schemas:
-    Error:
-      type: object
-      properties:
-        code:
-          type: integer
-        message:
-          type: string
+    description: "Operations related to account confirmation."
 
 paths:
   /confirmation:
@@ -46,29 +40,75 @@ paths:
       summary: Confirm a new account
       description: Confirms a newly created account using a confirmation token.
       operationId: confirm_account
+      security: []  # No authentication required for account confirmation
       requestBody:
         description: Account confirmation information
         required: true
         content:
           application/json:
             schema:
-              $ref: './components.yaml#/components/schemas/ConfirmationParams'
+              $ref: '#/components/schemas/ConfirmationParams'
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/Confirmation'
-        "400":
+                $ref: '#/components/schemas/Confirmation'
+        '400':
           description: Bad Request
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "404":
+                $ref: '#/components/schemas/Error'
+        '404':
           description: Invalid confirmation token
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      
+  schemas:
+    ConfirmationParams:
+      required:
+        - confirmation_token
+      properties:
+        confirmation_token:
+          type: string
+          description: Token received via email to confirm the account
+          example: "i2W9OXLqCaKNHoQY07lVAkgPVaI"
+    
+    Confirmation:
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Success message
+          example: "Account confirmed"
+    
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Error status
+          example: "error"
+        error:
+          type: string
+          description: Error message
+          example: "Invalid confirmation token"
+        error_code:
+          type: string
+          description: Error code for machine processing
+          example: "INVALID_TOKEN"
+      required:
+        - status
+        - error

@@ -4,117 +4,245 @@
 
 openapi: 3.0.3
 info:
-  title: Sites
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to Sites.
+  title: Ringer Business API - Sites
+  description: |
+    Manage sites in your Ringer Business account.
+    
+    Sites are physical locations where your business operates. Each site can have its own
+    specific configuration, phone numbers, and other resources. Sites allow you to organize
+    your telecom resources by location.
+    
+    ## Authentication
+    This API supports OAuth 2.0 authentication using:
+    - Password grant flow
+    - Client credentials grant flow
+    
+    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
+    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
   version: 1.0.0
-  contact:
-    name: IVY API Support
-    url: https://ivy.teliax.com/
-    email: support@ivy.teliax.com
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
-  x-partial-file: true
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.io/
+    email: support@ringer.io
+
 servers:
-  - url: http://ivy-api.teliax.com
+  - url: https://api.ringer.io/v1
     description: Production server
+  - url: https://api.staging.ringer.io/v1
+    description: Staging server
+
+security:
+  - BearerAuth: []
+
 tags:
   - name: Sites
-    description: Operations related to Sites
-security:
-  - apiKey: []
-components:
-  securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: Authorization
-  schemas:
-    Error:
-      type: object
-      properties:
-        code:
-          type: integer
-        message:
-          type: string
+    description: "Manage sites associated with your account."
 
 paths:
   /sites:
-      get:
-        tags:
-          - Sites
-        summary: List Sites
-        description: Retrieve a list of sites for your account.
-        operationId: list_sites
-        parameters:
-          - name: Authorization
-            in: header
-            description: This token is used to authenticate a particular account.
-            required: true
-            schema:
-              type: string
-        responses:
-          "200":
-            description: Array of Sites
-            content:
-              application/json:
-                schema:
-                  $ref: './components.yaml#/components/schemas/SiteList'
-          "400":
-            description: Bad Request Parameters or Validation Errors
-            content:
-              application/json:
-                schema:
-                  $ref: './components.yaml#/components/schemas/error'
-          "401":
-            description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-            content:
-              application/json:
-                schema:
-                  $ref: './components.yaml#/components/schemas/error'
-    
+    get:
+      tags:
+        - Sites
+      summary: List Sites
+      description: Retrieve a list of sites for your account.
+      operationId: list_sites
+      parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Array of Sites
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteList'
+        '400':
+          description: Bad Request Parameters or Validation Errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
   /sites/{id}:
-      get:
-        tags:
-          - Sites
-        summary: Site Details
-        description: Retrieve detailed information about a specific site.
-        operationId: show_site
-        parameters:
-          - name: Authorization
-            in: header
-            description: This token is used to authenticate a particular account.
-            required: true
-            schema:
-              type: string
-          - name: id
-            in: path
-            description: ID of the site
-            required: true
-            schema:
-              type: integer
-        responses:
-          "200":
-            description: Site Detail
-            content:
-              application/json:
-                schema:
-                  $ref: './components.yaml#/components/schemas/Site'
-          "400":
-            description: Bad Request Parameters or Validation Errors
-            content:
-              application/json:
-                schema:
-                  $ref: './components.yaml#/components/schemas/error'
-          "401":
-            description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-            content:
-              application/json:
-                schema:
-                  $ref: './components.yaml#/components/schemas/error'
-          "404":
-            description: Couldn't find site record
-            content:
-              application/json:
-                schema:
-                  $ref: './components.yaml#/components/schemas/error' 
+    get:
+      tags:
+        - Sites
+      summary: Site Details
+      description: Retrieve detailed information about a specific site.
+      operationId: show_site
+      parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          description: ID of the site
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Site Detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Site'
+        '400':
+          description: Bad Request Parameters or Validation Errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Couldn't find site record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    SiteList:
+      type: object
+      properties:
+        sites:
+          type: array
+          description: Array of Sites
+          items:
+            $ref: '#/components/schemas/Site'
+        total_items:
+          type: string
+          example: "350"
+          description: Total number of items
+          readOnly: true
+        total_pages:
+          type: string
+          example: "7"
+          description: Total number of pages
+          readOnly: true
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/linkDescription'
+    
+    Site:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12345
+        name:
+          type: string
+          example: "Headquarters"
+        address:
+          $ref: '#/components/schemas/Address'
+        timezone:
+          type: string
+          example: "America/New_York"
+        status:
+          type: string
+          enum: [active, inactive]
+          example: "active"
+        thin_client_id:
+          type: integer
+          example: 11
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/linkDescription'
+      required:
+        - id
+        - name
+        - timezone
+        - status
+    
+    Address:
+      type: object
+      properties:
+        street_address:
+          type: string
+          example: "123 Main St."
+        city:
+          type: string
+          example: "Denver"
+        state_province:
+          type: string
+          example: "CO"
+        postal_code:
+          type: string
+          example: "80202"
+        country:
+          type: string
+          example: "US"
+      required:
+        - street_address
+        - city
+        - state_province
+        - postal_code
+        - country
+    
+    linkDescription:
+      type: object
+      required:
+        - href
+        - rel
+      properties:
+        href:
+          type: string
+          description: "URI template, as defined by RFC 6570, with the addition of the $, ( and ) characters for pre-processing"
+        rel:
+          type: string
+          description: Relation to the target resource of the link
+        title:
+          type: string
+          description: A title for the link
+        method:
+          type: string
+          description: HTTP method for requesting the target of the link (e.g. "GET" or "POST")
+    
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Error status
+          example: "error"
+        error:
+          type: string
+          description: Error message
+          example: "Invalid input parameters"
+        error_code:
+          type: string
+          description: Error code for machine processing
+          example: "INVALID_INPUT"
+      required:
+        - status
+        - error 

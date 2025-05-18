@@ -4,49 +4,57 @@
 
 openapi: 3.0.3
 info:
-  title: Addresses
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to Addresses.
+  title: Ringer Business API - Addresses
+  description: |
+    Manage addresses for your Ringer Business account.
+    
+    The addresses API allows you to update addresses associated with your account or sites.
+    These addresses are used for billing, emergency services (E911), and other location-based services.
+    
+    ## Authentication
+    This API supports OAuth 2.0 authentication using:
+    - Password grant flow
+    - Client credentials grant flow
+    
+    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
+    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
   version: 1.0.0
-  contact:
-    name: IVY API Support
-    url: https://ivy.teliax.com/
-    email: support@ivy.teliax.com
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
-  x-partial-file: true
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.io/
+    email: support@ringer.io
+
 servers:
-  - url: http://ivy-api.teliax.com
+  - url: https://api.ringer.io/v1
     description: Production server
+  - url: https://api.staging.ringer.io/v1
+    description: Staging server
+
+security:
+  - BearerAuth: []
+
 tags:
   - name: Addresses
-    description: Operations related to Addresses
-security:
-  - apiKey: []
-components:
-  securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: Authorization
-  schemas:
-    Error:
-      type: object
-      properties:
-        code:
-          type: integer
-        message:
-          type: string
+    description: "Manage addresses for your account and sites. These addresses are used for billing, emergency services (E911), and other location-based services."
 
 paths:
   /addresses/{id}:
     put:
       tags:
         - Addresses
-      summary: Update address
+      summary: Update Address
       description: Updates an existing address.
       operationId: update_address
       parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
         - name: id
           in: path
           description: Address ID
@@ -59,29 +67,138 @@ paths:
         content:
           application/json:
             schema:
-              $ref: './components.yaml#/components/schemas/AddressParams'
+              $ref: '#/components/schemas/AddressParams'
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/Address'
-        "400":
-          description: Bad Request
+                $ref: '#/components/schemas/Address'
+        '400':
+          description: Bad Request Parameters or Validation Errors
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "401":
-          description: Unauthorized request
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "404":
+                $ref: '#/components/schemas/Error'
+        '404':
           description: Address not found
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    Address:
+      allOf:
+        - $ref: '#/components/schemas/AddressParams'
+        - required:
+          - id
+          properties:
+            id:
+              type: integer
+            links:
+              type: array
+              items:
+                $ref: '#/components/schemas/linkDescription'
+      example:
+        id: 671
+        email: email@example.com
+        street_address: "233 E Wacker Drive, Suite #1106"
+        country: US
+        city: Chicago
+        state_province: IL
+        postal_code: "60601"
+        contact_number: "3125233844"
+        links:
+          - href: /addresses/671
+            rel: self
+            title: Update Address
+            method: PUT
+          - href: /account
+            rel: account
+            title: Account Details
+            method: GET
+    
+    AddressParams:
+      required:
+        - city
+        - contact_number
+        - country
+        - email
+        - postal_code
+        - state_province
+        - street_address
+      properties:
+        email:
+          type: string
+          example: email@example.com
+        street_address:
+          type: string
+          example: "233 E Wacker Drive, Suite #1106"
+        country:
+          type: string
+          example: US
+        city:
+          type: string
+          example: Chicago
+        state_province:
+          type: string
+          example: IL
+        postal_code:
+          type: string
+          example: "60601"
+        contact_number:
+          type: string
+          example: "3125233844"
+    
+    linkDescription:
+      type: object
+      required:
+        - href
+        - rel
+      properties:
+        href:
+          type: string
+          description: "URI template, as defined by RFC 6570, with the addition of the $, ( and ) characters for pre-processing"
+        rel:
+          type: string
+          description: Relation to the target resource of the link
+        title:
+          type: string
+          description: A title for the link
+        method:
+          type: string
+          description: HTTP method for requesting the target of the link (e.g. "GET" or "POST")
+    
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Error status
+          example: "error"
+        error:
+          type: string
+          description: Error message
+          example: "Invalid input parameters"
+        error_code:
+          type: string
+          description: Error code for machine processing
+          example: "INVALID_INPUT"
+      required:
+        - status
+        - error

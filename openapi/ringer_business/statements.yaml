@@ -163,8 +163,8 @@ components:
           - href: /statements/1
             rel: self
             method: GET
-        total_items: 350
-        total_pages: 7
+        total_items: "350"
+        total_pages: "7"
         links:
         - href: /statements?page_size=50&page=3
           rel: self

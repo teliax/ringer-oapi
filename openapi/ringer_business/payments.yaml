@@ -4,95 +4,235 @@
 
 openapi: 3.0.3
 info:
-  title: Payments
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to Payments.
+  title: Ringer Business API - Payments
+  description: |
+    Make and manage payments on your Ringer Business account.
+    
+    The Payments API allows you to view your payment history and submit new payments
+    using credit cards or other payment methods stored in your account.
+    
+    ## Authentication
+    This API supports OAuth 2.0 authentication using:
+    - Password grant flow
+    - Client credentials grant flow
+    
+    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
+    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
   version: 1.0.0
-  contact:
-    name: IVY API Support
-    url: https://ivy.teliax.com/
-    email: support@ivy.teliax.com
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
-  x-partial-file: true
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.io/
+    email: support@ringer.io
+
 servers:
-  - url: http://ivy-api.teliax.com
+  - url: https://api.ringer.io/v1
     description: Production server
+  - url: https://api.staging.ringer.io/v1
+    description: Staging server
+
+security:
+  - BearerAuth: []
+
 tags:
   - name: Payments
-    description: Operations related to Payments
-security:
-  - apiKey: []
-components:
-  securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: Authorization
-  schemas:
-    Error:
-      type: object
-      properties:
-        code:
-          type: integer
-        message:
-          type: string
+    description: "Make and manage payments on your account."
 
 paths:
   /payments:
     get:
       tags:
         - Payments
-      summary: List all payments
-      description: Returns a list of all payments made on the account.
+      summary: List Payments
+      description: Retrieve a list of all payments made on the account.
       operationId: list_payments
+      parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  payments:
-                    type: array
-                    items:
-                      $ref: './components.yaml#/components/schemas/Payment'
-        "401":
-          description: Unauthorized request
+                $ref: '#/components/schemas/PaymentList'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
     post:
       tags:
         - Payments
-      summary: Make a payment
-      description: Makes a payment on the account.
+      summary: Make Payment
+      description: Make a payment on the account.
       operationId: make_payment
+      parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
       requestBody:
         description: Payment information
         required: true
         content:
           application/json:
             schema:
-              $ref: './components.yaml#/components/schemas/PaymentParams'
+              $ref: '#/components/schemas/PaymentParams'
       responses:
-        "201":
-          description: Created
+        '201':
+          description: Payment Created Successfully
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/Payment'
-        "400":
-          description: Bad Request
+                $ref: '#/components/schemas/Payment'
+        '400':
+          description: Bad Request Parameters or Validation Errors
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "401":
-          description: Unauthorized request
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    PaymentList:
+      type: object
+      properties:
+        payments:
+          type: array
+          description: Array of Payments
+          items:
+            $ref: '#/components/schemas/Payment'
+        total_items:
+          type: string
+          example: "350"
+          description: Total number of items
+          readOnly: true
+        total_pages:
+          type: string
+          example: "7"
+          description: Total number of pages
+          readOnly: true
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/linkDescription'
+    
+    Payment:
+      allOf:
+        - $ref: '#/components/schemas/PaymentParams'
+        - required:
+          - id
+          - status
+          - transaction_id
+          - payment_date
+          properties:
+            id:
+              type: integer
+              example: 12345
+            status:
+              type: string
+              enum: [pending, completed, failed, refunded]
+              example: "completed"
+            transaction_id:
+              type: string
+              example: "txn_123456789"
+            payment_date:
+              type: string
+              format: date-time
+              example: "2023-01-15T14:30:00Z"
+            last_four:
+              type: string
+              example: "1234"
+            links:
+              type: array
+              items:
+                $ref: '#/components/schemas/linkDescription'
+    
+    PaymentParams:
+      required:
+        - amount
+        - payment_method
+      properties:
+        amount:
+          type: number
+          format: float
+          description: The payment amount
+          example: 99.99
+        currency:
+          type: string
+          description: The currency code
+          example: "USD"
+          default: "USD"
+        payment_method:
+          type: string
+          enum: [credit_card, ach, wire_transfer]
+          description: The payment method to use
+          example: "credit_card"
+        credit_card_id:
+          type: integer
+          description: ID of the credit card to use (required if payment_method is credit_card)
+          example: 789
+        note:
+          type: string
+          description: Optional note about the payment
+          example: "Monthly service payment"
+    
+    linkDescription:
+      type: object
+      required:
+        - href
+        - rel
+      properties:
+        href:
+          type: string
+          description: "URI template, as defined by RFC 6570, with the addition of the $, ( and ) characters for pre-processing"
+        rel:
+          type: string
+          description: Relation to the target resource of the link
+        title:
+          type: string
+          description: A title for the link
+        method:
+          type: string
+          description: HTTP method for requesting the target of the link (e.g. "GET" or "POST")
+    
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Error status
+          example: "error"
+        error:
+          type: string
+          description: Error message
+          example: "Invalid input parameters"
+        error_code:
+          type: string
+          description: Error code for machine processing
+          example: "INVALID_INPUT"
+      required:
+        - status
+        - error

@@ -4,114 +4,116 @@
 
 openapi: 3.0.3
 info:
-  title: Packages
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to Packages.
+  title: Ringer Business API - Packages
+  description: |
+    View and manage packages in your Ringer Business account.
+    
+    Packages are collections of features and services that can be added to your account.
+    Some packages may be included with your plan, while others are available as add-ons.
+    
+    ## Authentication
+    This API supports OAuth 2.0 authentication using:
+    - Password grant flow
+    - Client credentials grant flow
+    
+    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
+    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
   version: 1.0.0
-  contact:
-    name: IVY API Support
-    url: https://ivy.teliax.com/
-    email: support@ivy.teliax.com
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
-  x-partial-file: true
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.io/
+    email: support@ringer.io
+
 servers:
-  - url: http://ivy-api.teliax.com
+  - url: https://api.ringer.io/v1
     description: Production server
+  - url: https://api.staging.ringer.io/v1
+    description: Staging server
+
+security:
+  - BearerAuth: []
+
 tags:
   - name: Packages
-    description: Operations related to Packages
-security:
-  - apiKey: []
-components:
-  securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: Authorization
-  schemas:
-    Error:
-      type: object
-      properties:
-        code:
-          type: integer
-        message:
-          type: string
+    description: "View and manage packages available for your account."
 
 paths:
   /packages:
     get:
       tags:
         - Packages
-      summary: List available Packages
-      description: A list of packages available for purchase for your account.
+      summary: List Packages
+      description: Retrieve a list of packages available for purchase for your account.
       operationId: list_packages
       parameters:
         - name: Authorization
           in: header
-          description: This token is used to authenticate a particular account.
+          description: Authentication token used to access the API
           required: true
           schema:
             type: string
       responses:
-        "200":
+        '200':
           description: Array of Packages
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/PackageList'
-        "400":
+                $ref: '#/components/schemas/PackageList'
+        '400':
           description: Bad Request Parameters or Validation Errors
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "401":
-          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
   
   /packages/{id}:
     post:
       tags:
         - Packages
-      summary: Purchase a Package
+      summary: Purchase Package
       description: Purchase an add-on package for your account.
       operationId: purchase_package
       parameters:
         - name: Authorization
           in: header
-          description: This token is used to authenticate a particular account.
+          description: Authentication token used to access the API
           required: true
           schema:
             type: string
         - name: id
           in: path
-          description: ID of Package
+          description: ID of the package to purchase
           required: true
           schema:
             type: integer
       responses:
-        "201":
-          description: Package purchased
+        '201':
+          description: Package purchased successfully
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/PackagePurchase'
-        "400":
+                $ref: '#/components/schemas/PackagePurchase'
+        '400':
           description: Bad Request Parameters or Validation Errors
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "401":
-          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
     
     delete:
       tags:
@@ -122,34 +124,176 @@ paths:
       parameters:
         - name: Authorization
           in: header
-          description: This token is used to authenticate a particular account.
+          description: Authentication token used to access the API
           required: true
           schema:
             type: string
         - name: id
           in: path
-          description: ID of the Package
+          description: ID of the package to remove
           required: true
           schema:
             type: integer
       responses:
-        "204":
-          description: Package Deleted. No Content
-        "400":
+        '204':
+          description: Package removed successfully. No Content.
+        '400':
           description: Bad Request Parameters or Validation Errors
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "401":
-          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "404":
-          description: Couldn't find site record
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Package not found
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    PackageList:
+      type: object
+      properties:
+        packages:
+          type: array
+          description: Array of Packages
+          items:
+            $ref: '#/components/schemas/Package'
+        total_items:
+          type: string
+          example: "350"
+          description: Total number of items
+          readOnly: true
+        total_pages:
+          type: string
+          example: "7"
+          description: Total number of pages
+          readOnly: true
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/linkDescription'
+    
+    Package:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - price
+        - category
+      properties:
+        id:
+          type: integer
+          example: 12345
+        name:
+          type: string
+          example: "International Calling"
+        description:
+          type: string
+          example: "Reduced rates for international calls to over 50 countries"
+        price:
+          type: number
+          format: float
+          example: 9.99
+        currency:
+          type: string
+          example: "USD"
+        category:
+          type: string
+          enum: [calling, messaging, conferencing, faxing, security]
+          example: "calling"
+        renewable:
+          type: boolean
+          example: true
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/PackageFeature'
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/linkDescription'
+    
+    PackageFeature:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Discounted Calls to Europe"
+        description:
+          type: string
+          example: "Calls to European countries at 5¢/minute"
+        value:
+          type: string
+          example: "0.05"
+    
+    PackagePurchase:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Package'
+        - properties:
+            purchased_at:
+              type: string
+              format: date-time
+              example: "2023-01-15T14:30:00Z"
+            expires_at:
+              type: string
+              format: date-time
+              nullable: true
+              example: "2023-02-15T14:30:00Z"
+            status:
+              type: string
+              enum: [active, pending, expired]
+              example: "active"
+    
+    linkDescription:
+      type: object
+      required:
+        - href
+        - rel
+      properties:
+        href:
+          type: string
+          description: "URI template, as defined by RFC 6570, with the addition of the $, ( and ) characters for pre-processing"
+        rel:
+          type: string
+          description: Relation to the target resource of the link
+        title:
+          type: string
+          description: A title for the link
+        method:
+          type: string
+          description: HTTP method for requesting the target of the link (e.g. "GET" or "POST")
+    
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Error status
+          example: "error"
+        error:
+          type: string
+          description: Error message
+          example: "Invalid input parameters"
+        error_code:
+          type: string
+          description: Error code for machine processing
+          example: "INVALID_INPUT"
+      required:
+        - status
+        - error

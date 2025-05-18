@@ -4,108 +4,250 @@
 
 openapi: 3.0.3
 info:
-  title: oauth
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to oauth.
+  title: Ringer Business API - Authentication
+  description: |
+    Authentication endpoints for the Ringer Business API.
+    
+    To authenticate API clients, Ringer Business uses the OAuth 2.0 framework, supporting:
+    - Password grant flow
+    - Client credentials grant flow
+    - Refresh token flow for obtaining new access tokens
+    
+    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
+    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
+    
+    ## Grant Types
+    
+    ### Password Grant
+    With the resource owner password credentials grant type, the user provides their service credentials 
+    (username and password) directly to the application, which uses the credentials to obtain an access token.
+    
+    Required parameters:
+    - grant_type: "password"
+    - username: User's email address
+    - password: User's password
+    - client_id: Your application's client ID
+    - client_secret: Your application's client secret
+    
+    ### Client Credentials Grant
+    For service-to-service authentication where a specific user isn't involved.
+    
+    Required parameters:
+    - grant_type: "client_credentials"
+    - client_id: Your application's client ID
+    - client_secret: Your application's client secret
+    
+    ### Refresh Token
+    When an access token expires, you can use the refresh token to obtain a new access token.
+    
+    Required parameters:
+    - grant_type: "refresh_token"
+    - refresh_token: The refresh token received with the original access token
+    - client_id: Your application's client ID
+    - client_secret: Your application's client secret
   version: 1.0.0
-  contact:
-    name: IVY API Support
-    url: https://ivy.teliax.com/
-    email: support@ivy.teliax.com
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
-  x-partial-file: true
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.io/
+    email: support@ringer.io
+
 servers:
-  - url: http://ivy-api.teliax.com
+  - url: https://api.ringer.io/v1
     description: Production server
+  - url: https://api.staging.ringer.io/v1
+    description: Staging server
+
 tags:
-  - name: oauth
-    description: Operations related to oauth
-security:
-  - apiKey: []
-components:
-  securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: Authorization
-  schemas:
-    Error:
-      type: object
-      properties:
-        code:
-          type: integer
-        message:
-          type: string
+  - name: Authentication
+    description: "Authentication endpoints for obtaining and managing access tokens."
 
 paths:
   /oauth/token:
     post:
       tags:
-        - oauth
-      summary: Fetch the access token
-      description: |-
-        To access the IVY API the client needs to be authenticated first. The authentication happens through OAuth 2.0 using the `password` and `client_credentilas` grant flows:
-        -- `grant_type` - `password`-- The OAuth2.0 authentication scheme is Grant Type: Resource Owner Password Credentials or Refresh Token With the resource owner password credentials grant type, the user provides their service credentials (username and password) directly to the application, which uses the credentials to obtain an access token from the service. This method is basically the sign in endpoint.
-        The attributes passed for fetching the access token will be:
-          => grant_type Value: password
-          => username
-          => password
-          => client_id
-          => client_secret
-
-        The obtained access token will be valid only for 2 hours. Then the new access_token can be obtained by refresh_token. The attributes passed for fetching the new access_token using refresh_token are:
-          => grant_type Value: refresh_token
-          => refresh_token
-          => client_id
-          => client_secret
-
-        ------------
-        -- `grant_type` - `client_credentials`-- The OAuth2.0 authentication scheme is Grant Type: Resource Client Credentials. The client application provides the `client_id` and `client_secret` and the user is issued a token. Please note that the refresh token is not issued in the response once the token expires.
+        - Authentication
+      summary: Get Access Token
+      description: |
+        Obtain an access token using one of the supported OAuth 2.0 grant types.
+        
+        Access tokens are valid for 2 hours. When expired, you can obtain a new token using the refresh token flow.
       operationId: fetch_access_token
+      security: []  # No authentication required for token endpoint
       requestBody:
-        description: OAuth2.0 parameters
+        description: OAuth 2.0 parameters
         required: true
         content:
-          application/json:
+          application/x-www-form-urlencoded:
             schema:
-              $ref: './components.yaml#/components/schemas/LoginParams'
+              $ref: '#/components/schemas/TokenRequest'
       responses:
-        "200":
-          description: OK
+        '200':
+          description: Access token successfully issued
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/AccessToken'
-        "401":
-          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+                $ref: '#/components/schemas/TokenResponse'
+        '400':
+          description: Bad Request Parameters or Validation Errors
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   
   /oauth/revoke:
     post:
       tags:
-        - oauth
-      summary: Logout
-      description: |-
-        To access the IVY API the client needs to be authenticated first. The authentication happens through OAuth 2.0.
-        To sign-out this can be the sign-out endpoint.
-      operationId: Logout
+        - Authentication
+      summary: Revoke Token
+      description: Revoke an active access token and associated refresh token.
+      operationId: revoke_token
+      security:
+        - BearerAuth: []
       requestBody:
-        description: Logout parameters
+        description: Token revocation parameters
         required: true
         content:
-          application/json:
+          application/x-www-form-urlencoded:
             schema:
-              $ref: './components.yaml#/components/schemas/LogoutParams'
+              $ref: '#/components/schemas/RevokeRequest'
       responses:
-        "200":
-          description: Logout Consumer. No Content
-        "401":
-          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+        '200':
+          description: Token successfully revoked
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/RevokeResponse'
+        '400':
+          description: Bad Request Parameters or Validation Errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    TokenRequest:
+      required:
+        - grant_type
+        - client_id
+        - client_secret
+      properties:
+        grant_type:
+          type: string
+          enum: [password, client_credentials, refresh_token]
+          description: The OAuth 2.0 grant type to use
+          example: "password"
+        username:
+          type: string
+          description: User's email address (required for password grant)
+          example: "user@example.com"
+        password:
+          type: string
+          format: password
+          description: User's password (required for password grant)
+          example: "secureP@ssword123"
+        refresh_token:
+          type: string
+          description: Refresh token (required for refresh_token grant)
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        client_id:
+          type: string
+          description: Your application's client ID
+          example: "c1ient1d"
+        client_secret:
+          type: string
+          description: Your application's client secret
+          example: "c1ients3cret"
+    
+    TokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: The bearer token to use for API requests
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        token_type:
+          type: string
+          description: Type of token issued
+          example: "bearer"
+        expires_in:
+          type: integer
+          description: Token validity in seconds
+          example: 7200
+        refresh_token:
+          type: string
+          description: Token that can be used to obtain a new access token
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        scope:
+          type: string
+          description: Scopes granted to the token
+          example: "read write"
+      required:
+        - access_token
+        - token_type
+        - expires_in
+    
+    RevokeRequest:
+      required:
+        - token
+      properties:
+        token:
+          type: string
+          description: The token to revoke
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        token_type_hint:
+          type: string
+          enum: [access_token, refresh_token]
+          description: Type of token being revoked
+          example: "access_token"
+    
+    RevokeResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [success]
+          example: "success"
+        message:
+          type: string
+          example: "Token has been revoked"
+    
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Error status
+          example: "error"
+        error:
+          type: string
+          description: Error message
+          example: "Invalid grant type"
+        error_code:
+          type: string
+          description: Error code for machine processing
+          example: "INVALID_GRANT"
+      required:
+        - status
+        - error

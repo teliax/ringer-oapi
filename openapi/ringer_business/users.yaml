@@ -4,102 +4,133 @@
 
 openapi: 3.0.3
 info:
-  title: Users
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to Users.
+  title: Ringer Business API - Users
+  description: |
+    Manage users within your Ringer Business account.
+    
+    Users are the people who interact with the Ringer Business system. Users have predefined roles with different permissions:
+    
+    - Administrators can:
+      - Access billing information
+      - Request payouts
+      - Add or change price decks and plans
+      - Manage users
+    
+    - Regular users can:
+      - View account activity
+      - View existing price decks
+    
+    ## Authentication
+    This API supports OAuth 2.0 authentication using:
+    - Password grant flow
+    - Client credentials grant flow
+    
+    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
+    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
   version: 1.0.0
-  contact:
-    name: IVY API Support
-    url: https://ivy.teliax.com/
-    email: support@ivy.teliax.com
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
-  x-partial-file: true
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.io/
+    email: support@ringer.io
+
 servers:
-  - url: http://ivy-api.teliax.com
+  - url: https://api.ringer.io/v1
     description: Production server
+  - url: https://api.staging.ringer.io/v1
+    description: Staging server
+
+security:
+  - BearerAuth: []
+
 tags:
   - name: Users
-    description: Operations related to Users
-security:
-  - apiKey: []
-components:
-  securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: Authorization
-  schemas:
-    Error:
-      type: object
-      properties:
-        code:
-          type: integer
-        message:
-          type: string
+    description: "Manage user accounts and their permissions within your Ringer Business organization."
 
 paths:
   /users:
     get:
       tags:
         - Users
-      summary: List all users
-      description: Returns a list of all users for the account.
+      summary: List Users
+      description: Retrieve a list of all users for the account.
       operationId: list_users
+      parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/UserList'
-        "401":
-          description: Unauthorized request
+                $ref: '#/components/schemas/UserList'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
     post:
       tags:
         - Users
-      summary: Create a new user
-      description: Creates a new user for the account.
+      summary: Create User
+      description: Create a new user for the account.
       operationId: create_user
+      parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
       requestBody:
         description: User information
         required: true
         content:
           application/json:
             schema:
-              $ref: './components.yaml#/components/schemas/UserParams'
+              $ref: '#/components/schemas/UserParams'
       responses:
-        "201":
+        '201':
           description: Created
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/User'
-        "400":
-          description: Bad Request
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Bad Request Parameters or Validation Errors
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "401":
-          description: Unauthorized request
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
   
   /users/{id}:
     get:
       tags:
         - Users
-      summary: Get user details
-      description: Returns details for a specific user.
+      summary: User Details
+      description: Retrieve details for a specific user.
       operationId: get_user
       parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
         - name: id
           in: path
           description: User ID
@@ -107,31 +138,37 @@ paths:
           schema:
             type: integer
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/User'
-        "401":
-          description: Unauthorized request
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "404":
+                $ref: '#/components/schemas/Error'
+        '404':
           description: User not found
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
     put:
       tags:
         - Users
-      summary: Update user
-      description: Updates an existing user.
+      summary: Update User
+      description: Update an existing user's information.
       operationId: update_user
       parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
         - name: id
           in: path
           description: User ID
@@ -144,39 +181,45 @@ paths:
         content:
           application/json:
             schema:
-              $ref: './components.yaml#/components/schemas/UserParams'
+              $ref: '#/components/schemas/UserParams'
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/User'
-        "400":
-          description: Bad Request
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Bad Request Parameters or Validation Errors
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "401":
-          description: Unauthorized request
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "404":
+                $ref: '#/components/schemas/Error'
+        '404':
           description: User not found
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
     delete:
       tags:
         - Users
-      summary: Delete user
-      description: Deletes a user.
+      summary: Delete User
+      description: Delete a user from the account.
       operationId: delete_user
       parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
         - name: id
           in: path
           description: User ID
@@ -184,17 +227,135 @@ paths:
           schema:
             type: integer
       responses:
-        "204":
+        '204':
           description: No Content
-        "401":
-          description: Unauthorized request
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "404":
+                $ref: '#/components/schemas/Error'
+        '404':
           description: User not found
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    UserList:
+      type: object
+      properties:
+        users:
+          type: array
+          description: Array of Users
+          items:
+            $ref: '#/components/schemas/User'
+        total_items:
+          type: string
+          example: "350"
+          description: Total number of items
+          readOnly: true
+        total_pages:
+          type: string
+          example: "7"
+          description: Total number of pages
+          readOnly: true
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/linkDescription'
+    
+    User:
+      allOf:
+        - $ref: '#/components/schemas/UserParams'
+        - required:
+          - id
+          properties:
+            id:
+              type: integer
+              example: 1
+            links:
+              type: array
+              items:
+                $ref: '#/components/schemas/linkDescription'
+              example:
+                - href: /users/1
+                  rel: self
+                  title: User Details
+                  method: GET
+                - href: /users/1
+                  rel: edit
+                  title: Edit User
+                  method: PUT
+                - href: /users/1
+                  rel: delete
+                  title: Delete User
+                  method: DELETE
+    
+    UserParams:
+      required:
+        - email
+        - first_name
+        - last_name
+        - role
+      properties:
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        first_name:
+          type: string
+          example: "John"
+        last_name:
+          type: string
+          example: "Doe"
+        role:
+          type: string
+          enum: [administrator, user]
+          example: "user"
+    
+    linkDescription:
+      type: object
+      required:
+        - href
+        - rel
+      properties:
+        href:
+          type: string
+          description: "URI template, as defined by RFC 6570, with the addition of the $, ( and ) characters for pre-processing"
+        rel:
+          type: string
+          description: Relation to the target resource of the link
+        title:
+          type: string
+          description: A title for the link
+        method:
+          type: string
+          description: HTTP method for requesting the target of the link (e.g. "GET" or "POST")
+    
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Error status
+          example: "error"
+        error:
+          type: string
+          description: Error message
+          example: "Invalid input parameters"
+        error_code:
+          type: string
+          description: Error code for machine processing
+          example: "INVALID_INPUT"
+      required:
+        - status
+        - error

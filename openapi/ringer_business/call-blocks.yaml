@@ -4,85 +4,87 @@
 
 openapi: 3.0.3
 info:
-  title: callBlocks
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to callBlocks.
+  title: Ringer Business API - Call Blocks
+  description: |
+    Manage call blocking rules for your Ringer Business account.
+    
+    Call blocks allow you to prevent calls to or from specific phone numbers or patterns.
+    This can be useful for blocking spam calls, international numbers, or specific area codes.
+    
+    ## Authentication
+    This API supports OAuth 2.0 authentication using:
+    - Password grant flow
+    - Client credentials grant flow
+    
+    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
+    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
   version: 1.0.0
-  contact:
-    name: IVY API Support
-    url: https://ivy.teliax.com/
-    email: support@ivy.teliax.com
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
-  x-partial-file: true
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.io/
+    email: support@ringer.io
+
 servers:
-  - url: http://ivy-api.teliax.com
+  - url: https://api.ringer.io/v1
     description: Production server
-tags:
-  - name: callBlocks
-    description: Operations related to callBlocks
+  - url: https://api.staging.ringer.io/v1
+    description: Staging server
+
 security:
-  - apiKey: []
-components:
-  securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: Authorization
-  schemas:
-    Error:
-      type: object
-      properties:
-        code:
-          type: integer
-        message:
-          type: string
+  - BearerAuth: []
+
+tags:
+  - name: Call Blocks
+    description: "Manage call blocking settings to prevent calls to or from specific phone numbers or patterns."
 
 paths:
   /call-blocks:
     get:
       tags:
-        - callBlocks
+        - Call Blocks
       summary: List Call Blocks
       description: Retrieve a list of call blocks for your account.
       operationId: list_call_blocks
       parameters:
         - name: Authorization
           in: header
-          description: This token is used to authenticate a particular account.
+          description: Authentication token used to access the API
           required: true
           schema:
             type: string
       responses:
-        "200":
+        '200':
           description: Array of Call Blocks
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/CallBlockList'
-        "400":
+                $ref: '#/components/schemas/CallBlockList'
+        '400':
           description: Bad Request Parameters or Validation Errors
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "401":
-          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
     
     post:
       tags:
-        - callBlocks
+        - Call Blocks
       summary: Create Call Block
       description: Create a new call block for your account.
       operationId: create_call_block
       parameters:
         - name: Authorization
           in: header
-          description: This token is used to authenticate a particular account.
+          description: Authentication token used to access the API
           required: true
           schema:
             type: string
@@ -92,38 +94,38 @@ paths:
         content:
           application/json:
             schema:
-              $ref: './components.yaml#/components/schemas/CallBlockParams'
+              $ref: '#/components/schemas/CallBlockParams'
       responses:
-        "201":
+        '201':
           description: Call Block Created
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/CallBlock'
-        "400":
+                $ref: '#/components/schemas/CallBlock'
+        '400':
           description: Bad Request Parameters or Validation Errors
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "401":
-          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
   
   /call-blocks/{id}:
     delete:
       tags:
-        - callBlocks
+        - Call Blocks
       summary: Delete Call Block
       description: Delete a call block from your account.
       operationId: delete_call_block
       parameters:
         - name: Authorization
           in: header
-          description: This token is used to authenticate a particular account.
+          description: Authentication token used to access the API
           required: true
           schema:
             type: string
@@ -134,23 +136,113 @@ paths:
           schema:
             type: integer
       responses:
-        "204":
+        '204':
           description: Call Block Deleted. No Content
-        "400":
+        '400':
           description: Bad Request Parameters or Validation Errors
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "401":
-          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "404":
+                $ref: '#/components/schemas/Error'
+        '404':
           description: Couldn't find call block record
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error' 
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    CallBlockList:
+      properties:
+        call_blocks:
+          type: array
+          description: Array of Call Blocks
+          items:
+            $ref: '#/components/schemas/CallBlock'
+    
+    CallBlock:
+      allOf:
+        - $ref: '#/components/schemas/CallBlockParams'
+        - properties:
+            id:
+              type: integer
+              example: 1
+            links:
+              type: array
+              items:
+                $ref: '#/components/schemas/linkDescription'
+              example:
+                - href: /call-blocks/1
+                  rel: self
+                  title: Call Block Details
+                  method: GET
+                - href: /call-blocks/1
+                  rel: delete
+                  title: Delete Call Block
+                  method: DELETE
+    
+    CallBlockParams:
+      required:
+        - pattern
+        - block_type
+      properties:
+        pattern:
+          type: string
+          description: The phone number pattern to block
+          example: "212555*"
+        block_type:
+          type: string
+          description: The type of block (inbound or outbound)
+          enum: [inbound, outbound]
+          example: "outbound"
+    
+    linkDescription:
+      type: object
+      required:
+        - href
+        - rel
+      properties:
+        href:
+          type: string
+          description: "URI template, as defined by RFC 6570, with the addition of the $, ( and ) characters for pre-processing"
+        rel:
+          type: string
+          description: Relation to the target resource of the link
+        title:
+          type: string
+          description: A title for the link
+        method:
+          type: string
+          description: HTTP method for requesting the target of the link (e.g. "GET" or "POST")
+    
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Error status
+          example: "error"
+        error:
+          type: string
+          description: Error message
+          example: "Invalid input parameters"
+        error_code:
+          type: string
+          description: Error code for machine processing
+          example: "INVALID_INPUT"
+      required:
+        - status
+        - error 

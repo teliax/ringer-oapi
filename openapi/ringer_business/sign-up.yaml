@@ -4,65 +4,154 @@
 
 openapi: 3.0.3
 info:
-  title: signUp
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to signUp.
+  title: Ringer Business API - Sign Up
+  description: |
+    Register new customer accounts for Ringer Business services.
+    
+    To use the Ringer Business system, customers can directly register with basic information including:
+    - Company Name
+    - Contact Information:
+      - Email
+      - Street Address
+      - Country
+      - City
+      - State/Province
+      - Postal Code
+      - Contact Number
+    
+    ## Authentication
+    This endpoint does not require authentication as it's used for initial registration.
+    
+    After registration, customers will receive a confirmation token to activate their account.
   version: 1.0.0
-  contact:
-    name: IVY API Support
-    url: https://ivy.teliax.com/
-    email: support@ivy.teliax.com
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
-  x-partial-file: true
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.io/
+    email: support@ringer.io
+
 servers:
-  - url: http://ivy-api.teliax.com
+  - url: https://api.ringer.io/v1
     description: Production server
+  - url: https://api.staging.ringer.io/v1
+    description: Staging server
+
 tags:
-  - name: signUp
-    description: Operations related to signUp
-security:
-  - apiKey: []
-components:
-  securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: Authorization
-  schemas:
-    Error:
-      type: object
-      properties:
-        code:
-          type: integer
-        message:
-          type: string
+  - name: Sign Up
+    description: "Register new accounts with the Ringer Business platform."
 
 paths:
   /sign-up:
     post:
       tags:
-        - signUp
-      summary: Register a new account
-      description: Creates a new customer account in the system.
+        - Sign Up
+      summary: Register Account
+      description: Create a new customer account in the system.
       operationId: register_account
+      security: []  # No authentication required for signup
       requestBody:
         description: Account registration information
         required: true
         content:
           application/json:
             schema:
-              $ref: './components.yaml#/components/schemas/CustomerRegistrationParams'
+              $ref: '#/components/schemas/CustomerRegistrationParams'
       responses:
-        "201":
-          description: Created
+        '201':
+          description: Account Created Successfully
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/CustomerRegistration'
-        "400":
-          description: Bad Request
+                $ref: '#/components/schemas/CustomerRegistration'
+        '400':
+          description: Bad Request Parameters or Validation Errors
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    CustomerRegistrationParams:
+      required:
+        - name
+        - email
+        - street_address
+        - country
+        - city
+        - state_province
+        - postal_code
+        - contact_number
+      properties:
+        name:
+          type: string
+          description: Company name
+          example: "Acme Corporation"
+        email:
+          type: string
+          format: email
+          description: Contact email address
+          example: "contact@acme.com"
+        street_address:
+          type: string
+          description: Street address
+          example: "123 Main St, Suite 200"
+        country:
+          type: string
+          description: Country code (ISO 3166-1 alpha-2)
+          example: "US"
+        city:
+          type: string
+          description: City
+          example: "Denver"
+        state_province:
+          type: string
+          description: State or province
+          example: "CO"
+        postal_code:
+          type: string
+          description: Postal code
+          example: "80202"
+        contact_number:
+          type: string
+          description: Contact phone number
+          example: "3035551234"
+    
+    CustomerRegistration:
+      allOf:
+        - $ref: '#/components/schemas/CustomerRegistrationParams'
+        - properties:
+            id:
+              type: integer
+              description: Unique identifier for the new account
+              example: 12345
+            confirmation_token:
+              type: string
+              description: Token used to confirm and activate the account
+              example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            status:
+              type: string
+              description: Current account status
+              enum: [pending, confirmed, active]
+              example: "pending"
+    
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Error status
+          example: "error"
+        error:
+          type: string
+          description: Error message
+          example: "Invalid input parameters"
+        error_code:
+          type: string
+          description: Error code for machine processing
+          example: "INVALID_INPUT"
+      required:
+        - status
+        - error

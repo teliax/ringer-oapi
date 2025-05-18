@@ -4,107 +4,302 @@
 
 openapi: 3.0.3
 info:
-  title: creditCards
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to creditCards.
+  title: Ringer Business API - Credit Cards
+  description: |
+    Manage credit cards for your Ringer Business account.
+    
+    The Credit Cards API allows you to add, view, verify, and delete credit cards 
+    associated with your account. These credit cards can be used for automated payments,
+    one-time payments, and other billing operations.
+    
+    ## Authentication
+    This API supports OAuth 2.0 authentication using:
+    - Password grant flow
+    - Client credentials grant flow
+    
+    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
+    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
   version: 1.0.0
-  contact:
-    name: IVY API Support
-    url: https://ivy.teliax.com/
-    email: support@ivy.teliax.com
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.io/
+    email: support@ringer.io
   x-partial-file: true
 servers:
-  - url: http://ivy-api.teliax.com
+  - url: https://api.ringer.io/v1
     description: Production server
+  - url: https://api.staging.ringer.io/v1
+    description: Staging server
 tags:
-  - name: creditCards
-    description: Operations related to creditCards
+  - name: Credit Cards
+    description: "Manage credit cards used for account payments."
 security:
-  - apiKey: []
+  - BearerAuth: []
 components:
   securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: Authorization
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
+    CreditCardList:
+      type: object
+      properties:
+        credit_cards:
+          type: array
+          description: Array of Credit Cards
+          items:
+            $ref: '#/components/schemas/CreditCard'
+        total_items:
+          type: string
+          example: "350"
+          description: Total number of items
+          readOnly: true
+        total_pages:
+          type: string
+          example: "7"
+          description: Total number of pages
+          readOnly: true
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/linkDescription'
+    
+    CreditCard:
+      allOf:
+        - $ref: '#/components/schemas/CreditCardParams'
+        - required:
+          - id
+          - last_four
+          - card_type
+          - verified
+          - exp_date
+          properties:
+            id:
+              type: integer
+              example: 12345
+            last_four:
+              type: string
+              example: "1234"
+            billing_name:
+              type: string
+              example: "John Doe"
+            card_type:
+              type: string
+              enum: [visa, mastercard, amex, discover]
+              example: "visa"
+            verified:
+              type: boolean
+              example: true
+            exp_date:
+              type: string
+              example: "12/2025"
+            links:
+              type: array
+              items:
+                $ref: '#/components/schemas/linkDescription'
+              example:
+                - href: /credit-cards/12345
+                  rel: self
+                  title: Credit Card Details
+                  method: GET
+                - href: /credit-cards/12345
+                  rel: delete
+                  title: Delete Credit Card
+                  method: DELETE
+                - href: /credit-cards/12345/verify
+                  rel: verify
+                  title: Verify Credit Card
+                  method: PATCH
+    
+    CreditCardParams:
+      required:
+        - card_number
+        - exp_month
+        - exp_year
+        - cvv
+        - billing_name
+        - billing_address
+        - billing_city
+        - billing_state
+        - billing_zip
+        - billing_country
+      properties:
+        card_number:
+          type: string
+          description: Credit card number (no spaces or dashes)
+          example: "4111111111111111"
+        exp_month:
+          type: integer
+          description: Expiration month (1-12)
+          minimum: 1
+          maximum: 12
+          example: 12
+        exp_year:
+          type: integer
+          description: Expiration year (4-digit)
+          example: 2025
+        cvv:
+          type: string
+          description: Card verification value
+          example: "123"
+        billing_name:
+          type: string
+          description: Name on the credit card
+          example: "John Doe"
+        billing_address:
+          type: string
+          description: Billing street address
+          example: "123 Main St"
+        billing_city:
+          type: string
+          description: Billing city
+          example: "Anytown"
+        billing_state:
+          type: string
+          description: Billing state/province
+          example: "CA"
+        billing_zip:
+          type: string
+          description: Billing postal code
+          example: "12345"
+        billing_country:
+          type: string
+          description: Billing country code (ISO 3166-1 alpha-2)
+          example: "US"
+    
+    VerificationParams:
+      required:
+        - verification_code
+      properties:
+        verification_code:
+          type: string
+          description: Verification code for the credit card
+          example: "123"
+    
+    linkDescription:
+      type: object
+      required:
+        - href
+        - rel
+      properties:
+        href:
+          type: string
+          description: "URI template, as defined by RFC 6570, with the addition of the $, ( and ) characters for pre-processing"
+        rel:
+          type: string
+          description: Relation to the target resource of the link
+        title:
+          type: string
+          description: A title for the link
+        method:
+          type: string
+          description: HTTP method for requesting the target of the link (e.g. "GET" or "POST")
+    
     Error:
       type: object
       properties:
-        code:
-          type: integer
-        message:
+        status:
           type: string
+          description: Error status
+          example: "error"
+        error:
+          type: string
+          description: Error message
+          example: "Invalid input parameters"
+        error_code:
+          type: string
+          description: Error code for machine processing
+          example: "INVALID_INPUT"
+      required:
+        - status
+        - error
 
 paths:
   /credit-cards:
     get:
       tags:
-        - creditCards
-      summary: List all credit cards
-      description: Returns a list of all credit cards associated with the account.
+        - Credit Cards
+      summary: List Credit Cards
+      description: Retrieve a list of all credit cards associated with the account.
       operationId: list_credit_cards
+      parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  credit_cards:
-                    type: array
-                    items:
-                      $ref: './components.yaml#/components/schemas/CreditCard'
-        "401":
-          description: Unauthorized request
+                $ref: '#/components/schemas/CreditCardList'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
     post:
       tags:
-        - creditCards
-      summary: Add a new credit card
-      description: Adds a new credit card to the account.
+        - Credit Cards
+      summary: Add Credit Card
+      description: Add a new credit card to the account.
       operationId: add_credit_card
+      parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
       requestBody:
         description: Credit card information
         required: true
         content:
           application/json:
             schema:
-              $ref: './components.yaml#/components/schemas/CreditCardParams'
+              $ref: '#/components/schemas/CreditCardParams'
       responses:
-        "201":
-          description: Created
+        '201':
+          description: Credit Card Added Successfully
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/CreditCard'
-        "400":
-          description: Bad Request
+                $ref: '#/components/schemas/CreditCard'
+        '400':
+          description: Bad Request Parameters or Validation Errors
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "401":
-          description: Unauthorized request
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
   
   /credit-cards/{id}:
     get:
       tags:
-        - creditCards
-      summary: Get credit card details
-      description: Returns details for a specific credit card.
+        - Credit Cards
+      summary: Credit Card Details
+      description: Retrieve details for a specific credit card.
       operationId: get_credit_card
       parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
         - name: id
           in: path
           description: Credit Card ID
@@ -112,31 +307,37 @@ paths:
           schema:
             type: integer
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/CreditCard'
-        "401":
-          description: Unauthorized request
+                $ref: '#/components/schemas/CreditCard'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "404":
+                $ref: '#/components/schemas/Error'
+        '404':
           description: Credit card not found
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
     delete:
       tags:
-        - creditCards
-      summary: Delete credit card
-      description: Deletes a credit card from the account.
+        - Credit Cards
+      summary: Delete Credit Card
+      description: Delete a credit card from the account.
       operationId: delete_credit_card
       parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
         - name: id
           in: path
           description: Credit Card ID
@@ -144,29 +345,35 @@ paths:
           schema:
             type: integer
       responses:
-        "204":
-          description: No Content
-        "401":
-          description: Unauthorized request
+        '204':
+          description: Credit Card Deleted Successfully. No Content.
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "404":
+                $ref: '#/components/schemas/Error'
+        '404':
           description: Credit card not found
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
   
   /credit-cards/{id}/verify:
     patch:
       tags:
-        - creditCards
-      summary: Verify credit card
-      description: Verifies a credit card with verification code.
+        - Credit Cards
+      summary: Verify Credit Card
+      description: Verify a credit card with a verification code.
       operationId: verify_credit_card
       parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
         - name: id
           in: path
           description: Credit Card ID
@@ -179,35 +386,29 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - verification_code
-              properties:
-                verification_code:
-                  type: string
-                  example: "123"
+              $ref: '#/components/schemas/VerificationParams'
       responses:
-        "200":
-          description: OK
+        '200':
+          description: Credit Card Verified Successfully
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/CreditCard'
-        "400":
-          description: Bad Request
+                $ref: '#/components/schemas/CreditCard'
+        '400':
+          description: Bad Request Parameters or Validation Errors
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "401":
-          description: Unauthorized request
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "404":
+                $ref: '#/components/schemas/Error'
+        '404':
           description: Credit card not found
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'

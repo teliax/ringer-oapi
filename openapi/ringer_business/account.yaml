@@ -4,185 +4,364 @@
 
 openapi: 3.0.3
 info:
-  title: Account
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to Account.
+  title: Ringer Business API - Account
+  description: |
+    Manage your company's account information and settings.
+    
+    The account endpoints allow you to view and update your account details, including
+    your company name, contact information, balance preferences, and more. Administrators
+    can also activate and close accounts.
+    
+    ## Authentication
+    This API supports OAuth 2.0 authentication using:
+    - Password grant flow
+    - Client credentials grant flow
+    
+    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
+    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
   version: 1.0.0
-  contact:
-    name: IVY API Support
-    url: https://ivy.teliax.com/
-    email: support@ivy.teliax.com
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
-  x-partial-file: true
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.io/
+    email: support@ringer.io
+
 servers:
-  - url: http://ivy-api.teliax.com
+  - url: https://api.ringer.io/v1
     description: Production server
+  - url: https://api.staging.ringer.io/v1
+    description: Staging server
+
+security:
+  - BearerAuth: []
+
 tags:
   - name: Account
-    description: Operations related to Account
-security:
-  - apiKey: []
-components:
-  securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: Authorization
-  schemas:
-    Error:
-      type: object
-      properties:
-        code:
-          type: integer
-        message:
-          type: string
+    description: "Manage account details and configurations."
 
 paths:
   /account:
-        get:
-          tags:
-            - Account
-          summary: Account Details
-          description: Details of your account
-          operationId: account_details
-          parameters:
-            - name: Authorization
-              in: header
-              description: This token is used to authenticate a particular account.
-              required: true
+    get:
+      tags:
+        - Account
+      summary: Account Details
+      description: Retrieve details of your account.
+      operationId: account_details
+      parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
               schema:
-                type: string
-          responses:
-            "200":
-              description: OK
-              content:
-                application/json:
-                  schema:
-                    $ref: './components.yaml#/components/schemas/Account'
-            "401":
-              description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-              content:
-                application/json:
-                  schema:
-                    $ref: './components.yaml#/components/schemas/error'
-      
-        put:
-          tags:
-            - Account
-          summary: Update Account
-          description: Update your account. This includes your name and contact info.
-          operationId: update_account
-          parameters:
-            - name: Authorization
-              in: header
-              description: This token is used to authenticate a particular account.
-              required: true
+                $ref: '#/components/schemas/Account'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
+          content:
+            application/json:
               schema:
-                type: string
-          requestBody:
-            description: Account Attributes
-            required: true
-            content:
-              application/json:
-                schema:
-                  $ref: './components.yaml#/components/schemas/AccountParams'
-          responses:
-            "200":
-              description: Update account.
-              content:
-                application/json:
-                  schema:
-                    $ref: './components.yaml#/components/schemas/Account'
-            "400":
-              description: Bad Request Parameters or Validation Errors
-              content:
-                application/json:
-                  schema:
-                    $ref: './components.yaml#/components/schemas/error'
-            "401":
-              description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-              content:
-                application/json:
-                  schema:
-                    $ref: './components.yaml#/components/schemas/error'
-            "404":
-              description: Couldn't find account record
-              content:
-                application/json:
-                  schema:
-                    $ref: './components.yaml#/components/schemas/error'
-      
-        delete:
-          tags:
-            - Account
-          summary: Delete Account
-          description: Delete your account
-          operationId: delete_account
-          parameters:
-            - name: Authorization
-              in: header
-              description: This token is used to authenticate a particular account.
-              required: true
+                $ref: '#/components/schemas/Error'
+    
+    put:
+      tags:
+        - Account
+      summary: Update Account
+      description: Update your account information. This operation is only allowed if you are in the administrator role.
+      operationId: update_account
+      parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Account Attributes
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountParams'
+      responses:
+        '200':
+          description: Update Account Information and Organization Details
+          content:
+            application/json:
               schema:
-                type: string
-          responses:
-            "204":
-              description: Account Deleted
-            "401":
-              description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-              content:
-                application/json:
-                  schema:
-                    $ref: './components.yaml#/components/schemas/error'
-            "404":
-              description: Couldn't find account record
-              content:
-                application/json:
-                  schema:
-                    $ref: './components.yaml#/components/schemas/error'
-      
-        patch:
-          tags:
-            - Account
-          summary: Activate Account
-          description: Activate Account. This operation is only allowed if you are in the administrator role.
-          operationId: activate_account
-          parameters:
-            - name: Authorization
-              in: header
-              description: This token is used to authenticate a particular account.
-              required: true
+                $ref: '#/components/schemas/Account'
+        '400':
+          description: Bad Request Parameters or Validation Errors
+          content:
+            application/json:
               schema:
-                type: string
-          responses:
-            "200":
-              description: Activate an Inactive account once the account is ready for operation.
-              content:
-                application/json:
-                  schema:
-                    $ref: './components.yaml#/components/schemas/Account'
-            "400":
-              description: Bad Request Parameters or Validation Errors
-              content:
-                application/json:
-                  schema:
-                    $ref: './components.yaml#/components/schemas/error'
-            "401":
-              description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-              content:
-                application/json:
-                  schema:
-                    $ref: './components.yaml#/components/schemas/error'
-            "403":
-              description: Forbidden request. This error will occur if the Activation is tried on an Active account
-              content:
-                application/json:
-                  schema:
-                    $ref: './components.yaml#/components/schemas/error'
-            "404":
-              description: Couldn't find account record
-              content:
-                application/json:
-                  schema:
-                    $ref: './components.yaml#/components/schemas/error' 
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Couldn't find account record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      tags:
+        - Account
+      summary: Close an Account
+      description: Close Account. This operation is only allowed if you are in the administrator role.
+      operationId: close_account
+      parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Account Closed. No Content
+        '400':
+          description: Bad Request Parameters or Validation Errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Couldn't find site record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    patch:
+      tags:
+        - Account
+      summary: Activate Account
+      description: Activate Account. This operation is only allowed if you are in the administrator role.
+      operationId: activate_account
+      parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Activate an Inactive account once the account is ready for operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '400':
+          description: Bad Request Parameters or Validation Errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden request. This error will occur if the Activation is tried on an Active account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Couldn't find account record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    Account:
+      allOf:
+        - $ref: '#/components/schemas/AccountParams'
+        - required:
+          - id
+          properties:
+            id:
+              type: integer
+              example: 1
+            balance:
+              type: string
+              example: "4276.85"
+            current_user:
+              $ref: '#/components/schemas/Account_current_user'
+            address:
+              $ref: '#/components/schemas/Address'
+            links:
+              type: array
+              items:
+                $ref: '#/components/schemas/linkDescription'
+              example:
+                - href: /account
+                  rel: self
+                  title: Account Details
+                  method: GET
+                - href: /account
+                  rel: edit
+                  title: Edit Account
+                  method: PUT
+                - href: /account
+                  rel: delete
+                  title: Delete Account
+    
+    AccountParams:
+      required:
+        - balance_preference_in_dollars
+        - locale
+        - maximum_recharge_preference_in_dollars
+        - name
+        - recharge_preference_in_dollars
+      properties:
+        name:
+          type: string
+          example: Leap Tel
+        locale:
+          type: string
+          example: English
+        balance_preference_in_dollars:
+          type: string
+          example: "100.0"
+        recharge_preference_in_dollars:
+          type: string
+          example: "200.0"
+        maximum_recharge_preference_in_dollars:
+          type: string
+          example: "1000.0"
+    
+    Address:
+      allOf:
+        - $ref: '#/components/schemas/AddressParams'
+        - required:
+          - id
+          properties:
+            id:
+              type: integer
+            links:
+              type: array
+              items:
+                $ref: '#/components/schemas/linkDescription'
+      example:
+        id: 671
+        email: email@example.com
+        street_address: "233 E Wacker Drive, Suite #1106"
+        country: US
+        city: Chicago
+        state_province: IL
+        postal_code: "60601"
+        contact_number: "3125233844"
+        links:
+          - href: /addresses/671
+            rel: self
+            title: Update Address
+            method: PUT
+          - href: /account
+            rel: account
+            title: Account Details
+            method: GET
+    
+    AddressParams:
+      required:
+        - city
+        - contact_number
+        - country
+        - email
+        - postal_code
+        - state_province
+        - street_address
+      properties:
+        email:
+          type: string
+          example: email@example.com
+        street_address:
+          type: string
+          example: "233 E Wacker Drive, Suite #1106"
+        country:
+          type: string
+          example: US
+        city:
+          type: string
+          example: Chicago
+        state_province:
+          type: string
+          example: IL
+        postal_code:
+          type: string
+          example: "60601"
+        contact_number:
+          type: string
+          example: "3125233844"
+    
+    Account_current_user:
+      type: object
+      description: Information about the current user accessing the account
+    
+    linkDescription:
+      type: object
+      required:
+        - href
+        - rel
+      properties:
+        href:
+          type: string
+          description: "URI template, as defined by RFC 6570, with the addition of the $, ( and ) characters for pre-processing"
+        rel:
+          type: string
+          description: Relation to the target resource of the link
+        title:
+          type: string
+          description: A title for the link
+        method:
+          type: string
+          description: HTTP method for requesting the target of the link (e.g. "GET" or "POST")
+    
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Error status
+          example: "error"
+        error:
+          type: string
+          description: Error message
+          example: "Invalid input parameters"
+        error_code:
+          type: string
+          description: Error code for machine processing
+          example: "INVALID_INPUT"
+      required:
+        - status
+        - error 

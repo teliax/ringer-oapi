@@ -4,52 +4,55 @@
 
 openapi: 3.0.3
 info:
-  title: callRecords
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to callRecords.
+  title: Ringer Business API - Call Records
+  description: |
+    View and manage call records for your Ringer Business account.
+    
+    The Call Records API allows you to retrieve detailed information about calls made
+    to and from your account. These records can be used for billing verification,
+    usage analysis, and troubleshooting.
+    
+    ## Authentication
+    This API supports OAuth 2.0 authentication using:
+    - Password grant flow
+    - Client credentials grant flow
+    
+    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
+    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
   version: 1.0.0
-  contact:
-    name: IVY API Support
-    url: https://ivy.teliax.com/
-    email: support@ivy.teliax.com
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
-  x-partial-file: true
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.io/
+    email: support@ringer.io
+
 servers:
-  - url: http://ivy-api.teliax.com
+  - url: https://api.ringer.io/v1
     description: Production server
-tags:
-  - name: callRecords
-    description: Operations related to callRecords
+  - url: https://api.staging.ringer.io/v1
+    description: Staging server
+
 security:
-  - apiKey: []
-components:
-  securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: Authorization
-  schemas:
-    Error:
-      type: object
-      properties:
-        code:
-          type: integer
-        message:
-          type: string
+  - BearerAuth: []
+
+tags:
+  - name: Call Records
+    description: "View and manage call records for your account."
 
 paths:
   /call-records:
     get:
       tags:
-        - callRecords
+        - Call Records
       summary: List of Call Records
       description: A list of call records for your account.
       operationId: list_call_records
       parameters:
         - name: Authorization
           in: header
-          description: This token is used to authenticate a particular account.
+          description: Authentication token used to access the API
           required: true
           schema:
             type: string
@@ -81,21 +84,138 @@ paths:
             enum: [asc, desc]
             default: desc
       responses:
-        "200":
+        '200':
           description: Array of Call Records
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/CallRecordList'
-        "400":
+                $ref: '#/components/schemas/CallRecordList'
+        '400':
           description: Bad Request Parameters or Validation Errors
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "401":
-          description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error' 
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    CallRecordList:
+      type: object
+      properties:
+        call_records:
+          type: array
+          description: Array of Call Records
+          items:
+            $ref: '#/components/schemas/CallRecord'
+        total_items:
+          type: string
+          example: "350"
+          description: Total number of items
+          readOnly: true
+        total_pages:
+          type: string
+          example: "7"
+          description: Total number of pages
+          readOnly: true
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/linkDescription'
+    
+    CallRecord:
+      type: object
+      required:
+        - id
+        - start_time
+        - duration
+        - direction
+        - from_number
+        - to_number
+        - status
+      properties:
+        id:
+          type: string
+          example: "call-123456"
+          description: Unique identifier for the call record
+        start_time:
+          type: string
+          format: date-time
+          example: "2023-01-15T14:30:00Z"
+          description: When the call started
+        duration:
+          type: integer
+          example: 120
+          description: Duration in seconds
+        direction:
+          type: string
+          enum: [inbound, outbound]
+          example: "inbound"
+          description: Whether the call was incoming or outgoing
+        from_number:
+          type: string
+          example: "+13125551234"
+          description: The caller's phone number
+        to_number:
+          type: string
+          example: "+13125557890"
+          description: The recipient's phone number
+        status:
+          type: string
+          enum: [completed, missed, failed]
+          example: "completed"
+          description: The final status of the call
+        recording_url:
+          type: string
+          format: uri
+          example: "https://recordings.example.com/call-123456.mp3"
+          description: URL to the call recording if available
+    
+    linkDescription:
+      type: object
+      required:
+        - href
+        - rel
+      properties:
+        href:
+          type: string
+          description: "URI template, as defined by RFC 6570, with the addition of the $, ( and ) characters for pre-processing"
+        rel:
+          type: string
+          description: Relation to the target resource of the link
+        title:
+          type: string
+          description: A title for the link
+        method:
+          type: string
+          description: HTTP method for requesting the target of the link (e.g. "GET" or "POST")
+    
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Error status
+          example: "error"
+        error:
+          type: string
+          description: Error message
+          example: "Invalid input parameters"
+        error_code:
+          type: string
+          description: Error code for machine processing
+          example: "INVALID_INPUT"
+      required:
+        - status
+        - error 

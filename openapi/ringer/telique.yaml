@@ -27,18 +27,18 @@ security:
 tags:
   - name: CIC
     description: Operations for Carrier Identification Code
+  - name: DNC
+    description: Operations for Do Not Call database lookups
+  - name: DNO
+    description: Operations for Do Not Originate database lookups
+  - name: DNX
+    description: Combined DNO and DNC lookup operations
   - name: Lookup
     description: Operations for looking up phone number information
   - name: Portability
     description: Operations for phone number portability information
   - name: ROR
     description: Operations for Responsible Organization
-  - name: DNO
-    description: Operations for Do Not Originate database lookups
-  - name: DNC
-    description: Operations for Do Not Call database lookups
-  - name: DNX
-    description: Combined DNO and DNC lookup operations
   - name: STIR/SHAKEN
     description: Operations for call authentication validation
 paths:

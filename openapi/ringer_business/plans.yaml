@@ -4,75 +4,99 @@
 
 openapi: 3.0.3
 info:
-  title: Plans
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to Plans.
+  title: Ringer Business API - Plans
+  description: |
+    Manage service plans for your Ringer Business account.
+    
+    All accounts have a plan, even if it's just the default "tryout" plan. Your plan, included packages,
+    add-on packages, usage, and monthly pricing are displayed here. Plans are made up of included and
+    optional packages. The price you set on a plan will cover all included packages. Optional packages
+    can be added or removed at any time and each optional package has its own cost, separate from the plan price.
+    
+    Plans usually provide you with additional calling features or calling minute usage for a lower price
+    than what you would pay individually. Since plans allow a certain amount of features or minutes to be
+    used during your billing cycle you should analyze your usage and select a plan that best suits your needs.
+    In some cases it could make more sense to use your account without a plan and instead be charged the individual rates.
+    
+    If you add a new plan at any time in your billing cycle your account will be charged the full amount of the plan.
+    If you're changing a plan, it's best to change it just before the end of your billing cycle.
+    
+    Some plans and add-on packages can be removed at any time. Others can only be removed by Customer Support.
+    The resources provided will remain on your account until the next billing cycle.
+    Removing a plan only removes associated resources at the next billing cycle and not the calling features themselves.
+    
+    ## Authentication
+    This API supports OAuth 2.0 authentication using:
+    - Password grant flow
+    - Client credentials grant flow
+    
+    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
+    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
   version: 1.0.0
-  contact:
-    name: IVY API Support
-    url: https://ivy.teliax.com/
-    email: support@ivy.teliax.com
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
-  x-partial-file: true
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.io/
+    email: support@ringer.io
+
 servers:
-  - url: http://ivy-api.teliax.com
+  - url: https://api.ringer.io/v1
     description: Production server
+  - url: https://api.staging.ringer.io/v1
+    description: Staging server
+
+security:
+  - BearerAuth: []
+
 tags:
   - name: Plans
-    description: Operations related to Plans
-security:
-  - apiKey: []
-components:
-  securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: Authorization
-  schemas:
-    Error:
-      type: object
-      properties:
-        code:
-          type: integer
-        message:
-          type: string
+    description: "View and manage plans available for your account."
 
 paths:
   /plans:
     get:
       tags:
         - Plans
-      summary: List all plans
-      description: Returns a list of all available plans.
+      summary: List Plans
+      description: Retrieve a list of all available plans.
       operationId: list_plans
+      parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  plans:
-                    type: array
-                    items:
-                      $ref: './components.yaml#/components/schemas/Plan'
-        "401":
-          description: Unauthorized request
+                $ref: '#/components/schemas/PlanList'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
   
   /plans/{id}:
     get:
       tags:
         - Plans
-      summary: Get plan details
-      description: Returns details for a specific plan.
+      summary: Plan Details
+      description: Retrieve details for a specific plan.
       operationId: get_plan
       parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
         - name: id
           in: path
           description: Plan ID
@@ -80,31 +104,37 @@ paths:
           schema:
             type: integer
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/Plan'
-        "401":
-          description: Unauthorized request
+                $ref: '#/components/schemas/Plan'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "404":
+                $ref: '#/components/schemas/Error'
+        '404':
           description: Plan not found
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
     post:
       tags:
         - Plans
-      summary: Add plan to account
-      description: Adds the specified plan to the account.
+      summary: Add Plan to Account
+      description: Add the specified plan to the account.
       operationId: add_plan
       parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
         - name: id
           in: path
           description: Plan ID
@@ -112,37 +142,43 @@ paths:
           schema:
             type: integer
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/Plan'
-        "400":
-          description: Bad Request
+                $ref: '#/components/schemas/Plan'
+        '400':
+          description: Bad Request Parameters or Validation Errors
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "401":
-          description: Unauthorized request
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "404":
+                $ref: '#/components/schemas/Error'
+        '404':
           description: Plan not found
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
     delete:
       tags:
         - Plans
-      summary: Remove plan from account
-      description: Removes the specified plan from the account.
+      summary: Remove Plan from Account
+      description: Remove the specified plan from the account.
       operationId: remove_plan
       parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
         - name: id
           in: path
           description: Plan ID
@@ -150,17 +186,150 @@ paths:
           schema:
             type: integer
       responses:
-        "204":
+        '204':
           description: No Content
-        "401":
-          description: Unauthorized request
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
-        "404":
+                $ref: '#/components/schemas/Error'
+        '404':
           description: Plan not found
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    PlanList:
+      type: object
+      properties:
+        plans:
+          type: array
+          description: Array of Plans
+          items:
+            $ref: '#/components/schemas/Plan'
+        total_items:
+          type: string
+          example: "350"
+          description: Total number of items
+          readOnly: true
+        total_pages:
+          type: string
+          example: "7"
+          description: Total number of pages
+          readOnly: true
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/linkDescription'
+    
+    Plan:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12345
+        name:
+          type: string
+          example: "Standard Business"
+        description:
+          type: string
+          example: "Standard business plan with 2000 minutes and 5 users"
+        price:
+          type: number
+          format: float
+          example: 49.99
+        currency:
+          type: string
+          example: "USD"
+        billing_cycle:
+          type: string
+          enum: [monthly, quarterly, annual]
+          example: "monthly"
+        feature_list:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanFeature'
+        active:
+          type: boolean
+          example: true
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/linkDescription'
+      required:
+        - id
+        - name
+        - price
+        - currency
+        - billing_cycle
+        - active
+    
+    PlanFeature:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 101
+        name:
+          type: string
+          example: "Unlimited Domestic Calling"
+        included:
+          type: boolean
+          example: true
+        additional_cost:
+          type: number
+          format: float
+          nullable: true
+          example: null
+      required:
+        - id
+        - name
+        - included
+    
+    linkDescription:
+      type: object
+      required:
+        - href
+        - rel
+      properties:
+        href:
+          type: string
+          description: "URI template, as defined by RFC 6570, with the addition of the $, ( and ) characters for pre-processing"
+        rel:
+          type: string
+          description: Relation to the target resource of the link
+        title:
+          type: string
+          description: A title for the link
+        method:
+          type: string
+          description: HTTP method for requesting the target of the link (e.g. "GET" or "POST")
+    
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Error status
+          example: "error"
+        error:
+          type: string
+          description: Error message
+          example: "Invalid input parameters"
+        error_code:
+          type: string
+          description: Error code for machine processing
+          example: "INVALID_INPUT"
+      required:
+        - status
+        - error

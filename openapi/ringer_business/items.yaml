@@ -4,71 +4,189 @@
 
 openapi: 3.0.3
 info:
-  title: Items
-  description: This is a partial file containing path objects for the IVY API. It defines operations related to Items.
+  title: Ringer Business API - Items
+  description: |
+    View available items for purchase in your Ringer Business account.
+    
+    Items are individual services or products that can be purchased for your account.
+    This API allows you to list all available items with their pricing information.
+    
+    ## Authentication
+    This API supports OAuth 2.0 authentication using:
+    - Password grant flow
+    - Client credentials grant flow
+    
+    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
+    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
   version: 1.0.0
-  contact:
-    name: IVY API Support
-    url: https://ivy.teliax.com/
-    email: support@ivy.teliax.com
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
-  x-partial-file: true
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.io/
+    email: support@ringer.io
+
 servers:
-  - url: http://ivy-api.teliax.com
+  - url: https://api.ringer.io/v1
     description: Production server
+  - url: https://api.staging.ringer.io/v1
+    description: Staging server
+
+security:
+  - BearerAuth: []
+
 tags:
   - name: Items
-    description: Operations related to Items
-security:
-  - apiKey: []
-components:
-  securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: Authorization
-  schemas:
-    Error:
-      type: object
-      properties:
-        code:
-          type: integer
-        message:
-          type: string
+    description: "View available items for purchase."
 
 paths:
   /items:
-        get:
-          tags:
-            - Items
-          summary: List of Items
-          description: A list of items available to purchase for your account.
-          operationId: list_items
-          parameters:
-            - name: Authorization
-              in: header
-              description: This token is used to authenticate a particular account.
-              required: true
+    get:
+      tags:
+        - Items
+      summary: List Items
+      description: Retrieve a list of items available for purchase for your account.
+      operationId: list_items
+      parameters:
+        - name: Authorization
+          in: header
+          description: Authentication token used to access the API
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Array of Items
+          content:
+            application/json:
               schema:
-                type: string
-          responses:
-            "200":
-              description: Array of Items
-              content:
-                application/json:
-                  schema:
-                    $ref: './components.yaml#/components/schemas/ItemList'
-            "400":
-              description: Bad Request Parameters or Validation Errors
-              content:
-                application/json:
-                  schema:
-                    $ref: './components.yaml#/components/schemas/error'
-            "401":
-              description: Unauthorized request. This error will occur if the SecurityContext header is not provided or does not include a party_id.
-              content:
-                application/json:
-                  schema:
-                    $ref: './components.yaml#/components/schemas/error' 
+                $ref: '#/components/schemas/ItemList'
+        '400':
+          description: Bad Request Parameters or Validation Errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    ItemList:
+      type: object
+      properties:
+        items:
+          type: array
+          description: Array of Items
+          items:
+            $ref: '#/components/schemas/Item'
+        total_items:
+          type: string
+          example: "350"
+          description: Total number of items
+          readOnly: true
+        total_pages:
+          type: string
+          example: "7"
+          description: Total number of pages
+          readOnly: true
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/linkDescription'
+    
+    Item:
+      type: object
+      required:
+        - id
+        - name
+        - price
+        - category
+      properties:
+        id:
+          type: integer
+          example: 12345
+        name:
+          type: string
+          example: "Direct Inward Dialing (DID) Number"
+        description:
+          type: string
+          example: "Phone number that can receive incoming calls"
+        price:
+          type: number
+          format: float
+          example: 4.99
+        one_time_fee:
+          type: number
+          format: float
+          example: 1.99
+        currency:
+          type: string
+          example: "USD"
+        category:
+          type: string
+          enum: [number, device, service, feature]
+          example: "number"
+        recurring:
+          type: boolean
+          example: true
+        billing_period:
+          type: string
+          enum: [monthly, quarterly, annual]
+          example: "monthly"
+        sku:
+          type: string
+          example: "DID-US-LOCAL"
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/linkDescription'
+    
+    linkDescription:
+      type: object
+      required:
+        - href
+        - rel
+      properties:
+        href:
+          type: string
+          description: "URI template, as defined by RFC 6570, with the addition of the $, ( and ) characters for pre-processing"
+        rel:
+          type: string
+          description: Relation to the target resource of the link
+        title:
+          type: string
+          description: A title for the link
+        method:
+          type: string
+          description: HTTP method for requesting the target of the link (e.g. "GET" or "POST")
+    
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Error status
+          example: "error"
+        error:
+          type: string
+          description: Error message
+          example: "Invalid input parameters"
+        error_code:
+          type: string
+          description: Error code for machine processing
+          example: "INVALID_INPUT"
+      required:
+        - status
+        - error 
