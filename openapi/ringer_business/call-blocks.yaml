@@ -1,248 +1,469 @@
-# THIS IS A PARTIAL OPENAPI FILE
-# This file contains path objects intended to be referenced by main.yaml
-# The following structure is added for standalone validation purposes only
-
 openapi: 3.0.3
 info:
-  title: Ringer Business API - Call Blocks
+  title: Ringer Business API - Call Blocking Management
   description: |
-    Manage call blocking rules for your Ringer Business account.
-    
-    Call blocks allow you to prevent calls to or from specific phone numbers or patterns.
-    This can be useful for blocking spam calls, international numbers, or specific area codes.
-    
-    ## Authentication
-    This API supports OAuth 2.0 authentication using:
-    - Password grant flow
-    - Client credentials grant flow
-    
-    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
-    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
+    This API provides endpoints for managing call blocking rules on a specific site.
+    Call blocking allows customers to prevent inbound calls from specified numbers to certain extensions or all extensions on a site.
+    When a blocked number attempts to call, they will typically receive a busy tone.
+
+    Functionality includes:
+    - Listing all call block rules for a site.
+    - Creating a new call block rule.
+    - Retrieving details of a specific call block rule.
+    - Updating an existing call block rule.
+    - Deleting a call block rule.
   version: 1.0.0
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
   contact:
     name: Ringer API Support
-    url: https://docs.ringer.io/
-    email: support@ringer.io
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
 
 servers:
-  - url: https://api.ringer.io/v1
+  - url: https://api.ringer.tel/v1
     description: Production server
-  - url: https://api.staging.ringer.io/v1
+  - url: https://api.staging.ringer.tel/v1
     description: Staging server
 
-security:
-  - BearerAuth: []
-
 tags:
-  - name: Call Blocks
-    description: "Manage call blocking settings to prevent calls to or from specific phone numbers or patterns."
+  - name: Call Blocking
+    description: Endpoints for managing call blocking rules for a site.
 
 paths:
-  /call-blocks:
+  /sites/{siteId}/call-blocks:
+    parameters:
+      - $ref: '#/components/parameters/SiteIdPath'
     get:
       tags:
-        - Call Blocks
-      summary: List Call Blocks
-      description: Retrieve a list of call blocks for your account.
-      operationId: list_call_blocks
-      parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
-          schema:
-            type: string
+        - Call Blocking
+      summary: List Call Block Rules for a Site
+      description: Retrieves a list of all call blocking rules configured for the specified site.
+      operationId: listSiteCallBlocks
+      security:
+        - oAuth2: [read]
       responses:
         '200':
-          description: Array of Call Blocks
+          description: A list of call block rules.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CallBlockList'
-        '400':
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/CallBlockListResponse'
+              example:
+                call_blocks:
+                  - id: 101
+                    site_id: 6
+                    number_to_block: "+14155550100"
+                    block_all_extensions: true
+                    notes: "Spam call source."
+                  - id: 102
+                    site_id: 6
+                    number_to_block: "+12125550199"
+                    block_all_extensions: false
+                    applicable_extensions: ["extension:1001", "device:dev_xyz"]
+                    notes: "Block for specific sales extensions only."
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-    
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/SiteNotFoundError'
+
     post:
       tags:
-        - Call Blocks
-      summary: Create Call Block
-      description: Create a new call block for your account.
-      operationId: create_call_block
-      parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
-          schema:
-            type: string
+        - Call Blocking
+      summary: Create a New Call Block Rule
+      description: Adds a new call blocking rule to the specified site.
+      operationId: createSiteCallBlock
+      security:
+        - oAuth2: [write]
       requestBody:
-        description: Call Block Attributes
+        description: Details of the call block rule to create.
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CallBlockParams'
+              $ref: '#/components/schemas/CallBlockCreateRequest'
+            example:
+              number_to_block: "+18001234567"
+              block_all_extensions: true
+              notes: "New telemarketer to block."
       responses:
         '201':
-          description: Call Block Created
+          description: Call block rule created successfully.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CallBlock'
+                $ref: '#/components/schemas/CallBlockResponse'
+              example:
+                id: 103
+                site_id: 6
+                number_to_block: "+18001234567"
+                block_all_extensions: true
+                applicable_extensions: 
+                notes: "Block marketing calls from this number."
+                links:
+                  - href: "/sites/6/call-blocks/103"
+                    rel: "self"
+                    method: "GET"
         '400':
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/BadRequestError'
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/SiteNotFoundError'
+        '409':
+          description: Conflict - A similar call block rule already exists.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  
-  /call-blocks/{id}:
+              example:
+                status: "error"
+                error: "A call block rule for +18001234567 already exists."
+                error_code: "CONFLICT_RESOURCE"
+
+  /sites/{siteId}/call-blocks/{callBlockId}:
+    parameters:
+      - $ref: '#/components/parameters/SiteIdPath'
+      - name: callBlockId
+        in: path
+        description: The unique identifier of the call block rule.
+        required: true
+        schema:
+          type: integer
+          format: int64
+          example: 101
+    get:
+      tags:
+        - Call Blocking
+      summary: Get Call Block Rule Details
+      description: Retrieves detailed information for a specific call blocking rule by its ID.
+      operationId: getSiteCallBlockById
+      security:
+        - oAuth2: [read]
+      responses:
+        '200':
+          description: Successfully retrieved call block rule details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallBlockResponse'
+              example:
+                id: 101
+                site_id: 6
+                number_to_block: "+14155550100"
+                block_all_extensions: true
+                applicable_extensions: 
+                notes: "Blocked due to spam reports."
+                links:
+                  - href: "/sites/6/call-blocks/101"
+                    rel: "self"
+                    method: "GET"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/CallBlockNotFoundError'
+
+    put:
+      tags:
+        - Call Blocking
+      summary: Update an Existing Call Block Rule
+      description: Updates the configuration of an existing call blocking rule.
+      operationId: updateSiteCallBlockById
+      security:
+        - oAuth2: [write]
+      requestBody:
+        description: Call block rule attributes to update.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CallBlockUpdateRequest'
+            example:
+              number_to_block: "+18001234567"
+              block_all_extensions: false
+              applicable_extensions: ["extension:1002"]
+              notes: "Update: Only block for extension 1002."
+      responses:
+        '200':
+          description: Call block rule updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallBlockResponse'
+              example:
+                id: 101
+                site_id: 6
+                number_to_block: "+18001234567"
+                block_all_extensions: false
+                applicable_extensions: ["extension:1002"]
+                notes: "Updated: Block only for specific extensions now."
+                links:
+                  - href: "/sites/6/call-blocks/101"
+                    rel: "self"
+                    method: "GET"
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/CallBlockNotFoundError'
+
     delete:
       tags:
-        - Call Blocks
-      summary: Delete Call Block
-      description: Delete a call block from your account.
-      operationId: delete_call_block
-      parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          description: ID of the call block
-          required: true
-          schema:
-            type: integer
+        - Call Blocking
+      summary: Delete a Call Block Rule
+      description: Permanently deletes a specific call blocking rule by its ID.
+      operationId: deleteSiteCallBlockById
+      security:
+        - oAuth2: [write]
       responses:
         '204':
-          description: Call Block Deleted. No Content
-        '400':
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          description: Call block rule deleted successfully. No content is returned.
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
         '404':
-          description: Couldn't find call block record
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/CallBlockNotFoundError'
 
 components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-  
+  parameters:
+    SiteIdPath:
+      name: siteId
+      in: path
+      description: The unique identifier of the site.
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 6
+
   schemas:
-    CallBlockList:
+    CallBlockCore:
+      type: object
+      properties:
+        number_to_block:
+          type: string
+          description: The phone number (or pattern) to block. E.164 format recommended for specific numbers.
+          example: "+14155550100"
+        block_all_extensions:
+          type: boolean
+          description: If true, calls from the number are blocked to all extensions on the site. If false, `applicable_extensions` must be specified.
+          example: true
+        applicable_extensions:
+          type: array
+          items:
+            type: string
+          description: A list of specific extension identifiers (e.g., device codes, extension numbers) to which this block applies. Used if `block_all_extensions` is false.
+          example: ["device:dev_abc", "extension:1001"]
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+          description: Optional notes or reason for this call block rule.
+          example: "Persistent telemarketer."
+      required:
+        - number_to_block
+        - block_all_extensions
+
+    CallBlockCreateRequest:
+      allOf:
+        - $ref: '#/components/schemas/CallBlockCore'
+      description: Data required to create a new call block rule.
+      required:
+        - number_to_block
+        - block_all_extensions
+      example:
+        number_to_block: "+18001234567"
+        block_all_extensions: true
+        notes: "New telemarketer to block."
+
+    CallBlockUpdateRequest:
+      allOf:
+        - $ref: '#/components/schemas/CallBlockCore'
+      description: Data for updating an existing call block rule. All fields are resubmitted.
+      required:
+        - number_to_block
+        - block_all_extensions
+      example:
+        number_to_block: "+18001234567"
+        block_all_extensions: false
+        applicable_extensions: ["extension:1002"]
+        notes: "Update: Only block for extension 1002."
+
+    CallBlockResponse:
+      allOf:
+        - $ref: '#/components/schemas/CallBlockCore'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+              description: Unique identifier for the call block rule.
+              example: 101
+            site_id:
+              type: integer
+              format: int64
+              description: Identifier of the site this call block rule belongs to.
+              example: 6
+            links:
+              type: array
+              description: HATEOAS links related to this call block rule.
+              items:
+                $ref: '#/components/schemas/Link'
+              nullable: true
+          required:
+            - id
+            - site_id
+            - number_to_block
+            - block_all_extensions
+      description: Detailed information about a call block rule.
+      example:
+        id: 101
+        site_id: 6
+        number_to_block: "+14155550100"
+        block_all_extensions: true
+        applicable_extensions: 
+        notes: "Blocked due to spam reports."
+        links:
+          - href: "/sites/6/call-blocks/101"
+            rel: "self"
+            method: "GET"
+
+    CallBlockListResponse:
+      type: object
+      description: A list of call block rules for a site.
       properties:
         call_blocks:
           type: array
-          description: Array of Call Blocks
           items:
-            $ref: '#/components/schemas/CallBlock'
-    
-    CallBlock:
-      allOf:
-        - $ref: '#/components/schemas/CallBlockParams'
-        - properties:
-            id:
-              type: integer
-              example: 1
-            links:
-              type: array
-              items:
-                $ref: '#/components/schemas/linkDescription'
-              example:
-                - href: /call-blocks/1
-                  rel: self
-                  title: Call Block Details
-                  method: GET
-                - href: /call-blocks/1
-                  rel: delete
-                  title: Delete Call Block
-                  method: DELETE
-    
-    CallBlockParams:
+            $ref: '#/components/schemas/CallBlockResponse'
       required:
-        - pattern
-        - block_type
-      properties:
-        pattern:
-          type: string
-          description: The phone number pattern to block
-          example: "212555*"
-        block_type:
-          type: string
-          description: The type of block (inbound or outbound)
-          enum: [inbound, outbound]
-          example: "outbound"
-    
-    linkDescription:
+        - call_blocks
+      example:
+        call_blocks:
+          - id: 101
+            site_id: 6
+            number_to_block: "+14155550100"
+            block_all_extensions: true
+            notes: "Spam call source."
+          - id: 102
+            site_id: 6
+            number_to_block: "+12125550199"
+            block_all_extensions: false
+            applicable_extensions: ["extension:1001", "device:dev_xyz"]
+            notes: "Block for specific sales extensions only."
+
+    Link:
       type: object
-      required:
-        - href
-        - rel
+      description: Represents a HATEOAS link.
       properties:
         href:
           type: string
-          description: "URI template, as defined by RFC 6570, with the addition of the $, ( and ) characters for pre-processing"
+          format: uri-reference
         rel:
           type: string
-          description: Relation to the target resource of the link
         title:
           type: string
-          description: A title for the link
+          nullable: true
         method:
           type: string
-          description: HTTP method for requesting the target of the link (e.g. "GET" or "POST")
-    
+          enum: [GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD]
+      required:
+        - href
+        - rel
+
     Error:
       type: object
+      description: Standard error response format.
       properties:
         status:
           type: string
-          description: Error status
           example: "error"
         error:
           type: string
-          description: Error message
-          example: "Invalid input parameters"
+          example: "Call block operation failed."
         error_code:
           type: string
-          description: Error code for machine processing
-          example: "INVALID_INPUT"
+          example: "CALL_BLOCK_ERROR"
       required:
         - status
-        - error 
+        - error
+        - error_code
+      example:
+        status: "error"
+        error: "A generic call block error occurred."
+        error_code: "CALL_BLOCK_GENERIC_ERROR"
+
+  responses:
+    UnauthorizedError:
+      description: Unauthorized - Authentication token is missing, invalid, or does not have permissions for this resource.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Authentication required."
+            error_code: "UNAUTHORIZED"
+    ForbiddenError:
+      description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Permission denied for this operation."
+            error_code: "FORBIDDEN"
+    SiteNotFoundError:
+      description: Not Found - The specified site could not be found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "The specified site was not found."
+            error_code: "SITE_NOT_FOUND"
+    CallBlockNotFoundError:
+      description: Not Found - The requested call block rule could not be found or is not associated with the specified site.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "The requested call block rule was not found."
+            error_code: "CALL_BLOCK_NOT_FOUND"
+    BadRequestError:
+      description: Bad Request - The request was malformed or contained invalid data.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Invalid request data provided for call block."
+            error_code: "VALIDATION_ERROR_CALL_BLOCK"
+
+  securitySchemes:
+    oAuth2:
+      type: oauth2
+      description: OAuth 2.0 Authentication for securing API endpoints.
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ringer.tel/v1/auth/token
+          scopes:
+            read: Read access to API resources
+            write: Write access to API resources
+            admin: Administrative access.

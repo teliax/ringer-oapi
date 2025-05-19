@@ -1,204 +1,306 @@
-# THIS IS A PARTIAL OPENAPI FILE
-# This file contains path objects intended to be referenced by main.yaml
-# The following structure is added for standalone validation purposes only
-
 openapi: 3.0.3
 info:
-  title: Ringer Business API - Addresses
+  title: Ringer Business API - Address Management
   description: |
-    Manage addresses for your Ringer Business account.
-    
-    The addresses API allows you to update addresses associated with your account or sites.
-    These addresses are used for billing, emergency services (E911), and other location-based services.
-    
-    ## Authentication
-    This API supports OAuth 2.0 authentication using:
-    - Password grant flow
-    - Client credentials grant flow
-    
-    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
-    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
+    This API focuses on managing addresses associated with entities like customer accounts.
+    Currently, it supports updating an existing address record linked to an account.
+
+    Address operations typically require authentication and appropriate permissions.
   version: 1.0.0
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
   contact:
     name: Ringer API Support
-    url: https://docs.ringer.io/
-    email: support@ringer.io
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
 
 servers:
-  - url: https://api.ringer.io/v1
+  - url: https://api.ringer.tel/v1
     description: Production server
-  - url: https://api.staging.ringer.io/v1
+  - url: https://api.staging.ringer.tel/v1
     description: Staging server
-
-security:
-  - BearerAuth: []
 
 tags:
   - name: Addresses
-    description: "Manage addresses for your account and sites. These addresses are used for billing, emergency services (E911), and other location-based services."
+    description: Endpoints for managing address records.
+    # Note: In the original Swagger, address update was under the "Account" tag.
+    # Here, it's given its own tag for better modularity, assuming addresses might be linked to other entities too.
 
 paths:
-  /addresses/{id}:
+  /addresses/{addressId}:
     put:
       tags:
         - Addresses
-      summary: Update Address
-      description: Updates an existing address.
-      operationId: update_address
+      summary: Update an Address
+      description: |
+        Updates the details of a specific address record by its ID.
+        This is typically used to modify the contact or billing address associated with an account.
+        The user must have permissions to update the account to which this address belongs.
+      operationId: updateAccountAddress # Retained from original Teliax for a direct mapping
+      security:
+        - oAuth2: [write] # Operation-specific security
       parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
-          schema:
-            type: string
-        - name: id
+        - name: addressId
           in: path
-          description: Address ID
+          description: The unique identifier of the address record to be updated.
           required: true
           schema:
             type: integer
+            format: int64
+            example: 671
       requestBody:
-        description: Address information
+        description: Address attributes to update. All fields in the request are typically required for a PUT, or optional for a PATCH.
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AddressParams'
+              $ref: '#/components/schemas/AddressUpdateRequest'
+            example:
+              email: "updated.contact@example.com"
+              street_address: "456 Business Road, Unit 10"
+              country: "US"
+              city: "New City"
+              state_province: "TX"
+              postal_code: "75001"
+              contact_number: "+18005550099"
       responses:
         '200':
-          description: OK
+          description: Address updated successfully.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Address'
+                $ref: '#/components/schemas/AddressResponse'
+              example:
+                id: 671
+                email: "updated.contact@example.com"
+                street_address: "456 Business Road, Unit 10"
+                country: "US"
+                city: "New City"
+                state_province: "TX"
+                postal_code: "75001"
+                contact_number: "+18005550099"
+                links:
+                  - href: "/addresses/671"
+                    rel: "self"
+                    method: "GET"
+                  - href: "/account" 
+                    rel: "account"
+                    method: "GET"
         '400':
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/BadRequestError'
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
         '404':
-          description: Address not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/NotFoundError'
 
 components:
   securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+    oAuth2: # Only oAuth2 is needed now
+      type: oauth2
+      description: OAuth 2.0 Authentication for securing API endpoints.
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ringer.tel/v1/auth/token
+          scopes:
+            read: Read access to API resources
+            write: Write access to API resources
+            admin: Administrative access.
   
   schemas:
-    Address:
-      allOf:
-        - $ref: '#/components/schemas/AddressParams'
-        - required:
-          - id
-          properties:
-            id:
-              type: integer
-            links:
-              type: array
-              items:
-                $ref: '#/components/schemas/linkDescription'
-      example:
-        id: 671
-        email: email@example.com
-        street_address: "233 E Wacker Drive, Suite #1106"
-        country: US
-        city: Chicago
-        state_province: IL
-        postal_code: "60601"
-        contact_number: "3125233844"
-        links:
-          - href: /addresses/671
-            rel: self
-            title: Update Address
-            method: PUT
-          - href: /account
-            rel: account
-            title: Account Details
-            method: GET
-    
-    AddressParams:
-      required:
-        - city
-        - contact_number
-        - country
-        - email
-        - postal_code
-        - state_province
-        - street_address
+    AddressCore: # Extracted common fields for reusability
+      type: object
+      description: Core fields defining an address.
       properties:
         email:
           type: string
-          example: email@example.com
+          format: email
+          description: Contact email address associated with this address record.
+          example: "contact@example.com"
         street_address:
           type: string
-          example: "233 E Wacker Drive, Suite #1106"
+          description: Full street address, including building number, street name, and suite/apartment if applicable.
+          example: "123 Commerce Street, Suite 101"
         country:
           type: string
-          example: US
+          # pattern: '^([A-Z]{2}|C2)$' # From original Address.country
+          description: Two-letter ISO 3166-1 alpha-2 country code (e.g., US, GB, CA).
+          example: "US"
         city:
           type: string
-          example: Chicago
+          description: City name.
+          example: "Metropolis"
         state_province:
           type: string
-          example: IL
+          description: State, province, or region, as applicable for the country.
+          example: "NY"
         postal_code:
           type: string
-          example: "60601"
+          description: Postal or ZIP code.
+          example: "10001"
         contact_number:
           type: string
-          example: "3125233844"
-    
-    linkDescription:
-      type: object
+          description: A contact phone number associated with this address, preferably in E.164 format.
+          example: "+12125551234"
       required:
-        - href
-        - rel
+        - email
+        - street_address
+        - country
+        - city
+        - postal_code
+        - contact_number
+      example:
+        email: "shipping@example.com"
+        street_address: "789 Distribution Way"
+        country: "CA"
+        city: "Toronto"
+        state_province: "ON"
+        postal_code: "M5V 2T6"
+        contact_number: "+14165550199"
+
+    AddressUpdateRequest: # Based on AddressParams from Teliax Swagger
+      allOf:
+        - $ref: '#/components/schemas/AddressCore'
+      description: All fields required to update an existing address. For PUT, typically all fields are provided.
+      required:
+        - email
+        - street_address
+        - country
+        - city
+        - postal_code
+        - contact_number
+      example:
+        email: "billing.dept@example.com"
+        street_address: "Main Square 1, Finance Tower"
+        country: "DE"
+        city: "Frankfurt"
+        state_province: "HE"
+        postal_code: "60313"
+        contact_number: "+496912345678"
+
+    AddressResponse: # Based on Address definition from Teliax Swagger
+      allOf:
+        - $ref: '#/components/schemas/AddressCore'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+              description: Unique identifier for the address record.
+              example: 671
+            links:
+              type: array
+              description: HATEOAS links related to this address.
+              items:
+                $ref: '#/components/schemas/Link'
+              nullable: true
+          required:
+            - id
+            - email
+            - street_address
+            - country
+            - city
+            - postal_code
+            - contact_number
+      description: Detailed information about an address record, including its unique ID.
+      example:
+        id: 671
+        email: "contact@example.com"
+        street_address: "123 Commerce Street, Suite 101"
+        country: "US"
+        city: "Metropolis"
+        state_province: "NY"
+        postal_code: "10001"
+        contact_number: "+12125551234"
+        links:
+          - href: "/addresses/671"
+            rel: "self"
+            method: "GET"
+          - href: "/account" # Assuming address is tied to an account
+            rel: "account"
+            method: "GET"
+
+    Link: # Standard Link object
+      type: object
+      description: Represents a HATEOAS link.
       properties:
         href:
           type: string
-          description: "URI template, as defined by RFC 6570, with the addition of the $, ( and ) characters for pre-processing"
+          format: uri-reference
         rel:
           type: string
-          description: Relation to the target resource of the link
         title:
           type: string
-          description: A title for the link
+          nullable: true
         method:
           type: string
-          description: HTTP method for requesting the target of the link (e.g. "GET" or "POST")
-    
-    Error:
+          enum: [GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD]
+      required:
+        - href
+        - rel
+
+    Error: # Consistent Error schema
       type: object
+      description: Standard error response format.
       properties:
         status:
           type: string
-          description: Error status
           example: "error"
         error:
           type: string
-          description: Error message
-          example: "Invalid input parameters"
+          example: "An error occurred."
         error_code:
           type: string
-          description: Error code for machine processing
-          example: "INVALID_INPUT"
+          example: "GENERIC_ERROR"
       required:
         - status
         - error
+        - error_code
+      example:
+        status: "error"
+        error: "A specific address error occurred."
+        error_code: "ADDRESS_ERROR"
+
+  responses:
+    BadRequestError:
+      description: Bad Request - Invalid data provided.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Invalid input for address."
+            error_code: "VALIDATION_ERROR"
+    UnauthorizedError:
+      description: Unauthorized - Authentication token is missing or invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Authentication required."
+            error_code: "UNAUTHORIZED"
+    ForbiddenError:
+      description: Forbidden - The authenticated user does not have permission.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Permission denied."
+            error_code: "FORBIDDEN"
+    NotFoundError:
+      description: Not Found - The requested address could not be found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Address not found."
+            error_code: "RESOURCE_NOT_FOUND"

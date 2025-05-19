@@ -1,0 +1,99 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Site Available Voicemail Boxes
+  description: |
+    Endpoint for listing voicemail boxes that are available to be associated with a specific site or user.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server
+  # - url: https://api.staging.ringer.tel/v1
+  #   description: Staging server
+
+tags:
+  - name: Site Features - Voicemail Boxes
+    description: "Managing voicemail boxes for a site."
+
+paths:
+  /sites/{siteId}/voice-mail-boxes/available:
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId'
+    get:
+      tags:
+        - Site Features - Voicemail Boxes
+      summary: List Available Voicemail Boxes for a Site
+      operationId: listSiteAvailableVoicemailBoxes
+      description: >-
+        Retrieves available Voicemail Boxes that could be used by the Site or a User on the Site.
+      security:
+        - oAuth2: [read]
+      parameters:
+        - name: user_id
+          in: query
+          description: Optional. User ID to filter or contextualize available voicemail boxes.
+          required: false
+          schema:
+            type: integer
+            format: int64
+            example: 10
+      responses:
+        '200':
+          description: A list of available voicemail boxes.
+          content:
+            application/json:
+              schema:
+                $ref: './index.yaml#/components/schemas/PaginatedVoicemailBoxListResponse'
+              example:
+                data:
+                  - id: "vm_template_1"
+                    type: "voicemail-box"
+                    attributes:
+                      name: "General Voicemail Template"
+                      pin: "****"
+                      notification_emails: "template@example.com"
+                      status: "active"
+                      site_id: null
+                    links:
+                      self:
+                        href: "/voicemail-templates/vm_template_1"
+                        rel: "self"
+                        method: "GET"
+                links:
+                  self:
+                    href: "/sites/6/voice-mail-boxes/available?page%5Bnumber%5D=1&page_size=25"
+                    rel: "self"
+                    method: "GET"
+                  first:
+                    href: "/sites/6/voice-mail-boxes/available?page%5Bnumber%5D=1&page_size=25"
+                    rel: "first"
+                    method: "GET"
+                  last:
+                    href: "/sites/6/voice-mail-boxes/available?page%5Bnumber%5D=1&page_size=25"
+                    rel: "last"
+                    method: "GET"
+                meta:
+                  total_items: 1
+                  total_pages: 1
+                  current_page: 1
+                  per_page: 25
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/SiteNotFoundError'
+
+components:
+  securitySchemes:
+    oAuth2:
+      $ref: '../../common_components.yaml#/components/securitySchemes/oAuth2'
+
+  # No local schemas defined, all referenced from index.yaml or common components directory 

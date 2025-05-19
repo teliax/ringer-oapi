@@ -1,0 +1,458 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Site Devices (Collection)
+  description: |
+    Endpoints for listing devices associated with a specific site and creating new devices for that site.
+    A device provides a connection between a physical IP phone (or softphone) and the phone system.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server
+  # - url: https://api.staging.ringer.tel/v1
+  #   description: Staging server
+
+tags:
+  - name: Site Features - Devices
+    description: Managing SIP devices (phones, softphones) associated with a site.
+
+paths:
+  /sites/{siteId}/devices:
+    parameters:
+      - $ref: '#/components/parameters/SiteIdPath' # Local reference
+    get:
+      tags:
+        - Site Features - Devices
+      summary: List Devices for a Site
+      description: Retrieves a list of all devices (e.g., IP phones, softphones) configured for the specified site.
+      operationId: listSiteDevices
+      security:
+        - oAuth2: [read]
+      responses:
+        '200':
+          description: A list of devices for the site.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceListResponse'
+              example:
+                devices:
+                  - id: 1763
+                    site_id: 6
+                    name: "John Doe Desk Phone"
+                    login: "john.doe.phone1"
+                    active: true
+                    channel_limit: 2
+                    timeout: 120
+                    caller_id_name: "John Doe"
+                    caller_id_number: "+13035551234"
+                    acl: "0.0.0.0/0"
+                    fail_over_destination_code: "voicemailbox:vm_john_doe"
+                    fail_over_destination:
+                      name: "Voicemail for John Doe"
+                      code: "voicemailbox:vm_john_doe"
+                    user_id: 5
+                    links:
+                      - href: "/sites/6/devices/1763"
+                        rel: "self"
+                        method: "GET"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/SiteNotFoundError'
+
+    post:
+      tags:
+        - Site Features - Devices
+      summary: Create a Device for a Site
+      description: |
+        Adds a new device to the specified site.
+        The system will generate login credentials (login and password) for the device.
+      operationId: createSiteDevice
+      security:
+        - oAuth2: [write]
+      requestBody:
+        description: Configuration details for the new device.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceCreateRequest'
+            example:
+              name: "Lobby Phone"
+              login: "lobby.phone.site_beta"
+              active: true
+              channel_limit: 1
+              timeout: 300
+              caller_id_name: "Lobby"
+              caller_id_number: "+13035550102"
+              acl: "0.0.0.0/0"
+              fail_over_destination_code: "voicemailbox:general_vm"
+      responses:
+        '201':
+          description: Device created successfully. The response includes the generated password.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceResponse' 
+              example:
+                id: 1763
+                site_id: 6
+                name: "John Doe Desk Phone"
+                login: "john.doe.phone1"
+                active: true
+                channel_limit: 2
+                timeout: 120
+                caller_id_name: "John Doe"
+                caller_id_number: "+13035551234"
+                acl: "0.0.0.0/0"
+                password: "aGeneratedPasswordExample"
+                fail_over_destination_code: "voicemailbox:vm_john_doe"
+                fail_over_destination:
+                  name: "Voicemail for John Doe"
+                  code: "voicemailbox:vm_john_doe"
+                user_id: 5
+                links: 
+        '400':
+          $ref: '#/components/responses/BadRequestError' 
+        '401':
+          $ref: '#/components/responses/UnauthorizedError' 
+        '403':
+          $ref: '#/components/responses/ForbiddenError' 
+        '404':
+          $ref: '#/components/responses/SiteNotFoundError' 
+        '409': 
+          description: Conflict - A device with the specified login already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error' 
+              example:
+                status: "error"
+                error: "Device login 'confroom1.site6' already exists."
+                error_code: "DEVICE_LOGIN_CONFLICT"
+
+components:
+  parameters:
+    SiteIdPath:
+      name: siteId
+      in: path
+      description: The unique identifier of the site.
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 6
+    DeviceIdPath:
+      name: deviceId
+      in: path
+      description: The unique identifier of the device.
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 1763
+
+  securitySchemes:
+    oAuth2:
+      type: oauth2
+      description: OAuth 2.0 Authentication for securing API endpoints.
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ringer.tel/v1/auth/token
+          scopes:
+            read: Read access to API resources
+            write: Write access to API resources
+            admin: Administrative access
+  
+  schemas:
+    DeviceCore: 
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Sales Desk Phone 1"
+        login:
+          type: string
+          example: "sales.phone1.site_alpha"
+        active:
+          type: boolean
+          default: true
+        channel_limit:
+          type: integer
+          default: 2
+        timeout:
+          type: integer
+          default: 120
+        caller_id_name:
+          type: string
+          nullable: true
+        caller_id_number:
+          type: string
+          nullable: true
+        acl:
+          type: string
+          nullable: true
+          default: "0.0.0.0/0"
+        fail_over_destination_code: 
+          type: string
+          nullable: true
+      required:
+        - name
+        - login
+
+    DeviceCreateRequest:
+      allOf:
+        - $ref: '#/components/schemas/DeviceCore'
+      required:
+        - name
+        - login
+      example:
+        name: "Lobby Phone"
+        login: "lobby.phone.site_beta"
+        active: true
+        channel_limit: 1
+        timeout: 300
+        caller_id_name: "Lobby"
+        caller_id_number: "+13035550102"
+        acl: "0.0.0.0/0"
+        fail_over_destination_code: "voicemailbox:general_vm"
+
+    DeviceUpdateRequest:
+      type: object
+      description: Fields that can be updated for an existing device. Login is typically not updatable.
+      properties:
+        name:
+          type: string
+          example: "Sales Desk Phone 1 - Updated"
+        active:
+          type: boolean
+        channel_limit:
+          type: integer
+        timeout:
+          type: integer
+        caller_id_name:
+          type: string
+          nullable: true
+        caller_id_number:
+          type: string
+          nullable: true
+        acl:
+          type: string
+          nullable: true
+        fail_over_destination_code:
+          type: string
+          nullable: true
+      # No required fields, assuming all are optional for an update
+      example:
+        name: "Marketing Phone"
+        active: false
+        channel_limit: 1
+        timeout: 90
+        caller_id_name: "Marketing Dept"
+        acl: "192.168.1.0/24"
+        fail_over_destination_code: "menu:marketing_overflow"
+
+    SiteDestination: 
+      type: object
+      description: Represents a potential call destination or failover point.
+      properties:
+        name:
+          type: string
+          description: A human-readable name for the destination.
+          example: "Main Menu (menu:main_menu)"
+        code:
+          type: string
+          description: A system-usable code or identifier for the destination.
+          example: "menu:main_menu"
+      required:
+        - name
+        - code
+
+    DeviceResponse: 
+      allOf:
+        - $ref: '#/components/schemas/DeviceCore'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+            site_id: 
+              type: integer
+              format: int64
+              nullable: true
+            password:
+              type: string
+              description: (Returned on create only)
+            fail_over_destination: 
+              oneOf: # Using oneOf for robust nullability
+                - $ref: '#/components/schemas/SiteDestination'
+                - type: object
+                  nullable: true
+                  properties: {}
+                  additionalProperties: false
+            user_id: 
+              type: integer
+              format: int64
+              nullable: true
+            links:
+              type: array
+              items:
+                $ref: '#/components/schemas/Link'
+              nullable: true
+          required:
+            - id
+            - name
+            - login
+      example:
+        id: 1763
+        site_id: 6
+        name: "John Doe Desk Phone"
+        login: "john.doe.phone1"
+        active: true
+        channel_limit: 2
+        timeout: 120
+        caller_id_name: "John Doe"
+        caller_id_number: "+13035551234"
+        acl: "0.0.0.0/0"
+        password: "aGeneratedPasswordExample"
+        fail_over_destination_code: "voicemailbox:vm_john_doe"
+        fail_over_destination:
+          name: "Voicemail for John Doe"
+          code: "voicemailbox:vm_john_doe"
+        user_id: 5
+        links: 
+          - href: "/sites/6/devices/1763/regenerate-password"
+            rel: "regenerate-password"
+            method: "PATCH"
+
+    DeviceListResponse:
+      type: object
+      properties:
+        devices:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceResponse' 
+      required:
+        - devices
+      example:
+        devices:
+          - id: 1763
+            site_id: 6
+            name: "John Doe Desk Phone"
+            login: "john.doe.phone1"
+            active: true
+            channel_limit: 2
+            timeout: 120
+            caller_id_name: "John Doe"
+            caller_id_number: "+13035551234"
+            acl: "0.0.0.0/0"
+            fail_over_destination_code: "voicemailbox:vm_john_doe"
+            fail_over_destination:
+              name: "Voicemail for John Doe"
+              code: "voicemailbox:vm_john_doe"
+            user_id: 5
+            links: 
+              - href: "/sites/6/devices/1763/regenerate-password"
+                rel: "regenerate-password"
+                method: "PATCH"
+
+    Link: 
+      type: object
+      description: Represents a HATEOAS link.
+      properties:
+        href:
+          type: string
+          format: uri-reference
+        rel:
+          type: string
+        title:
+          type: string
+          nullable: true
+        method:
+          type: string
+          enum: [GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD]
+      required:
+        - href
+        - rel
+
+    Error: 
+      type: object
+      description: Standard error response format.
+      properties:
+        status:
+          type: string
+          example: "error"
+        error:
+          type: string
+        error_code:
+          type: string
+        details:
+          type: array
+          nullable: true
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              issue:
+                type: string
+      required:
+        - status
+        - error
+        - error_code
+      example:
+        status: "error"
+        error: "A generic device error occurred."
+        error_code: "DEVICE_ERROR_GENERIC"
+
+  responses: 
+    UnauthorizedError:
+      description: Unauthorized - Authentication token is missing, invalid, or does not have permissions for this resource.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Authentication token is missing or invalid."
+            error_code: "UNAUTHORIZED"
+    ForbiddenError:
+      description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "You do not have permission to perform this action."
+            error_code: "FORBIDDEN"
+    SiteNotFoundError: 
+      description: Not Found - The specified site could not be found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "The specified site was not found."
+            error_code: "SITE_NOT_FOUND"
+    BadRequestError:
+      description: Bad Request - The request was malformed or contained invalid data.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Invalid request parameters."
+            error_code: "INVALID_REQUEST" 

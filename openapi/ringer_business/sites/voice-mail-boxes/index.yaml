@@ -1,0 +1,340 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Site Voicemail Boxes (Collection)
+  description: |
+    Endpoints for listing voicemail boxes associated with a specific site and creating new voicemail boxes.
+    Voicemail boxes allow callers to leave messages, which are then typically emailed as audio files.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server
+  # - url: https://api.staging.ringer.tel/v1
+  #   description: Staging server
+
+tags:
+  - name: Site Features - Voicemail Boxes
+    description: "Managing voicemail boxes for a site."
+
+paths:
+  /sites/{siteId}/voice-mail-boxes:
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId'
+    get:
+      tags:
+        - Site Features - Voicemail Boxes
+      summary: List Voicemail Boxes for a Site
+      operationId: listSiteVoicemailBoxes
+      description: Retrieve a paginated list of all voicemail boxes configured for the specified site.
+      security:
+        - oAuth2: [read]
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination.
+          required: false
+          schema:
+            type: integer
+            default: 1
+            example: 1
+        - name: page_size
+          in: query
+          description: Number of voicemail boxes per page.
+          required: false
+          schema:
+            type: integer
+            default: 25
+            example: 10
+      responses:
+        '200':
+          description: A paginated list of voicemail boxes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVoicemailBoxListResponse'
+              example:
+                data:
+                  - id: "553"
+                    type: "voicemail-box"
+                    attributes:
+                      name: "Sales Team Voicemail"
+                      pin: "****"
+                      notification_emails: "sales@example.com,manager@example.com"
+                      status: "active"
+                      site_id: 6
+                      announcement_url: "https://cdn.example.com/greetings/vm553.mp3"
+                    links:
+                      self:
+                        href: "/sites/6/voice-mail-boxes/553"
+                        rel: "self"
+                        method: "GET"
+                links: 
+                  self:
+                    href: "/sites/6/voice-mail-boxes?page%5Bnumber%5D=1&page_size=25"
+                    rel: "self"
+                    method: "GET"
+                  first:
+                    href: "/sites/6/voice-mail-boxes?page%5Bnumber%5D=1&page_size=25"
+                    rel: "first"
+                    method: "GET"
+                  last:
+                    href: "/sites/6/voice-mail-boxes?page%5Bnumber%5D=1&page_size=25"
+                    rel: "last"
+                    method: "GET"
+                meta:
+                  total_items: 1
+                  total_pages: 1
+                  current_page: 1
+                  per_page: 25
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/SiteNotFoundError'
+    post:
+      tags:
+        - Site Features - Voicemail Boxes
+      summary: Create Voicemail Box for a Site
+      operationId: createSiteVoicemailBox
+      description: Adds a new voicemail box to the specified site. Announcement greeting can be uploaded.
+      security:
+        - oAuth2: [write]
+      requestBody:
+        description: Configuration details for the new voicemail box.
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VoicemailBoxCreateRequest'
+      responses:
+        '201':
+          description: Voicemail Box Created Successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoicemailBoxResponseData'
+              example:
+                id: "554"
+                type: "voicemail-box"
+                attributes:
+                  name: "Support Voicemail"
+                  pin: "****"
+                  notification_emails: "support@example.com"
+                  status: "active"
+                  site_id: 6
+                  announcement_url: "https://cdn.example.com/greetings/vm554_uploaded.mp3"
+                links:
+                  self:
+                    href: "/sites/6/voice-mail-boxes/554"
+                    rel: "self"
+                    method: "GET"
+        '400':
+          $ref: '../../common_components.yaml#/components/responses/BadRequestError'
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/SiteNotFoundError'
+
+components:
+  parameters:
+    SiteIdPath:
+      $ref: '../../common_components.yaml#/components/parameters/SiteId'
+    VoicemailBoxIdPath:
+      name: voicemailBoxId
+      in: path
+      description: The unique identifier of the voicemail box.
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 501
+  securitySchemes:
+    oAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ringer.tel/v1/oauth/token
+          scopes:
+            read: Read access
+            write: Write access
+      description: OAuth2 access token authentication 
+
+  schemas:
+    VoicemailBoxAttributes:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the Voicemail Box.
+          example: "Main Sales Voicemail"
+        pin:
+          type: string
+          description: PIN for accessing the Voicemail Box messages.
+          example: "1234"
+        notification_emails:
+          type: string
+          description: Email addresses for notifications of new voicemails.
+          example: "sales@example.com,manager@example.com"
+        announcement_url:
+          type: string
+          format: uri
+          readOnly: true
+          nullable: true
+          description: URL of the current announcement greeting.
+        status:
+          type: string
+          enum: [active, inactive]
+          description: Status of the Voicemail Box.
+          example: "active"
+        site_id:
+          type: integer
+          format: int64
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - name
+        - pin
+        - notification_emails
+        - status
+      example:
+        name: "Support Line VM"
+        pin: "5678"
+        notification_emails: "support@example.com"
+        status: "active"
+
+    VoicemailBoxCreateRequest:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - type
+            - attributes
+          properties:
+            type:
+              type: string
+              enum: [voicemail-box]
+            attributes:
+              $ref: '#/components/schemas/VoicemailBoxAttributes'
+      example:
+        data:
+          type: "voicemail-box"
+          attributes:
+            name: "General Inquiries VM"
+            pin: "0000"
+            notification_emails: "info@example.com"
+            status: "active"
+
+    VoicemailBoxResponseData:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the Voicemail Box.
+          example: "553"
+        type:
+          type: string
+          enum: [voicemail-box]
+          example: "voicemail-box"
+        attributes:
+          $ref: '#/components/schemas/VoicemailBoxAttributes'
+        links:
+          $ref: '../../common_components.yaml#/components/schemas/LinkObject'
+      required:
+        - id
+        - type
+        - attributes
+      example:
+        id: "553"
+        type: "voicemail-box"
+        attributes:
+          name: "Sales Team Voicemail"
+          pin: "****"
+          notification_emails: "sales@example.com,manager@example.com"
+          status: "active"
+          site_id: 6
+          announcement_url: "https://cdn.example.com/greetings/vm553.mp3"
+        links:
+          self:
+            href: "/sites/6/voice-mail-boxes/553"
+            rel: "self"
+            method: "GET"
+
+    PaginatedVoicemailBoxListResponse:
+      type: object
+      description: A paginated list of voicemail boxes.
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/VoicemailBoxResponseData'
+        links:
+          $ref: '../../common_components.yaml#/components/schemas/PaginationLinks'
+        meta:
+          type: object
+          properties:
+            total_items:
+              type: integer
+            total_pages:
+              type: integer
+            current_page:
+              type: integer
+            per_page:
+              type: integer
+      required:
+        - data
+        - meta
+      example:
+        data:
+          - id: "553"
+            type: "voicemail-box"
+            attributes:
+              name: "Sales Team Voicemail"
+              pin: "****"
+              notification_emails: "sales@example.com,manager@example.com"
+              status: "active"
+              site_id: 6
+              announcement_url: "https://cdn.example.com/greetings/vm553.mp3"
+            links:
+              self:
+                href: "/sites/6/voice-mail-boxes/553"
+                rel: "self"
+                method: "GET"
+        links: 
+          self:
+            href: "/sites/6/voice-mail-boxes?page%5Bnumber%5D=1&page_size=25"
+            rel: "self"
+            method: "GET"
+          first:
+            href: "/sites/6/voice-mail-boxes?page%5Bnumber%5D=1&page_size=25"
+            rel: "first"
+            method: "GET"
+          last:
+            href: "/sites/6/voice-mail-boxes?page%5Bnumber%5D=1&page_size=25"
+            rel: "last"
+            method: "GET"
+        meta:
+          total_items: 1
+          total_pages: 1
+          current_page: 1
+          per_page: 25 

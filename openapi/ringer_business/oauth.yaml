@@ -1,253 +1,335 @@
-# THIS IS A PARTIAL OPENAPI FILE
-# This file contains path objects intended to be referenced by main.yaml
-# The following structure is added for standalone validation purposes only
-
 openapi: 3.0.3
 info:
   title: Ringer Business API - Authentication
   description: |
-    Authentication endpoints for the Ringer Business API.
-    
-    To authenticate API clients, Ringer Business uses the OAuth 2.0 framework, supporting:
-    - Password grant flow
-    - Client credentials grant flow
-    - Refresh token flow for obtaining new access tokens
-    
-    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
-    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
-    
-    ## Grant Types
-    
-    ### Password Grant
-    With the resource owner password credentials grant type, the user provides their service credentials 
-    (username and password) directly to the application, which uses the credentials to obtain an access token.
-    
-    Required parameters:
-    - grant_type: "password"
-    - username: User's email address
-    - password: User's password
-    - client_id: Your application's client ID
-    - client_secret: Your application's client secret
-    
-    ### Client Credentials Grant
-    For service-to-service authentication where a specific user isn't involved.
-    
-    Required parameters:
-    - grant_type: "client_credentials"
-    - client_id: Your application's client ID
-    - client_secret: Your application's client secret
-    
-    ### Refresh Token
-    When an access token expires, you can use the refresh token to obtain a new access token.
-    
-    Required parameters:
-    - grant_type: "refresh_token"
-    - refresh_token: The refresh token received with the original access token
-    - client_id: Your application's client ID
-    - client_secret: Your application's client secret
+    The Ringer Business API uses OAuth 2.0 to authenticate and authorize client applications.
+    This section details the endpoints for obtaining and revoking access tokens.
+
+    **Supported Grant Types for Obtaining Access Tokens (`/auth/token`):**
+
+    *   **Password Grant:**
+        For trusted first-party applications where users directly provide their credentials.
+        Requires: `grant_type="password"`, `username`, `password`, `client_id`, `client_secret`.
+
+    *   **Client Credentials Grant:**
+        For server-to-server authentication where the client is acting on its own behalf.
+        Requires: `grant_type="client_credentials"`, `client_id`, `client_secret`.
+
+    *   **Refresh Token Grant:**
+        To obtain a new access token using a previously issued refresh token.
+        Requires: `grant_type="refresh_token"`, `refresh_token`, `client_id`, `client_secret`.
+
+    Access tokens are typically short-lived (e.g., 2 hours). Use the refresh token to maintain an active session without requiring users to re-authenticate frequently.
+
+    **Important Security Note:**
+    Your `client_id` and `client_secret` are confidential. Secure them appropriately and never expose them in client-side code or public repositories.
   version: 1.0.0
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
   contact:
     name: Ringer API Support
-    url: https://docs.ringer.io/
-    email: support@ringer.io
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
 
 servers:
-  - url: https://api.ringer.io/v1
+  - url: https://api.ringer.tel/v1
     description: Production server
-  - url: https://api.staging.ringer.io/v1
+  - url: https://api.staging.ringer.tel/v1
     description: Staging server
 
 tags:
   - name: Authentication
-    description: "Authentication endpoints for obtaining and managing access tokens."
+    description: "Endpoints for OAuth 2.0 token management: obtaining and revoking access tokens."
 
 paths:
-  /oauth/token:
+  /auth/token:
     post:
       tags:
         - Authentication
-      summary: Get Access Token
+      summary: Obtain an OAuth 2.0 Access Token
       description: |
-        Obtain an access token using one of the supported OAuth 2.0 grant types.
-        
-        Access tokens are valid for 2 hours. When expired, you can obtain a new token using the refresh token flow.
-      operationId: fetch_access_token
-      security: []  # No authentication required for token endpoint
+        Requests an access token using one of the supported OAuth 2.0 grant types.
+        The specific parameters required in the request body depend on the `grant_type` used.
+
+        - For `password` grant: include `username`, `password`, `client_id`, and `client_secret`.
+        - For `client_credentials` grant: include `client_id` and `client_secret`.
+        - For `refresh_token` grant: include `refresh_token`, `client_id`, and `client_secret`.
+
+        Successful authentication returns an access token, its type, expiration time, and a refresh token (if applicable for the grant type).
+      operationId: fetchAccessToken
+      security: []
       requestBody:
-        description: OAuth 2.0 parameters
+        description: OAuth 2.0 grant parameters.
         required: true
         content:
-          application/x-www-form-urlencoded:
+          application/json:
             schema:
               $ref: '#/components/schemas/TokenRequest'
+            examples:
+              passwordGrant:
+                summary: Example for Password Grant
+                value:
+                  grant_type: "password"
+                  username: "developer@example.com"
+                  password: "aVerySecurePassword123!"
+                  client_id: "your_application_client_id"
+                  client_secret: "your_application_client_secret"
+              clientCredentialsGrant:
+                summary: Example for Client Credentials Grant
+                value:
+                  grant_type: "client_credentials"
+                  client_id: "your_m2m_client_id"
+                  client_secret: "your_m2m_client_secret"
+                  scope: "read:service_data"
+              refreshTokenGrant:
+                summary: Example for Refresh Token Grant
+                value:
+                  grant_type: "refresh_token"
+                  refresh_token: "previously_issued_refresh_token_string"
+                  client_id: "your_application_client_id"
+                  client_secret: "your_application_client_secret"
       responses:
         '200':
-          description: Access token successfully issued
+          description: Access token issued successfully.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TokenResponse'
+              example:
+                access_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOi..."
+                token_type: "Bearer"
+                expires_in: 7200
+                refresh_token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOi..."
+                scope: "read write"
         '400':
-          description: Bad Request Parameters or Validation Errors
+          description: |
+            Bad Request.
+            This can occur if the request is malformed, missing required parameters for the specified `grant_type`,
+            or uses an unsupported `grant_type`.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                status: "error"
+                error: "Invalid request: 'username' is required for grant_type 'password'."
+                error_code: "INVALID_REQUEST_PARAMETERS"
         '401':
-          description: Unauthorized - Invalid credentials
+          description: |
+            Unauthorized.
+            Authentication failed. This could be due to invalid client credentials,
+            an invalid or expired refresh token, or incorrect user credentials for the password grant.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  
-  /oauth/revoke:
+              example:
+                status: "error"
+                error: "Client authentication failed: Invalid client_id or client_secret."
+                error_code: "INVALID_CLIENT_CREDENTIALS"
+
+  /auth/revoke:
     post:
       tags:
         - Authentication
-      summary: Revoke Token
-      description: Revoke an active access token and associated refresh token.
-      operationId: revoke_token
-      security:
-        - BearerAuth: []
+      summary: Revoke an OAuth 2.0 Token
+      description: |
+        Revokes an active access token or refresh token, effectively logging the user or application out.
+        The request must include the token to be revoked and client credentials for authentication of the revocation request itself.
+      operationId: revokeAccessToken
+      security: []
       requestBody:
-        description: Token revocation parameters
+        description: Parameters for token revocation.
         required: true
         content:
-          application/x-www-form-urlencoded:
+          application/json:
             schema:
               $ref: '#/components/schemas/RevokeRequest'
+            example:
+              token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOi..."
+              client_id: "your_application_client_id"
+              client_secret: "your_application_client_secret"
       responses:
-        '200':
-          description: Token successfully revoked
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RevokeResponse'
+        '204':
+          description: Token successfully revoked. No content is returned.
         '400':
-          description: Bad Request Parameters or Validation Errors
+          description: |
+            Bad Request.
+            The request may be missing required parameters (like `token` or client credentials),
+            or the token format might be invalid.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                status: "error"
+                error: "Invalid request: 'token' parameter is missing."
+                error_code: "INVALID_REQUEST_PARAMETERS"
         '401':
-          description: Unauthorized - Invalid or expired token
+          description: |
+            Unauthorized.
+            Client authentication failed for the revocation request (e.g., invalid `client_id` or `client_secret`).
+            This does *not* mean the token to be revoked was invalid, but that the revoking client is not authorized.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                status: "error"
+                error: "Client authentication failed for revocation."
+                error_code: "INVALID_CLIENT_CREDENTIALS_FOR_REVOCATION"
 
 components:
   securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-  
+    oAuth2:
+      type: oauth2
+      description: |
+        OAuth 2.0 authentication using various grant flows.
+        The primary token endpoint is `/auth/token`.
+        This security scheme definition primarily outlines the `clientCredentials` flow
+        for use in securing other API endpoints. Refer to the `/auth/token` endpoint
+        description for details on all supported grant types.
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ringer.tel/v1/auth/token
+          scopes:
+            read: Grants read access to resources.
+            write: Grants write access to resources.
+            admin: Grants administrative access to resources.
+
   schemas:
     TokenRequest:
-      required:
-        - grant_type
-        - client_id
-        - client_secret
+      type: object
+      description: Parameters for requesting an OAuth 2.0 access token. Required fields vary by grant_type.
       properties:
         grant_type:
           type: string
           enum: [password, client_credentials, refresh_token]
-          description: The OAuth 2.0 grant type to use
+          description: The OAuth 2.0 grant type.
           example: "password"
         username:
           type: string
-          description: User's email address (required for password grant)
-          example: "user@example.com"
+          nullable: true
+          description: User's email address (required for `password` grant).
+          example: "developer@example.com"
         password:
           type: string
           format: password
-          description: User's password (required for password grant)
-          example: "secureP@ssword123"
+          nullable: true
+          description: User's password (required for `password` grant).
+          example: "aVerySecurePassword123!"
         refresh_token:
           type: string
-          description: Refresh token (required for refresh_token grant)
-          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          nullable: true
+          description: Refresh token (required for `refresh_token` grant).
+          example: "def50200f29a807a83012f9a0904d71a..."
         client_id:
           type: string
-          description: Your application's client ID
-          example: "c1ient1d"
+          description: The application's client ID.
+          example: "your_application_client_id"
         client_secret:
           type: string
-          description: Your application's client secret
-          example: "c1ients3cret"
-    
+          description: The application's client secret.
+          example: "your_application_client_secret"
+        scope:
+          type: string
+          nullable: true
+          description: (Optional) A space-separated list of requested scopes. The granted scopes may differ.
+          example: "read:profile write:data"
+      required:
+        - grant_type
+        - client_id
+        - client_secret
+      example:
+        grant_type: "client_credentials"
+        client_id: "your_generic_client_id"
+        client_secret: "your_generic_client_secret"
+        scope: "read write"
+
     TokenResponse:
       type: object
+      description: Response containing the access token and related information.
       properties:
         access_token:
           type: string
-          description: The bearer token to use for API requests
-          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          description: The issued OAuth 2.0 access token.
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOi..."
         token_type:
           type: string
-          description: Type of token issued
-          example: "bearer"
+          description: Type of the token issued (typically "Bearer").
+          example: "Bearer"
         expires_in:
           type: integer
-          description: Token validity in seconds
+          description: The lifetime in seconds of the access token.
           example: 7200
         refresh_token:
           type: string
-          description: Token that can be used to obtain a new access token
-          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          nullable: true
+          description: Token that can be used to obtain a new access token when the current access token expires.
+          example: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOi..."
         scope:
           type: string
-          description: Scopes granted to the token
+          nullable: true
+          description: Space-separated list of scopes that have been granted for this access token.
           example: "read write"
       required:
         - access_token
         - token_type
         - expires_in
-    
+      example:
+        access_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOi..."
+        token_type: "Bearer"
+        expires_in: 7200
+        refresh_token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOi..."
+        scope: "read write profile"
+
     RevokeRequest:
-      required:
-        - token
+      type: object
+      description: Parameters for revoking an OAuth 2.0 token.
       properties:
         token:
           type: string
-          description: The token to revoke
-          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-        token_type_hint:
+          description: The access token or refresh token to be revoked.
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOi..."
+        client_id:
           type: string
-          enum: [access_token, refresh_token]
-          description: Type of token being revoked
-          example: "access_token"
-    
-    RevokeResponse:
-      type: object
-      properties:
-        status:
+          description: The client ID of the application making the revocation request.
+          example: "your_application_client_id"
+        client_secret:
           type: string
-          enum: [success]
-          example: "success"
-        message:
-          type: string
-          example: "Token has been revoked"
-    
+          description: The client secret of the application making the revocation request.
+          example: "your_application_client_secret"
+      required:
+        - token
+        - client_id
+        - client_secret
+      example:
+        token: "specific_token_string_to_revoke"
+        client_id: "your_application_client_id"
+        client_secret: "your_application_client_secret"
+
     Error:
       type: object
+      description: Standard error response structure.
       properties:
         status:
           type: string
-          description: Error status
+          description: A general status indicator for the error.
           example: "error"
         error:
           type: string
-          description: Error message
-          example: "Invalid grant type"
+          description: A human-readable description of the error.
+          example: "The requested resource was not found."
         error_code:
           type: string
-          description: Error code for machine processing
-          example: "INVALID_GRANT"
+          description: A machine-parsable error code specific to this error condition.
+          example: "RESOURCE_NOT_FOUND"
       required:
         - status
         - error
+        - error_code
+      example:
+        status: "error"
+        error: "Authentication failed due to invalid credentials."
+        error_code: "AUTHENTICATION_FAILURE"

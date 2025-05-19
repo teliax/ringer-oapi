@@ -1,128 +1,131 @@
-# THIS IS A PARTIAL OPENAPI FILE
-# This file contains path objects intended to be referenced by main.yaml
-# The following structure is added for standalone validation purposes only
-
 openapi: 3.0.3
 info:
   title: Ringer Business API - Timezones
   description: |
-    A list of timezones and offsets from GMT to configure time-based features within the Ringer Business platform.
-    
-    ## Authentication
-    This API supports OAuth 2.0 authentication using:
-    - Password grant flow
-    - Client credentials grant flow
-    
-    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
-    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
+    This API provides an endpoint for listing available Timezones.
+    Timezones are crucial for configuring time-sensitive features within the phone system, such as schedules, business hours, and call logging timestamps.
+    This endpoint allows developers to retrieve a comprehensive list of supported IANA timezone identifiers.
   version: 1.0.0
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
   contact:
     name: Ringer API Support
-    url: https://docs.ringer.io/
-    email: support@ringer.io
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
 
 servers:
-  - url: https://api.ringer.io/v1
+  - url: https://api.ringer.tel/v1
     description: Production server
-  - url: https://api.staging.ringer.io/v1
+  - url: https://api.staging.ringer.tel/v1
     description: Staging server
-
-security:
-  - BearerAuth: []
 
 tags:
   - name: Timezones
-    description: |
-      While configuring the phone system to set timezone for an object, the timezone 
-      standards that need to be followed are IANA tz database (https://www.iana.org/time-zones).
-      If you need the timezone collection on the client side there is a utility endpoint for it.
+    description: Endpoint for listing supported IANA timezone identifiers.
 
 paths:
   /timezones:
     get:
       tags:
         - Timezones
-      summary: List Timezones
-      description: Retrieve a list of Timezones supported by the system.
-      operationId: list_timezones
-      parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
-          schema:
-            type: string
+      summary: List Available Timezones
+      description: |
+        Retrieves a list of all IANA timezone identifiers supported by the system.
+        This information is essential for accurately configuring any time-dependent settings or features.
+      operationId: listAvailableTimezones
+      security:
+        - oAuth2: [read]
       responses:
         '200':
-          description: Array of Timezones
+          description: A list of available IANA timezone identifiers.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TimezoneList'
-        '400':
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/TimezoneListResponse'
+              example:
+                timezones:
+                  - "America/New_York"
+                  - "America/Chicago"
+                  - "America/Denver"
+                  - "America/Los_Angeles"
+                  - "Europe/London"
+                  - "Etc/UTC"
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
 
 components:
   securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+    oAuth2:
+      type: oauth2
+      description: OAuth 2.0 Authentication for securing API endpoints.
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ringer.tel/v1/auth/token
+          scopes:
+            read: Read access to API resources
+            write: Write access to API resources
+            admin: Administrative access.
     
   schemas:
-    TimezoneList:
+    Timezone:
+      type: string
+      description: |
+        A time zone identifier from the IANA Time Zone Database (tz database), e.g., "America/New_York", "Europe/London", "Etc/UTC".
+        It is recommended to use these standard identifiers to avoid ambiguity. Avoid using abbreviations like "EST" or "PST".
+      minLength: 1
+      maxLength: 127
+      example: "America/Los_Angeles"
+
+    TimezoneListResponse:
+      type: object
+      description: A list of available IANA timezone identifiers.
       properties:
         timezones:
           type: array
-          example:
-          - Pacific/Midway
-          - Pacific/Pago_Pago
-          - Pacific/Honolulu
-          - America/Juneau
-          - America/Los_Angeles
-          - America/Denver
-          - America/Chicago
-          - America/New_York
-          - Europe/London
-          - Etc/UTC
           items:
             $ref: '#/components/schemas/Timezone'
-    
-    Timezone:
-      type: string
-      minLength: 1
-      maxLength: 127
-      description: "A time zone, following the format defined in the IANA tz database (https://www.iana.org/time-zones). Valid examples are America/New_York and Etc/UTC. Do not use ambiguous, non-qualified values such as EST or GB."
-      example: "America/New_York"
-    
+      required:
+        - timezones
+      example:
+        timezones:
+          - "America/New_York"
+          - "America/Chicago"
+          - "America/Denver"
+          - "America/Los_Angeles"
+          - "Europe/London"
+          - "Etc/UTC"
+
     Error:
       type: object
+      description: Standard error response format.
       properties:
         status:
           type: string
-          description: Error status
           example: "error"
         error:
           type: string
-          description: Error message
-          example: "Invalid input parameters"
+          example: "Failed to retrieve timezone list."
         error_code:
           type: string
-          description: Error code for machine processing
-          example: "INVALID_INPUT"
+          example: "TIMEZONE_LIST_ERROR"
       required:
         - status
-        - error 
+        - error
+        - error_code
+
+  responses:
+    UnauthorizedError:
+      description: Unauthorized - Authentication token is missing, invalid, or does not have permissions for this resource.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ForbiddenError:
+      description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

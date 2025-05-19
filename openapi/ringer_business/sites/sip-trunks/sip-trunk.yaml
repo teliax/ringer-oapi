@@ -1,0 +1,215 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Site SIP Trunk (Individual Operations)
+  description: API endpoints for viewing, updating, and deleting an individual SIP Trunk for a site.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server
+  # - url: https://api.staging.ringer.tel/v1
+  #   description: Staging server
+
+tags:
+  - name: Site Features - SIP Trunks
+    description: "Managing SIP Trunks for a site."
+
+paths:
+  /sites/{siteId}/sip-trunks/{sipTrunkId}:
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId'
+      - $ref: './index.yaml#/components/parameters/SipTrunkIdPath'
+    get:
+      tags:
+        - Site Features - SIP Trunks
+      summary: Get SIP Trunk Details
+      operationId: getSiteSipTrunkById
+      description: Retrieves the details of a specific SIP Trunk.
+      security:
+        - oAuth2: [read]
+      responses:
+        '200':
+          description: SIP Trunk details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: './index.yaml#/components/schemas/SipTrunkResponse'
+              example:
+                id: 161
+                site_id: 6
+                name: "Main Office SIP Trunk"
+                login: "main_trunk_user"
+                active: true
+                channel_limit: 10
+                contact_ip: "1.2.3.4:5060"
+                acl: "0.0.0.0/0"
+                caller_id_name: "Teliax HQ"
+                caller_id_number: "+13035551212"
+                disable_comfort_noise: false
+                timeout: 120
+                fail_over_destination_code: "menu:main_ivr"
+                fail_over_destination:
+                  name: "Main IVR Menu"
+                  code: "menu:main_ivr"
+                user_id: null
+                links:
+                  - href: "/sites/6/sip-trunks/161"
+                    rel: "self"
+                    method: "GET"
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/SipTrunkNotFoundError'
+    put:
+      tags:
+        - Site Features - SIP Trunks
+      summary: Update SIP Trunk
+      operationId: updateSiteSipTrunkById
+      description: Updates an existing SIP Trunk. Only attributes provided in the request body will be updated. Password update should use regenerate-password endpoint.
+      security:
+        - oAuth2: [write]
+      requestBody:
+        description: SIP Trunk attributes to update.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SipTrunkUpdateRequest'
+            example:
+              name: "Primary Outbound Trunk - Updated"
+              active: false
+              channel_limit: 15
+              contact_ip: "1.2.3.5:5060"
+              caller_id_name: "Main Line Updated"
+      responses:
+        '200':
+          description: SIP Trunk updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: './index.yaml#/components/schemas/SipTrunkResponse'
+              example:
+                id: 161
+                site_id: 6
+                name: "Primary Outbound Trunk - Updated"
+                login: "main_trunk_user"
+                active: false
+                channel_limit: 15
+                contact_ip: "1.2.3.5:5060"
+                acl: "0.0.0.0/0"
+                caller_id_name: "Main Line Updated"
+                caller_id_number: "+13035551212"
+                disable_comfort_noise: false
+                timeout: 120
+                fail_over_destination_code: "menu:main_ivr"
+                fail_over_destination:
+                  name: "Main IVR Menu"
+                  code: "menu:main_ivr"
+                user_id: null
+                links:
+                  - href: "/sites/6/sip-trunks/161"
+                    rel: "self"
+                    method: "GET"
+        '400':
+          $ref: '../../common_components.yaml#/components/responses/BadRequestError'
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/SipTrunkNotFoundError'
+        '409':
+          $ref: '../../common_components.yaml#/components/responses/ConflictError'
+
+    delete:
+      tags:
+        - Site Features - SIP Trunks
+      summary: Delete a SIP Trunk
+      operationId: deleteSiteSipTrunkById
+      description: Permanently deletes a SIP Trunk.
+      security:
+        - oAuth2: [write]
+      responses:
+        '204':
+          description: SIP Trunk deleted successfully.
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/SipTrunkNotFoundError'
+
+components:
+  securitySchemes:
+    oAuth2:
+      $ref: '../../common_components.yaml#/components/securitySchemes/oAuth2'
+
+  schemas:
+    SipTrunkUpdateRequest:
+      type: object
+      description: Attributes for updating a SIP Trunk. Password should be updated via regenerate-password endpoint.
+      properties:
+        name:
+          type: string
+          nullable: true
+          example: "Primary International Trunk"
+        login:
+          type: string
+          nullable: true
+          example: "international_user_updated"
+        active:
+          type: boolean
+          nullable: true
+          example: true
+        channel_limit:
+          type: integer
+          nullable: true
+          example: 20
+        contact_ip:
+          type: string
+          nullable: true
+          example: "5.6.7.8:5060"
+        acl:
+          type: string
+          nullable: true
+          example: "172.16.0.0/12"
+        caller_id_name:
+          type: string
+          nullable: true
+          example: "Intl. Calls"
+        caller_id_number:
+          type: string
+          nullable: true
+          example: "+18005550105"
+        disable_comfort_noise:
+          type: boolean
+          nullable: true
+          example: false
+        timeout:
+          type: integer
+          nullable: true
+          example: 180
+        fail_over_destination_code:
+          type: string
+          nullable: true
+          example: "ring_group:intl_support"
+        user_id:
+          type: integer
+          format: int64
+          nullable: true
+          description: Optional. Identifier of a user primarily associated with this SIP Trunk.
+          example: 15
+      example:
+        name: "Main Office Trunk - Modified"
+
+    # SipTrunkResponse is referenced from ./index.yaml#/components/schemas/SipTrunkResponse
+    # Common Link and Error schemas are referenced from ../../common_components.yaml 

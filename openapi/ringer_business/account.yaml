@@ -1,367 +1,500 @@
-# THIS IS A PARTIAL OPENAPI FILE
-# This file contains path objects intended to be referenced by main.yaml
-# The following structure is added for standalone validation purposes only
-
 openapi: 3.0.3
 info:
-  title: Ringer Business API - Account
+  title: Ringer Business API - Account Management
   description: |
-    Manage your company's account information and settings.
-    
-    The account endpoints allow you to view and update your account details, including
-    your company name, contact information, balance preferences, and more. Administrators
-    can also activate and close accounts.
-    
-    ## Authentication
-    This API supports OAuth 2.0 authentication using:
-    - Password grant flow
-    - Client credentials grant flow
-    
-    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
-    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
+    This API provides endpoints for managing customer accounts in the Ringer Business system.
+    It allows for retrieving account details, updating account information, managing account status (activation/closure),
+    and updating associated addresses.
+
+    Account operations typically require authentication and appropriate permissions (e.g., administrator role for certain updates).
   version: 1.0.0
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
   contact:
     name: Ringer API Support
-    url: https://docs.ringer.io/
-    email: support@ringer.io
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
 
 servers:
-  - url: https://api.ringer.io/v1
+  - url: https://api.ringer.tel/v1
     description: Production server
-  - url: https://api.staging.ringer.io/v1
+  - url: https://api.staging.ringer.tel/v1
     description: Staging server
 
-security:
-  - BearerAuth: []
-
 tags:
-  - name: Account
-    description: "Manage account details and configurations."
+  - name: Accounts
+    description: Endpoints for managing customer accounts and their associated details.
 
 paths:
   /account:
     get:
       tags:
-        - Account
-      summary: Account Details
-      description: Retrieve details of your account.
-      operationId: account_details
-      parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
-          schema:
-            type: string
+        - Accounts
+      summary: Get Current Account Details
+      description: |
+        Retrieves detailed information about the authenticated user's account.
+        The level of detail and available actions might differ based on the user's role (e.g., administrator vs. regular user).
+      operationId: getAccountDetails
+      security:
+        - oAuth2: [read]
       responses:
         '200':
-          description: OK
+          description: Successfully retrieved account details.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Account'
+                $ref: '#/components/schemas/AccountResponse'
+              example:
+                id: 101
+                name: "Innovatech Solutions Ltd."
+                status: "active"
+                plan: "enterprise_annual_v2"
+                email: "billing@innovatech.com"
+                phone: "+14155550100"
+                created_at: "2023-01-15T10:30:00Z"
+                locale: "en-US"
+                balance: "4276.85"
+                balance_preference_in_dollars: "100.00"
+                recharge_preference_in_dollars: "200.00"
+                maximum_recharge_preference_in_dollars: "1000.00"
+                international_enabled: true
+                current_user:
+                  id: 5
+                  first_name: "Jane"
+                  last_name: "Doe"
+                  email: "jane.doe@innovatech.com"
+                  role: "administrator"
+                address:
+                  id: 25
+                  email: "billing@innovatech.com"
+                  street_address: "123 Tech Park, Suite 100"
+                  country: "US"
+                  city: "San Francisco"
+                  state_province: "CA"
+                  postal_code: "94107"
+                  contact_number: "+14155550100"
+                links:
+                  - href: "/account"
+                    rel: "self"
+                    method: "GET"
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-    
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
     put:
       tags:
-        - Account
-      summary: Update Account
-      description: Update your account information. This operation is only allowed if you are in the administrator role.
-      operationId: update_account
-      parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
-          schema:
-            type: string
+        - Accounts
+      summary: Update Current Account Information
+      description: |
+        Updates information for the authenticated user's account.
+        Certain fields may only be modifiable by users with an administrator role.
+      operationId: updateAccount
+      security:
+        - oAuth2: [write]
       requestBody:
-        description: Account Attributes
+        description: Account attributes to update.
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AccountParams'
+              $ref: '#/components/schemas/AccountUpdateRequest'
+            example:
+              name: "Innovatech Global Solutions Ltd."
+              locale: "en-GB"
+              balance_preference_in_dollars: "150.00"
+              recharge_preference_in_dollars: "250.00"
+              maximum_recharge_preference_in_dollars: "1500.00"
       responses:
         '200':
-          description: Update Account Information and Organization Details
+          description: Account updated successfully.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Account'
+                $ref: '#/components/schemas/AccountResponse'
+              example:
+                id: 101
+                name: "Innovatech Global Solutions Ltd."
+                status: "active"
+                plan: "enterprise_annual_v2"
+                email: "billing@innovatech.com"
+                phone: "+14155550100"
+                created_at: "2023-01-15T10:30:00Z"
+                locale: "en-GB"
+                balance: "4026.85"
+                balance_preference_in_dollars: "150.00"
+                recharge_preference_in_dollars: "250.00"
+                maximum_recharge_preference_in_dollars: "1500.00"
+                international_enabled: true
+                current_user:
+                  id: 5
+                  first_name: "Jane"
+                  last_name: "Doe"
+                  email: "jane.doe@innovatech.com"
+                  role: "administrator"
+                address:
+                  id: 25
+                  email: "billing@innovatech.com"
+                  street_address: "123 Tech Park, Suite 100"
+                  country: "US"
+                  city: "San Francisco"
+                  state_province: "CA"
+                  postal_code: "94107"
+                  contact_number: "+14155550100"
+                links:
+                  - href: "/account"
+                    rel: "self"
+                    method: "GET"
         '400':
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/BadRequestError'
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
         '404':
-          description: Couldn't find account record
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-    
-    delete:
-      tags:
-        - Account
-      summary: Close an Account
-      description: Close Account. This operation is only allowed if you are in the administrator role.
-      operationId: close_account
-      parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Account Closed. No Content
-        '400':
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Couldn't find site record
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-    
+          $ref: '#/components/responses/NotFoundError' # Account not found (less likely for /account)
+
     patch:
       tags:
-        - Account
-      summary: Activate Account
-      description: Activate Account. This operation is only allowed if you are in the administrator role.
-      operationId: activate_account
-      parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
-          schema:
-            type: string
+        - Accounts
+      summary: Activate Current Account
+      description: |
+        Activates an inactive account, making it operational.
+        This operation is typically restricted to users with an administrator role and can only be performed on accounts that are currently inactive and ready for activation (e.g., after confirmation and initial setup).
+      operationId: activateAccount
+      security:
+        - oAuth2: [write, admin]
       responses:
         '200':
-          description: Activate an Inactive account once the account is ready for operation.
+          description: Account activated successfully.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Account'
+                $ref: '#/components/schemas/AccountResponse'
+              example:
+                id: 101
+                name: "Innovatech Global Solutions Ltd."
+                status: "active"
+                plan: "enterprise_annual_v2"
+                email: "billing@innovatech.com"
+                phone: "+14155550100"
+                created_at: "2023-01-15T10:30:00Z"
+                locale: "en-GB"
+                balance: "4026.85"
+                balance_preference_in_dollars: "150.00"
+                recharge_preference_in_dollars: "250.00"
+                maximum_recharge_preference_in_dollars: "1500.00"
+                international_enabled: true
+                current_user:
+                  id: 5
+                  first_name: "Jane"
+                  last_name: "Doe"
+                  email: "jane.doe@innovatech.com"
+                  role: "administrator"
+                address:
+                  id: 25
+                  email: "billing@innovatech.com"
+                  street_address: "123 Tech Park, Suite 100"
+                  country: "US"
+                  city: "San Francisco"
+                  state_province: "CA"
+                  postal_code: "94107"
+                  contact_number: "+14155550100"
+                links:
+                  - href: "/account"
+                    rel: "self"
+                    method: "GET"
         '400':
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/BadRequestError' 
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
-          description: Forbidden request. This error will occur if the Activation is tried on an Active account
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
-          description: Couldn't find account record
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/NotFoundError' # Account not found
+
+    delete:
+      tags:
+        - Accounts
+      summary: Close Current Account
+      description: |
+        Closes the authenticated user's account.
+        This action is typically permanent and may have prerequisites (e.g., settling outstanding balances).
+        Restricted to users with an administrator role.
+      operationId: closeAccount
+      security:
+        - oAuth2: [write, admin]
+      responses:
+        '204':
+          description: Account closed successfully. No content is returned.
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError' # Account not found
 
 components:
   securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+    oAuth2:
+      type: oauth2
+      description: OAuth 2.0 Authentication for securing API endpoints.
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ringer.tel/v1/auth/token
+          scopes:
+            read: Read access to API resources
+            write: Write access to API resources
+            admin: Administrative access for sensitive operations.
   
   schemas:
-    Account:
-      allOf:
-        - $ref: '#/components/schemas/AccountParams'
-        - required:
-          - id
-          properties:
-            id:
-              type: integer
-              example: 1
-            balance:
-              type: string
-              example: "4276.85"
-            current_user:
-              $ref: '#/components/schemas/Account_current_user'
-            address:
-              $ref: '#/components/schemas/Address'
-            links:
-              type: array
-              items:
-                $ref: '#/components/schemas/linkDescription'
-              example:
-                - href: /account
-                  rel: self
-                  title: Account Details
-                  method: GET
-                - href: /account
-                  rel: edit
-                  title: Edit Account
-                  method: PUT
-                - href: /account
-                  rel: delete
-                  title: Delete Account
-    
-    AccountParams:
-      required:
-        - balance_preference_in_dollars
-        - locale
-        - maximum_recharge_preference_in_dollars
-        - name
-        - recharge_preference_in_dollars
+    AccountUpdateRequest:
+      type: object
+      description: Specifies the fields that can be updated for an account.
       properties:
         name:
           type: string
-          example: Leap Tel
+          description: The official name of the account/company.
+          example: "Innovatech Global Solutions Ltd."
         locale:
           type: string
-          example: English
+          description: Preferred language and regional settings (e.g., "en-US", "en-GB").
+          example: "en-GB"
         balance_preference_in_dollars:
-          type: string
-          example: "100.0"
+          type: string 
+          description: Desired minimum balance to maintain, in dollars.
+          example: "150.00"
         recharge_preference_in_dollars:
-          type: string
-          example: "200.0"
+          type: string 
+          description: Amount to automatically recharge when balance falls below preference, in dollars.
+          example: "250.00"
         maximum_recharge_preference_in_dollars:
-          type: string
-          example: "1000.0"
-    
-    Address:
-      allOf:
-        - $ref: '#/components/schemas/AddressParams'
-        - required:
-          - id
-          properties:
-            id:
-              type: integer
-            links:
-              type: array
-              items:
-                $ref: '#/components/schemas/linkDescription'
+          type: string 
+          description: Maximum permissible auto-recharge amount in a single transaction, in dollars.
+          example: "1500.00"
       example:
-        id: 671
-        email: email@example.com
-        street_address: "233 E Wacker Drive, Suite #1106"
-        country: US
-        city: Chicago
-        state_province: IL
-        postal_code: "60601"
-        contact_number: "3125233844"
-        links:
-          - href: /addresses/671
-            rel: self
-            title: Update Address
-            method: PUT
-          - href: /account
-            rel: account
-            title: Account Details
-            method: GET
-    
-    AddressParams:
-      required:
-        - city
-        - contact_number
-        - country
-        - email
-        - postal_code
-        - state_province
-        - street_address
+        name: "Innovatech Solutions - EMEA Branch"
+
+    AccountResponse:
+      type: object
+      description: Detailed information about a customer account.
       properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the account.
+          example: 101
+        name:
+          type: string
+          description: The official name of the account/company.
+          example: "Innovatech Solutions Ltd."
+        status:
+          type: string
+          description: Current status of the account.
+          enum: [active, inactive, suspended, pending_confirmation, closed]
+          example: "active"
+        plan:
+          type: string
+          description: Identifier or name of the current subscription plan.
+          example: "enterprise_annual_v2"
         email:
           type: string
-          example: email@example.com
-        street_address:
+          format: email
+          description: Primary contact email for the account (often billing or admin).
+          example: "billing@innovatech.com"
+        phone:
           type: string
-          example: "233 E Wacker Drive, Suite #1106"
-        country:
+          description: Primary contact phone number for the account.
+          example: "+14155550100"
+        created_at:
           type: string
-          example: US
-        city:
+          format: date-time
+          description: Timestamp of when the account was created.
+          example: "2023-01-15T10:30:00Z"
+        locale:
           type: string
-          example: Chicago
-        state_province:
-          type: string
-          example: IL
-        postal_code:
-          type: string
-          example: "60601"
-        contact_number:
-          type: string
-          example: "3125233844"
-    
-    Account_current_user:
-      type: object
-      description: Information about the current user accessing the account
-    
-    linkDescription:
-      type: object
+          description: Preferred language and regional settings for the account.
+          example: "en-US"
+        balance:
+          type: string 
+          description: Current monetary balance of the account.
+          example: "4276.85"
+        balance_preference_in_dollars:
+          type: string 
+          description: Desired minimum balance to maintain, in dollars.
+          example: "100.00"
+        recharge_preference_in_dollars:
+          type: string 
+          description: Amount to automatically recharge when balance falls below preference, in dollars.
+          example: "200.00"
+        maximum_recharge_preference_in_dollars:
+          type: string 
+          description: Maximum permissible auto-recharge amount in a single transaction, in dollars.
+          example: "1000.00"
+        international_enabled:
+          type: boolean
+          description: Flag indicating if international calling/services are enabled.
+          example: true
+        current_user:
+          $ref: '#/components/schemas/UserSummary'
+        address:
+          $ref: './addresses.yaml#/components/schemas/AddressResponse'
+        links:
+          type: array
+          description: HATEOAS links related to the account.
+          items:
+            $ref: '#/components/schemas/Link'
       required:
-        - href
-        - rel
+        - id
+        - name
+        - status
+        - email
+        - created_at
+        - locale
+        - balance
+      example:
+        id: 101
+        name: "Innovatech Solutions Ltd."
+        status: "active"
+        plan: "enterprise_annual_v2"
+        email: "billing@innovatech.com"
+        phone: "+14155550100"
+        created_at: "2023-01-15T10:30:00Z"
+        locale: "en-US"
+        balance: "4276.85"
+        balance_preference_in_dollars: "100.00"
+        recharge_preference_in_dollars: "200.00"
+        maximum_recharge_preference_in_dollars: "1000.00"
+        international_enabled: true
+        current_user:
+          id: 5
+          first_name: "Jane"
+          last_name: "Doe"
+          email: "jane.doe@innovatech.com"
+          role: "administrator"
+        address:
+          id: 25
+          email: "billing@innovatech.com"
+          street_address: "123 Tech Park, Suite 100"
+          country: "US"
+          city: "San Francisco"
+          state_province: "CA"
+          postal_code: "94107"
+          contact_number: "+14155550100"
+        links:
+          - href: "/account"
+            rel: "self"
+            method: "GET"
+
+    UserSummary:
+      type: object
+      description: A brief summary of a user associated with an account.
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 5
+        first_name:
+          type: string
+          example: "Jane"
+        last_name:
+          type: string
+          example: "Doe"
+        email:
+          type: string
+          format: email
+          example: "jane.doe@innovatech.com"
+        role:
+          type: string
+          description: Role of the user within the account (e.g., administrator, user).
+          example: "administrator"
+      required:
+        - id
+        - email
+        - role
+
+    Link:
+      type: object
+      description: Represents a HATEOAS link.
       properties:
         href:
           type: string
-          description: "URI template, as defined by RFC 6570, with the addition of the $, ( and ) characters for pre-processing"
+          format: uri-reference
         rel:
           type: string
-          description: Relation to the target resource of the link
         title:
           type: string
-          description: A title for the link
+          nullable: true
         method:
           type: string
-          description: HTTP method for requesting the target of the link (e.g. "GET" or "POST")
-    
+          enum: [GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD]
+      required:
+        - href
+        - rel
+
     Error:
       type: object
+      description: Standard error response format.
       properties:
         status:
           type: string
-          description: Error status
           example: "error"
         error:
           type: string
-          description: Error message
-          example: "Invalid input parameters"
+          example: "Action not permitted for the current user."
         error_code:
           type: string
-          description: Error code for machine processing
-          example: "INVALID_INPUT"
+          example: "FORBIDDEN_ACTION"
       required:
         - status
-        - error 
+        - error
+        - error_code
+      example:
+        status: "error"
+        error: "A generic error occurred."
+        error_code: "GENERIC_ERROR"
+
+  responses:
+    BadRequestError:
+      description: Bad Request - Invalid data provided.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Invalid account update parameters."
+            error_code: "VALIDATION_ERROR"
+    UnauthorizedError:
+      description: Unauthorized - Authentication token is missing or invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Authentication required."
+            error_code: "UNAUTHORIZED"
+    ForbiddenError:
+      description: Forbidden - The authenticated user does not have permission.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Permission denied for this account operation."
+            error_code: "FORBIDDEN"
+    NotFoundError:
+      description: Not Found - The account could not be found (should be rare for /account path).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Account not found."
+            error_code: "RESOURCE_NOT_FOUND"

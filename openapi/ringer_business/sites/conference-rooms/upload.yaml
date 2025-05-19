@@ -1,0 +1,100 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Upload Conference Room Audio
+  description: |
+    Endpoint for uploading audio files (greeting and music on hold) for a specific conference room.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1 # Should be relative or overridden
+    description: Production server
+
+tags:
+  - name: Site Features - Conference Rooms
+    description: Managing conference rooms (audio bridges) associated with a site.
+
+paths:
+  /sites/{siteId}/conference-rooms/{conferenceRoomId}/upload:
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId'
+      - $ref: './index.yaml#/components/parameters/ConferenceRoomIdPath'
+    patch:
+      tags:
+        - Site Features - Conference Rooms
+      summary: Upload Conference Room Audio Files
+      description: |
+        Uploads or updates the greeting and/or music on hold audio files for a specific conference room.
+        This is a PATCH operation as it modifies specific parts of the conference room resource (its audio files).
+        The original Teliax API had this as PATCH.
+      operationId: uploadSiteConferenceRoomAudio # was upload_conference_room
+      security:
+        - oAuth2: [write]
+      requestBody:
+        description: Audio files for greeting and/or music on hold.
+        required: true # At least one file should be provided for an upload operation
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                greeting:
+                  type: string
+                  format: binary
+                  nullable: true
+                  description: Audio file for the menu greeting (e.g., .mp3, .wav).
+                music_on_hold:
+                  type: string
+                  format: binary
+                  nullable: true
+                  description: Audio file for music on hold. If not provided, existing music is unchanged.
+              # required: # If at least one is required, this should be defined or handled by server logic
+              #   - greeting # Example: if greeting is always needed, or one of greeting/music_on_hold
+              example: {} # Corrected to empty object for multipart per schema type
+            # Add encoding if specific file types are expected for greeting/music_on_hold
+            # encoding:
+            #   greeting:
+            #     contentType: audio/mpeg, audio/wav, audio/ogg
+            #   music_on_hold:
+            #     contentType: audio/mpeg, audio/wav, audio/ogg
+      responses:
+        '200':
+          description: Audio file(s) uploaded successfully. Returns the updated conference room details.
+          content:
+            application/json:
+              schema:
+                $ref: './index.yaml#/components/schemas/ConferenceRoomResponse' # Reference from index
+              example:
+                id: 3
+                site_id: 6
+                name: "Weekly Sales Meeting"
+                pin: "****" # Masked
+                moderator_pin: "****" # Masked
+                profile: "default"
+                greeting_url: "https://cdn.example.com/greetings/conf_3_new_greeting.mp3"
+                music_on_hold_url: "https://cdn.example.com/moh/conf_3_new_moh.mp3"
+                user_id: 1
+                links:
+                  - href: "/sites/6/conference-rooms/3"
+                    rel: "self"
+                    method: "GET"
+        '400':
+          $ref: '../../common_components.yaml#/components/responses/BadRequestError'
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/ConferenceRoomNotFoundError'
+
+components:
+  # Security Schemes and common responses would be referenced from a higher level
+  securitySchemes:
+    oAuth2:
+      $ref: '../../common_components.yaml#/components/securitySchemes/oAuth2' 

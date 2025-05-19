@@ -1,0 +1,351 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Site Ring Groups (Collection)
+  description: |
+    Endpoints for listing ring groups associated with a specific site and creating new ring groups.
+    Ring groups allow multiple destinations (e.g., extensions, devices) to be rung simultaneously or sequentially.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server
+  # - url: https://api.staging.ringer.tel/v1
+  #   description: Staging server
+
+tags:
+  - name: Site Features - Ring Groups # Standardized tag
+    description: "Managing ring groups for a site."
+
+paths:
+  /sites/{siteId}/ring-groups: # Standardized siteId
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId' # MODIFIED PATH
+    get:
+      tags:
+        - Site Features - Ring Groups
+      summary: List Ring Groups for a Site
+      description: Retrieve a paginated list of all ring groups configured for the specified site.
+      operationId: listSiteRingGroups # Renamed
+      security:
+        - oAuth2: [read]
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination.
+          required: false
+          schema:
+            type: integer
+            default: 1
+            example: 1
+        - name: page_size
+          in: query
+          description: Number of ring groups per page.
+          required: false
+          schema:
+            type: integer
+            default: 25
+            example: 25
+      responses:
+        '200':
+          description: A paginated list of ring groups.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRingGroupListResponse' # Updated schema name
+              example:
+                ring_groups:
+                  - id: 10
+                    site_id: 6
+                    name: "Sales Team"
+                    destination_codes: ["device:dev_sales1", "extension:ext_sales_mobile"]
+                    destinations: 
+                      - name: "Sales Device 1"
+                        code: "device:dev_sales1"
+                      - name: "Sales Extension Mobile"
+                        code: "extension:ext_sales_mobile"
+                    ring_strategy: "simultaneous"
+                    timeout: 30 # Renamed from ring_time
+                    fail_over_destination:
+                      code: "voicemailbox:vm_sales"
+                      name: "Sales Voicemail"
+                    user_id: null # Optional
+                    links:
+                      - href: "/sites/6/ring-groups/10"
+                        rel: "self"
+                        method: "GET"
+                total_items: 1
+                total_pages: 1
+                current_page: 1
+                per_page: 25
+                links:
+                  - href: "/sites/6/ring-groups?page=1&page_size=25"
+                    rel: "self"
+                    method: "GET"
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError' # MODIFIED PATH
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError' # MODIFIED PATH
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/SiteNotFoundError' # MODIFIED PATH
+    
+    post:
+      tags:
+        - Site Features - Ring Groups
+      summary: Create Ring Group for a Site
+      description: Add a new ring group to the specified site.
+      operationId: createSiteRingGroup # Renamed
+      security:
+        - oAuth2: [write]
+      requestBody:
+        description: Configuration details for the new ring group.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RingGroupCreateRequest'
+            example:
+              name: "Support Queue"
+              destination_codes: ["device:support1", "device:support2"] # Use destination_codes
+              ring_strategy: "sequential"
+              timeout: 20 # Renamed from ring_time
+              fail_over_destination_code: "voicemailbox:support_vm"
+      responses:
+        '201':
+          description: Ring Group Created Successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RingGroupResponse' # MODIFIED: Point to local RingGroupResponse
+              example:
+                id: 11
+                site_id: 6
+                name: "Support Queue"
+                destination_codes: ["device:support1", "device:support2"]
+                destinations: 
+                  - name: "Support Agent 1 (device:support1)"
+                    code: "device:support1"
+                  - name: "Support Agent 2 (device:support2)"
+                    code: "device:support2"
+                ring_strategy: "sequential"
+                timeout: 20
+                fail_over_destination:
+                  code: "voicemailbox:support_vm"
+                  name: "Support Voicemail"
+                user_id: null
+                links:
+                  - href: "/sites/6/ring-groups/11"
+                    rel: "self"
+                    method: "GET"
+        '400':
+          $ref: '../../common_components.yaml#/components/responses/BadRequestError' # MODIFIED PATH
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError' # MODIFIED PATH
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError' # MODIFIED PATH
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/SiteNotFoundError' # MODIFIED PATH
+
+components:
+  securitySchemes:
+    oAuth2:
+      $ref: '../../common_components.yaml#/components/securitySchemes/oAuth2' # MODIFIED PATH
+
+  schemas:
+    RingGroupCore:
+      type: object
+      properties:
+        name:
+          type: string
+          description: A user-friendly name for the ring group.
+          example: "Main Sales Line"
+        destination_codes: # Changed from 'members', array of destination codes
+          type: array
+          items:
+            type: string # e.g., "device:id", "extension:id", "forward:id"
+          description: An array of system codes for the destinations to be rung.
+          example: ["device:dev123", "extension:ext456"]
+        ring_strategy:
+          type: string
+          enum: [simultaneous, sequential, random] # Added random as a common strategy
+          description: How the destinations are rung.
+          example: "simultaneous"
+        timeout: # Renamed from ring_time for clarity
+          type: integer
+          description: Duration in seconds to ring the group before proceeding to failover.
+          default: 20
+          example: 30
+        fail_over_destination_code: # Changed from fail_over
+          type: string
+          nullable: true
+          description: System code for the failover destination if the ring group is not answered.
+          example: "voicemailbox:general_sales_vm"
+        user_id:
+          type: integer
+          format: int64
+          nullable: true
+          description: Optional. Identifier of a user primarily associated with this ring group.
+          example: 10
+      required:
+        - name
+        - destination_codes
+        - ring_strategy
+        - timeout # Typically a timeout is essential
+      example: # <--- ADDED
+        name: "Customer Support"
+        destination_codes: ["device:agent1", "extension:agent2_mobile"]
+        ring_strategy: "random"
+        timeout: 25
+        fail_over_destination_code: "menu:support_escalation"
+        user_id: 20
+
+    RingGroupCreateRequest:
+      allOf:
+        - $ref: '#/components/schemas/RingGroupCore'
+      description: Data required to create a new ring group.
+      required: [name, destination_codes, ring_strategy, timeout]
+      example:
+        name: "Tech Support Tier 1"
+        destination_codes: ["user:tech1", "user:tech2"]
+        ring_strategy: "simultaneous"
+        timeout: 60
+        fail_over_destination_code: "ring_group:tech_support_tier2"
+
+    RingGroupResponse: 
+      allOf:
+        - $ref: '#/components/schemas/RingGroupCore'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+            site_id:
+              type: integer
+              format: int64
+            destinations: 
+              type: array
+              items:
+                $ref: '../../common_components.yaml#/components/schemas/SiteDestination' # MODIFIED PATH
+            fail_over_destination: 
+              type: object
+              nullable: true
+              allOf:
+                - $ref: '../../common_components.yaml#/components/schemas/SiteDestination' # MODIFIED PATH
+            links:
+              type: array
+              items:
+                $ref: '../../common_components.yaml#/components/schemas/Link' # MODIFIED PATH
+              nullable: true
+          required:
+            - id
+            - site_id
+            # From RingGroupCore
+            - name
+            - destination_codes
+            - ring_strategy
+            - timeout
+      description: Detailed information about a ring group. # ADDED Description
+      example: # <--- ADDED
+        id: 10
+        site_id: 6
+        name: "Sales Team"
+        destination_codes: ["device:dev_sales1", "extension:ext_sales_mobile"]
+        destinations:
+          - name: "Sales Device 1"
+            code: "device:dev_sales1"
+          - name: "Sales Extension Mobile"
+            code: "extension:ext_sales_mobile"
+        ring_strategy: "simultaneous"
+        timeout: 30
+        fail_over_destination_code: "voicemailbox:vm_sales"
+        fail_over_destination:
+          name: "Sales Voicemail"
+          code: "voicemailbox:vm_sales"
+        user_id: null
+        links:
+          - href: "/sites/6/ring-groups/10"
+            rel: "self"
+            method: "GET"
+
+    PaginatedRingGroupListResponse:
+      type: object
+      description: A paginated list of ring groups.
+      properties:
+        ring_groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/RingGroupResponse' 
+        total_items:
+          type: integer
+          example: 30
+        total_pages:
+          type: integer
+          example: 3
+        current_page:
+          type: integer
+          example: 1
+        per_page:
+          type: integer
+          example: 10
+        links:
+          type: array
+          items:
+            $ref: '../../common_components.yaml#/components/schemas/Link' # MODIFIED PATH
+          nullable: true
+      required:
+        - ring_groups
+        - total_items
+        - total_pages
+        - current_page
+        - per_page
+      example: # <--- ADDED
+        ring_groups:
+          - id: 10
+            site_id: 6
+            name: "Sales Team"
+            destination_codes: ["device:dev_sales1", "extension:ext_sales_mobile"]
+            destinations:
+              - name: "Sales Device 1"
+                code: "device:dev_sales1"
+              - name: "Sales Extension Mobile"
+                code: "extension:ext_sales_mobile"
+            ring_strategy: "simultaneous"
+            timeout: 30
+            fail_over_destination_code: "voicemailbox:vm_sales"
+            fail_over_destination:
+              name: "Sales Voicemail"
+              code: "voicemailbox:vm_sales"
+            user_id: null
+            links:
+              - href: "/sites/6/ring-groups/10"
+                rel: "self"
+                method: "GET"
+        total_items: 1
+        total_pages: 1
+        current_page: 1
+        per_page: 25
+        links:
+          - href: "/sites/6/ring-groups?page=1&page_size=25"
+            rel: "self"
+            method: "GET"
+
+    # Error and Link schemas are common 
+
+  parameters:
+    SiteIdPath:
+      $ref: '../../common_components.yaml#/components/parameters/SiteId' # Ensuring consistency
+    RingGroupIdPath: # ADDING RingGroupId
+      name: ringGroupId
+      in: path
+      description: The unique identifier of the ring group.
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 10 

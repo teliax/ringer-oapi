@@ -1,0 +1,89 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Site Voicemail Box Transfer
+  description: API endpoint for transferring a Voicemail Box between sites.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server
+  # - url: https://api.staging.ringer.tel/v1
+  #   description: Staging server
+
+tags:
+  - name: Site Features - Voicemail Boxes
+    description: "Managing voicemail boxes for a site."
+
+paths:
+  /sites/{siteId}/voice-mail-boxes/{voicemailBoxId}/transfer:
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId'
+      - $ref: './index.yaml#/components/parameters/VoicemailBoxIdPath'
+    post:
+      tags:
+        - Site Features - Voicemail Boxes
+      summary: Transfer Voicemail Box to Another Site
+      operationId: transferSiteVoicemailBox
+      description: Moves a Voicemail Box from its current site to a new target site.
+      security:
+        - oAuth2: [write, admin]
+      requestBody:
+        description: The identifier of the new site for the Voicemail Box.
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                new_site_id:
+                  type: integer
+                  format: int64
+                  description: The unique identifier of the target site.
+                  example: 9
+              required:
+                - new_site_id
+              example:
+                new_site_id: 9
+      responses:
+        '200':
+          description: Voicemail Box transferred successfully. Returns the details in its new site context.
+          content:
+            application/json:
+              schema:
+                $ref: './index.yaml#/components/schemas/VoicemailBoxResponseData'
+              example:
+                id: "553"
+                type: "voicemail-box"
+                attributes:
+                  name: "Sales Team Voicemail"
+                  pin: "****"
+                  notification_emails: "sales@example.com"
+                  status: "active"
+                  site_id: 9
+                  announcement_url: "https://cdn.example.com/greetings/vm553.mp3"
+                links:
+                  self:
+                    href: "/sites/9/voice-mail-boxes/553"
+                    rel: "self"
+                    method: "GET"
+        '400':
+          $ref: '../../common_components.yaml#/components/responses/BadRequestError'
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/NotFoundError'
+
+components:
+  securitySchemes:
+    oAuth2:
+      $ref: '../../common_components.yaml#/components/securitySchemes/oAuth2'
+  # No local schemas as they are referenced 

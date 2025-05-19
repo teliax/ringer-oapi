@@ -1,44 +1,33 @@
-# THIS IS A PARTIAL OPENAPI FILE
-# This file contains path objects intended to be referenced by main.yaml
-# The following structure is added for standalone validation purposes only
-
 openapi: 3.0.3
 info:
-  title: Ringer Business API - Packages
+  title: Ringer Business API - Packages Management
   description: |
-    View and manage packages in your Ringer Business account.
-    
-    Packages are collections of features and services that can be added to your account.
-    Some packages may be included with your plan, while others are available as add-ons.
-    
-    ## Authentication
-    This API supports OAuth 2.0 authentication using:
-    - Password grant flow
-    - Client credentials grant flow
-    
-    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
-    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
+    This API provides endpoints for managing packages.
+    Packages are collections of items or features that can be included in or added to subscription plans.
+    This API allows retrieving details of specific packages and listing available packages.
+
+    - **Included Packages**: Provide a quantity of a specific rate item which is included in the plan subscription cost.
+    - **Optional Packages**: Provide a quantity of a specific rate item for an additional monthly fee.
   version: 1.0.0
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
   contact:
     name: Ringer API Support
-    url: https://docs.ringer.io/
-    email: support@ringer.io
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
 
 servers:
-  - url: https://api.ringer.io/v1
+  - url: https://api.ringer.tel/v1
     description: Production server
-  - url: https://api.staging.ringer.io/v1
+  - url: https://api.staging.ringer.tel/v1
     description: Staging server
 
-security:
-  - BearerAuth: []
+# Global security removed
 
 tags:
   - name: Packages
-    description: "View and manage packages available for your account."
+    description: Endpoints for retrieving details of service packages.
 
 paths:
   /packages:
@@ -46,254 +35,460 @@ paths:
       tags:
         - Packages
       summary: List Packages
-      description: Retrieve a list of packages available for purchase for your account.
-      operationId: list_packages
+      description: Retrieve a list of all available packages, potentially with pagination.
+      operationId: listPackages
+      security:
+        - oAuth2: [read]
       parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
+        - name: page
+          in: query
+          description: Page number for pagination.
+          required: false
           schema:
-            type: string
+            type: integer
+            default: 1
+            example: 1
+        - name: page_size
+          in: query
+          description: Number of packages per page.
+          required: false
+          schema:
+            type: integer
+            default: 25
+            example: 10
       responses:
         '200':
-          description: Array of Packages
+          description: A paginated list of packages.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PackageList'
+                $ref: '#/components/schemas/PaginatedPackageListResponse'
+              example:
+                packages:
+                  - id: 94 
+                    name: "Plan Subscription Fee"
+                    description: "Monthly fee for the Unlimited Device Plan."
+                    item_type: "subscription"
+                    item_rules: "base_fee"
+                    item_quantity: 1
+                    price: "25.00"
+                    currency: "USD"
+                    plan_id: 1
+                    included: true
+                    removable: false
+                    category: "base_plan"
+                    renewable: true
+                    links:
+                      - href: "/packages/94"
+                        rel: "self"
+                        method: "GET"
+                total_items: 1
+                total_pages: 1
+                current_page: 1
+                per_page: 25
+                links:
+                  - href: "/packages?page=1&page_size=25"
+                    rel: "self"
+                    method: "GET"
         '400':
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/BadRequestError'
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
   
-  /packages/{id}:
-    post:
+  /packages/{packageId}:
+    parameters:
+      - $ref: '#/components/parameters/PackageIdPath' # Local ref
+    get:
       tags:
         - Packages
-      summary: Purchase Package
-      description: Purchase an add-on package for your account.
-      operationId: purchase_package
-      parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          description: ID of the package to purchase
-          required: true
-          schema:
-            type: integer
+      summary: Get Package Details
+      description: Retrieves detailed information for a specific package by its ID.
+      operationId: getPackageById
+      security:
+        - oAuth2: [read]
       responses:
-        '201':
-          description: Package purchased successfully
+        '200':
+          description: Successfully retrieved package details.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PackagePurchase'
-        '400':
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/PackageResponse'
+              example:
+                id: 94 
+                name: "Plan Subscription Fee"
+                description: "Monthly fee for the Unlimited Device Plan."
+                item_type: "subscription"
+                item_rules: "base_fee"
+                item_quantity: 1
+                price: "25.00"
+                currency: "USD"
+                plan_id: 1
+                included: true
+                removable: false
+                category: "base_plan"
+                renewable: true
+                features: 
+                links:
+                  - href: "/packages/94"
+                    rel: "self"
+                    method: "GET"
+                  - href: "/plans/1"
+                    rel: "relatedPlan"
+                    method: "GET"
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-    
-    delete:
-      tags:
-        - Packages
-      summary: Remove Package
-      description: Remove an add-on package from your account.
-      operationId: remove_package
-      parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          description: ID of the package to remove
-          required: true
-          schema:
-            type: integer
-      responses:
-        '204':
-          description: Package removed successfully. No Content.
-        '400':
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
         '404':
-          description: Package not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/NotFoundError'
 
 components:
+  parameters:
+    PackageIdPath:
+      name: packageId
+      in: path
+      description: The unique identifier of the package.
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 94
+
   securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+    oAuth2:
+      type: oauth2
+      description: OAuth 2.0 Authentication for securing API endpoints.
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ringer.tel/v1/auth/token
+          scopes:
+            read: Read access to API resources
+            write: Write access to API resources
+            admin: Administrative access.
   
   schemas:
-    PackageList:
-      type: object
-      properties:
-        packages:
-          type: array
-          description: Array of Packages
-          items:
-            $ref: '#/components/schemas/Package'
-        total_items:
-          type: string
-          example: "350"
-          description: Total number of items
-          readOnly: true
-        total_pages:
-          type: string
-          example: "7"
-          description: Total number of pages
-          readOnly: true
-        links:
-          type: array
-          items:
-            $ref: '#/components/schemas/linkDescription'
-    
-    Package:
-      type: object
-      required:
-        - id
-        - name
-        - description
-        - price
-        - category
-      properties:
-        id:
-          type: integer
-          example: 12345
-        name:
-          type: string
-          example: "International Calling"
-        description:
-          type: string
-          example: "Reduced rates for international calls to over 50 countries"
-        price:
-          type: number
-          format: float
-          example: 9.99
-        currency:
-          type: string
-          example: "USD"
-        category:
-          type: string
-          enum: [calling, messaging, conferencing, faxing, security]
-          example: "calling"
-        renewable:
-          type: boolean
-          example: true
-        features:
-          type: array
-          items:
-            $ref: '#/components/schemas/PackageFeature'
-        links:
-          type: array
-          items:
-            $ref: '#/components/schemas/linkDescription'
-    
     PackageFeature:
       type: object
+      required:
+        - name
+        - description
       properties:
         name:
           type: string
+          description: Name of the feature
           example: "Discounted Calls to Europe"
         description:
           type: string
+          description: Detailed description of the feature
           example: "Calls to European countries at 5¢/minute"
         value:
           type: string
+          description: Value or metric for the feature
           example: "0.05"
     
-    PackagePurchase:
+    PackageCore:
       type: object
-      allOf:
-        - $ref: '#/components/schemas/Package'
-        - properties:
-            purchased_at:
-              type: string
-              format: date-time
-              example: "2023-01-15T14:30:00Z"
-            expires_at:
-              type: string
-              format: date-time
-              nullable: true
-              example: "2023-02-15T14:30:00Z"
-            status:
-              type: string
-              enum: [active, pending, expired]
-              example: "active"
-    
-    linkDescription:
-      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the package.
+          example: 94
+        name:
+          type: string
+          description: The name of the package.
+          example: "Plan Subscription"
+        description:
+          type: string
+          nullable: true
+          description: A brief description of what the package includes or its purpose.
+          example: "Core subscription fee for the selected plan."
+        item_type:
+          type: string
+          description: The type of item this package represents or groups (e.g., subscription, feature_bundle, usage_minutes).
+          example: "subscription"
+        item_rules:
+          type: string
+          nullable: true
+          description: Specific rules or subclassifications for the item type.
+          example: "monthly_fee"
+        item_quantity:
+          type: integer
+          description: The quantity of the item provided by this package (e.g., number of minutes, 1 for a subscription).
+          example: 1
+        price:
+          type: string
+          description: The cost of this package if it's optional or its contribution to a plan's price.
+          example: "25.00"
+        currency:
+          type: string
+          description: Three-letter ISO currency code for the package price.
+          default: "USD"
+          example: "USD"
+        plan_id:
+          type: integer
+          format: int64
+          nullable: true
+          description: Identifier of the plan this package definition might be primarily associated with or templated from.
+          example: 1
+        included:
+          type: boolean
+          description: True if this package is an included part of a plan, false if it's optional.
+          example: true
+        removable:
+          type: boolean
+          description: Indicates if this package can be removed from a plan by the customer.
+          example: false
+        category: 
+          type: string
+          description: Category of the package
+          enum: [calling, messaging, conferencing, faxing, security, base_plan, add_on]
+          example: "base_plan"
+        renewable: 
+          type: boolean
+          description: Whether the package renews automatically
+          example: true
+        features: 
+          type: array
+          description: List of features included in the package
+          items:
+            $ref: '#/components/schemas/PackageFeature'
+          nullable: true
       required:
-        - href
-        - rel
+        - id
+        - name
+        - item_type
+        - item_quantity
+        - price
+        - currency
+        - included
+        - removable
+
+    PackageResponse:
+      allOf:
+        - $ref: '#/components/schemas/PackageCore'
+        - type: object
+          properties:
+            links:
+              type: array
+              description: HATEOAS links related to this package.
+              items:
+                $ref: '#/components/schemas/Link' 
+              nullable: true
+      description: Detailed information about a service package.
+      example:
+        id: 94
+        name: "Plan Subscription Fee"
+        description: "Monthly fee for the Unlimited Device Plan."
+        item_type: "subscription"
+        item_rules: "base_fee"
+        item_quantity: 1
+        price: "25.00"
+        currency: "USD"
+        plan_id: 1
+        included: true
+        removable: false
+        category: "base_plan"
+        renewable: true
+        links:
+          - href: "/packages/94"
+            rel: "self"
+            method: "GET"
+          - href: "/plans/1"
+            rel: "relatedPlan"
+            method: "GET"
+
+    CategorizedPackageListResponse: 
+      type: object
+      description: A list of packages, typically categorized into included and optional. (Used by Plans API)
+      properties:
+        included_packages:
+          type: array
+          items:
+            $ref: '#/components/schemas/PackageResponse'
+          description: Packages that are automatically part of a plan.
+        optional_packages:
+          type: array
+          items:
+            $ref: '#/components/schemas/PackageResponse'
+          description: Additional packages that can be added to a plan.
+      required:
+        - included_packages
+        - optional_packages
+      example:
+        included_packages:
+          - $ref: '#/components/schemas/PackageResponse/example'
+        optional_packages:
+          - id: 22 
+            name: "International Calling Add-on - 100 Mins"
+            description: "100 minutes for international calls to Zone A."
+            item_type: "usage_minutes"
+            item_rules: "international_zone_a"
+            item_quantity: 100
+            price: "10.00"
+            currency: "USD"
+            plan_id: 1
+            included: false
+            removable: true
+            category: "add_on"
+            renewable: true
+
+    Link:
+      type: object
+      description: Represents a HATEOAS link.
       properties:
         href:
           type: string
-          description: "URI template, as defined by RFC 6570, with the addition of the $, ( and ) characters for pre-processing"
+          format: uri-reference
         rel:
           type: string
-          description: Relation to the target resource of the link
         title:
           type: string
-          description: A title for the link
+          nullable: true
         method:
           type: string
-          description: HTTP method for requesting the target of the link (e.g. "GET" or "POST")
-    
+          enum: [GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD]
+      required:
+        - href
+        - rel
+
     Error:
       type: object
+      description: Standard error response format.
       properties:
         status:
           type: string
-          description: Error status
           example: "error"
         error:
           type: string
-          description: Error message
-          example: "Invalid input parameters"
+          example: "Package not found."
         error_code:
           type: string
-          description: Error code for machine processing
-          example: "INVALID_INPUT"
+          example: "PACKAGE_NOT_FOUND"
+        details: # Added optional details for consistency
+          type: array
+          nullable: true
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              issue:
+                type: string
       required:
         - status
         - error
+        - error_code
+      example:
+        status: "error"
+        error: "A generic package error occurred."
+        error_code: "PACKAGE_GENERIC_ERROR"
+
+    PaginatedPackageListResponse:
+      type: object
+      description: A paginated list of packages.
+      properties:
+        packages:
+          type: array
+          items:
+            $ref: '#/components/schemas/PackageResponse'
+        total_items:
+          type: integer
+          description: Total number of packages matching the query.
+          example: 50
+        total_pages:
+          type: integer
+          description: Total number of pages based on `per_page`.
+          example: 5
+        current_page:
+          type: integer
+          description: The current page number being displayed.
+          example: 1
+        per_page:
+          type: integer
+          description: The number of items per page.
+          example: 10
+        links:
+          type: array
+          description: HATEOAS links for pagination and related resources.
+          items:
+            $ref: '#/components/schemas/Link' 
+          nullable: true
+      required:
+        - packages
+        - total_items
+        - total_pages
+        - current_page
+        - per_page
+      example:
+        packages:
+          - id: 94 
+            name: "Plan Subscription Fee"
+            description: "Monthly fee for the Unlimited Device Plan."
+            item_type: "subscription"
+            item_rules: "base_fee"
+            item_quantity: 1
+            price: "25.00"
+            currency: "USD"
+            plan_id: 1
+            included: true
+            removable: false
+            category: "base_plan"
+            renewable: true
+            features: 
+            links:
+              - href: "/packages/94"
+                rel: "self"
+                method: "GET"
+        total_items: 1
+        total_pages: 1
+        current_page: 1
+        per_page: 25
+        links:
+          - href: "/packages?page=1&page_size=25"
+            rel: "self"
+            method: "GET"
+
+  responses:
+    UnauthorizedError:
+      description: Unauthorized - Authentication token is missing, invalid, or does not have permissions for this resource.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Authentication required."
+            error_code: "UNAUTHORIZED"
+    ForbiddenError:
+      description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "You do not have permission to access packages."
+            error_code: "FORBIDDEN"
+    NotFoundError:
+      description: Not Found - The requested package could not be found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "The requested package was not found."
+            error_code: "RESOURCE_NOT_FOUND"
+    BadRequestError:
+      description: Bad Request - The request was malformed or contained invalid data.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Invalid pagination parameters for packages."
+            error_code: "PACKAGE_VALIDATION_ERROR"

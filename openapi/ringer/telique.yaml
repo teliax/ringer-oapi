@@ -8,6 +8,10 @@ info:
     The API also includes services for checking phone numbers against 
     Do Not Originate (DNO) and Do Not Call (DNC) databases, as well as 
     STIR/SHAKEN call authentication validation.
+    
+    ## Authentication
+    This API uses IP whitelist authentication. Your server's IP address must be registered with
+    Ringer before making API calls. Contact support@ringer.tel to register your IP address.
   version: 1.0.0
   license:
     name: MIT License
@@ -21,9 +25,267 @@ servers:
     description: Production server
   - url: https://api.staging.ringer.tel/v1
     description: Staging server
+
+# Global security definition for IP whitelist
+components:
+  securitySchemes:
+    ipWhitelist:
+      type: apiKey
+      name: X-Forwarded-For
+      in: header
+      description: |
+        IP Whitelist Authentication
+        
+        This API uses IP whitelist authentication. Your server's IP address must be registered with
+        Ringer before making API calls. Contact support@ringer.tel to register your IP address.
+  schemas:
+    CNAMResponse:
+      type: object
+      example:
+        phoneNumber: "8005551234"
+        name: "ACME CORPORATION"
+        status: "success"
+        cacheHit: true
+      properties:
+        phoneNumber:
+          type: string
+          description: The phone number that was looked up
+          example: "8005551234"
+        name:
+          type: string
+          description: The caller name associated with the phone number
+          example: "ACME CORPORATION"
+        status:
+          type: string
+          description: Status of the request
+          enum: [success, error]
+          example: "success"
+        error:
+          type: string
+          description: Error message (only present when status is "error")
+          example: "SS7 network not responding"
+        cacheHit:
+          type: boolean
+          description: Indicates whether the result was found in cache (true) or required an SS7 lookup (false)
+          example: true
+      required:
+        - phoneNumber
+        - name
+        - status
+        - cacheHit
+    LrnResponse:
+      type: object
+      example:
+        phoneNumber: "5551234567"
+        lrn: "5552345678"
+        spid: "AB12"
+        ported: true
+      properties:
+        phoneNumber:
+          type: string
+          description: The queried telephone number
+          example: '5551234567'
+        lrn:
+          type: string
+          description: Local Routing Number for the queried number
+          example: '5552345678'
+        spid:
+          type: string
+          nullable: true
+          description: Service Provider ID for the carrier serving this number
+          example: 'AB12'
+        ported:
+          type: boolean
+          description: Indicates whether the number has been ported (true) or not (false)
+          example: true
+      required:
+        - phoneNumber
+        - lrn
+        - ported
+    Error:
+      type: object
+      example:
+        status: "error"
+        error: "Invalid phone number format"
+        error_code: "INVALID_FORMAT"
+      properties:
+        status:
+          type: string
+          description: Error status
+          example: error
+        error:
+          type: string
+          description: Error message
+          example: Invalid phone number format
+        error_code:
+          type: string
+          description: Error code for machine processing
+          example: invalid_phone_number
+      required:
+        - status
+        - error
+    CICResponse:
+      type: object
+      example:
+        carrier: "0123"
+        data: {}
+        ir: {}
+      properties:
+        carrier:
+          type: string
+          description: Carrier Identification Code
+          example: "0123"
+        data:
+          type: object
+          description: Additional data from the interpretation
+        ir:
+          type: object
+          description: Interpretation result data structure
+      required:
+        - carrier
+    RORResponse:
+      type: object
+      example:
+        ror: "ROUTE1234"
+      properties:
+        ror:
+          type: string
+          description: Responsible Organization
+          example: "ROUTE1234"
+      required:
+        - ror
+    CICRORResponse:
+      type: object
+      example:
+        carrier: "0123"
+        ror: "ROUTE1234"
+        data: {}
+        ir: {}
+      properties:
+        carrier:
+          type: string
+          description: Carrier Identification Code
+          example: "0123"
+        ror:
+          type: string
+          description: Responsible Organization
+          example: "ROUTE1234"
+        data:
+          type: object
+          description: Additional data from the interpretation
+        ir:
+          type: object
+          description: Interpretation result data structure
+      required:
+        - carrier
+        - ror
+    DnoResponse:
+      type: object
+      example:
+        phoneNumber: "5551234567"
+        recordExists: false
+      properties:
+        phoneNumber:
+          type: string
+          description: The phone number that was looked up
+          example: "5551234567"
+        recordExists:
+          type: boolean
+          description: Indicates whether the number exists in the database
+          example: true
+      required:
+        - phoneNumber
+        - recordExists
+    DnxResponse:
+      type: object
+      example:
+        dnc: true
+        dno: false
+      properties:
+        dnc:
+          type: boolean
+          description: Indicates whether the number exists in the DNC database
+          example: true
+        dno:
+          type: boolean
+          description: Indicates whether the number exists in the DNO database
+          example: false
+      required:
+        - dnc
+        - dno
+    DncUpdateReport:
+      type: array
+      example:
+        - npa: 555
+          oldCount: 1200
+          newCount: 1235
+        - npa: 800
+          oldCount: 2500
+          newCount: 2520
+      items:
+        type: object
+        properties:
+          npa:
+            type: integer
+            description: Area code (NPA)
+            example: 555
+          oldCount:
+            type: integer
+            description: Previous count of numbers in this NPA
+            example: 1200
+          newCount:
+            type: integer
+            description: Current count of numbers in this NPA
+            example: 1235
+        required:
+          - npa
+          - oldCount
+          - newCount
+    StirShakenRequest:
+      type: object
+      example:
+        token: "eyJhbGciOiJSUzI1NiIsInR5cCI6InBhc3Nwb3J0Iiwic3R..."
+        certUrl: "https://cert.example.org/cert.pem"
+        algorithm: "RS256"
+        ppt: "shaken"
+      properties:
+        token:
+          type: string
+          description: The identity token to validate
+          example: "eyJhbGciOiJSUzI1NiIsInR5cCI6InBhc3Nwb3J0Iiwic3R..."
+        certUrl:
+          type: string
+          description: URL of the certificate
+          example: "https://cert.example.org/cert.pem"
+        algorithm:
+          type: string
+          description: Signature algorithm used
+          example: "RS256"
+        ppt:
+          type: string
+          description: PASSporT Token Type
+          example: "shaken"
+      required:
+        - token
+        - certUrl
+        - algorithm
+        - ppt
+    StirShakenResponse:
+      type: object
+      example:
+        valid: true
+      properties:
+        valid:
+          type: boolean
+          description: Whether the provided identity is valid
+          example: true
+      required:
+        - valid
+
+# Apply IP whitelist security globally
 security:
-  - BearerAuth: []
-  - ApiKeyAuth: []
+  - ipWhitelist: 
+
 tags:
   - name: CIC
     description: Operations for Carrier Identification Code
@@ -53,6 +315,8 @@ paths:
         It first checks the database cache for existing records, and if not found,
         performs an SS7 network lookup to retrieve the caller name information.
       operationId: getCNAM
+      security:
+        - ipWhitelist: []
       parameters:
         - name: phoneNumber
           in: path
@@ -69,42 +333,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CNAMResponse'
+              example:
+                phoneNumber: "8005551234"
+                name: "ACME CORPORATION"
+                status: "success"
+                cacheHit: true
         '400':
           description: Bad request - Invalid phone number format
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                status: error
+                error: Invalid phone number format
+                error_code: INVALID_FORMAT
         '404':
           description: Not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '405':
-          description: Method not allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '429':
-          description: Too many requests
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                status: error
+                error: Phone number not found
+                error_code: NOT_FOUND
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                status: error
+                error: Internal server error
+                error_code: SERVER_ERROR
   /telique/cnam:
     post:
       tags:
@@ -113,6 +376,8 @@ paths:
       description: |
         Alternative method to perform a CNAM lookup using a POST request with form data.
       operationId: postCNAM
+      security:
+        - ipWhitelist: []
       requestBody:
         required: true
         content:
@@ -127,6 +392,8 @@ paths:
                   example: "8005551234"
               required:
                 - number
+              example:
+                number: "8005551234"
       responses:
         '200':
           description: Successful response
@@ -134,42 +401,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CNAMResponse'
+              example:
+                phoneNumber: "8005551234"
+                name: "ACME CORPORATION"
+                status: "success"
+                cacheHit: true
         '400':
           description: Bad request - Missing or invalid phone number
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                status: error
+                error: Missing or invalid phone number
+                error_code: INVALID_FORMAT
         '404':
           description: Not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '405':
-          description: Method not allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '429':
-          description: Too many requests
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                status: error
+                error: Phone number not found
+                error_code: NOT_FOUND
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                status: error
+                error: Internal server error
+                error_code: SERVER_ERROR
   /telique/lrn/{phoneNumber}:
     get:
       tags:
@@ -181,6 +447,8 @@ paths:
         is used to correctly route calls to numbers that have been ported 
         from one carrier to another.
       operationId: getLrnInfo
+      security:
+        - ipWhitelist: []
       parameters:
         - name: phoneNumber
           in: path
@@ -220,12 +488,6 @@ paths:
                 status: error
                 error: 'Invalid phone number format. Must be a 10-digit NANP number.'
                 error_code: 'INVALID_FORMAT'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
         '403':
           description: Forbidden
           content:
@@ -234,30 +496,25 @@ paths:
                 $ref: '#/components/schemas/Error'
               example:
                 status: error
-                error: 'Forbidden. Your API key does not have permission to access this resource.'
+                error: 'Forbidden. Your IP address is not authorized to access this resource.'
                 error_code: 'FORBIDDEN'
-        '429':
-          description: Too many requests
-          headers:
-            Retry-After:
-              schema:
-                type: integer
-              description: Time in seconds to wait before making another request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                status: error
+                error: 'Internal server error'
+                error_code: 'SERVER_ERROR'
   /telique/cic/{crn}/{ani}/{lata}:
     get:
       summary: Get CIC information
       description: Retrieve Carrier Identification Code (CIC) information for the specified parameters.
       operationId: getCicInfo
+      security:
+        - ipWhitelist: []
       tags:
         - CIC
       parameters:
@@ -270,6 +527,7 @@ paths:
             format: int64
             minimum: 2000000000
             maximum: 9999999999
+            example: 2000000000
         - name: ani
           in: path
           description: Automatic Number Identification (10-digit)
@@ -279,6 +537,7 @@ paths:
             format: int64
             minimum: 2000000000
             maximum: 9999999999
+            example: 2000000001
         - name: lata
           in: path
           description: Local Access and Transport Area (3-digit)
@@ -287,6 +546,7 @@ paths:
             type: integer
             minimum: 0
             maximum: 999
+            example: 123
       responses:
         '200':
           description: Successful response
@@ -294,29 +554,47 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CICResponse'
+              example:
+                carrier: "0123"
+                data: {}
+                ir: {}
         '400':
           description: Bad request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                status: "error"
+                error: "Bad request"
+                error_code: "BAD_REQUEST"
         '404':
           description: Unknown CRN
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                status: "error"
+                error: "Unknown CRN"
+                error_code: "NOT_FOUND"
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                status: "error"
+                error: "Internal server error"
+                error_code: "SERVER_ERROR"
   /telique/cic/{crn}/{ani}/{lata}/plain:
     get:
       summary: Get CIC information (plain text)
       description: Retrieve Carrier Identification Code (CIC) information in plain text format.
       operationId: getCicInfoPlainText
+      security:
+        - ipWhitelist: []
       tags:
         - CIC
       parameters:
@@ -329,6 +607,7 @@ paths:
             format: int64
             minimum: 2000000000
             maximum: 9999999999
+            example: 2000000000
         - name: ani
           in: path
           description: Automatic Number Identification (10-digit)
@@ -338,6 +617,7 @@ paths:
             format: int64
             minimum: 2000000000
             maximum: 9999999999
+            example: 2000000001
         - name: lata
           in: path
           description: Local Access and Transport Area (3-digit)
@@ -346,6 +626,7 @@ paths:
             type: integer
             minimum: 0
             maximum: 999
+            example: 123
       responses:
         '200':
           description: Successful response
@@ -354,12 +635,14 @@ paths:
               schema:
                 type: string
                 description: CIC code (4 digits, zero-padded)
+              example: "0123"
         '400':
           description: Bad request
           content:
             text/plain:
               schema:
                 type: string
+              example: "Bad request"
         '404':
           description: Unknown CRN
           content:
@@ -367,17 +650,21 @@ paths:
               schema:
                 type: string
                 example: Unknown
+              example: Unknown
         '500':
           description: Server error
           content:
             text/plain:
               schema:
                 type: string
+              example: "Server error"
   /telique/cicror/{crn}/{ani}/{lata}:
     get:
       summary: Get CIC information with ROR
       description: Retrieve Carrier Identification Code (CIC) information including Responsible Organization (ROR) data.
       operationId: getCicRorInfo
+      security:
+        - ipWhitelist: []
       tags:
         - CIC
       parameters:
@@ -390,6 +677,7 @@ paths:
             format: int64
             minimum: 2000000000
             maximum: 9999999999
+            example: 2000000000
         - name: ani
           in: path
           description: Automatic Number Identification (10-digit)
@@ -399,6 +687,7 @@ paths:
             format: int64
             minimum: 2000000000
             maximum: 9999999999
+            example: 2000000001
         - name: lata
           in: path
           description: Local Access and Transport Area (3-digit)
@@ -407,6 +696,7 @@ paths:
             type: integer
             minimum: 0
             maximum: 999
+            example: 123
       responses:
         '200':
           description: Successful response
@@ -414,29 +704,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CICRORResponse'
+              example:
+                carrier: "0123"
+                ror: "ROUTE1234"
+                data: {}
+                ir: {}
         '400':
           description: Bad request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                status: "error"
+                error: "Bad request"
+                error_code: "BAD_REQUEST"
         '404':
           description: Unknown CRN
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                status: "error"
+                error: "Unknown CRN"
+                error_code: "NOT_FOUND"
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                status: "error"
+                error: "Internal server error"
+                error_code: "SERVER_ERROR"
   /telique/cicror/{crn}/{ani}/{lata}/plain:
     get:
       summary: Get CIC information with ROR (plain text)
       description: Retrieve Carrier Identification Code (CIC) and Responsible Organization (ROR) information in plain text format.
       operationId: getCicRorInfoPlainText
+      security:
+        - ipWhitelist: []
       tags:
         - CIC
       parameters:
@@ -449,6 +758,7 @@ paths:
             format: int64
             minimum: 2000000000
             maximum: 9999999999
+            example: 2000000000
         - name: ani
           in: path
           description: Automatic Number Identification (10-digit)
@@ -458,6 +768,7 @@ paths:
             format: int64
             minimum: 2000000000
             maximum: 9999999999
+            example: 2000000001
         - name: lata
           in: path
           description: Local Access and Transport Area (3-digit)
@@ -466,6 +777,7 @@ paths:
             type: integer
             minimum: 0
             maximum: 999
+            example: 123
       responses:
         '200':
           description: Successful response
@@ -474,13 +786,14 @@ paths:
               schema:
                 type: string
                 description: CIC code and ROR separated by semicolon
-                example: "0123;ROUTE1234"
+              example: "0123;ROUTE1234"
         '400':
           description: Bad request
           content:
             text/plain:
               schema:
                 type: string
+              example: "Bad request"
         '404':
           description: Unknown CRN
           content:
@@ -488,17 +801,21 @@ paths:
               schema:
                 type: string
                 example: Unknown
+              example: Unknown
         '500':
           description: Server error
           content:
             text/plain:
               schema:
                 type: string
+              example: "Server error"
   /telique/ror/{crn}:
     get:
       summary: Get ROR information
       description: Retrieve Responsible Organization (ROR) information for the specified CRN.
       operationId: getRorInfo
+      security:
+        - ipWhitelist: []
       tags:
         - ROR
       parameters:
@@ -511,6 +828,7 @@ paths:
             format: int64
             minimum: 2000000000
             maximum: 9999999999
+            example: 2000000000
       responses:
         '200':
           description: Successful response
@@ -518,29 +836,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RORResponse'
+              example:
+                ror: "ROUTE1234"
         '400':
           description: Bad request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                status: "error"
+                error: "Bad request"
+                error_code: "BAD_REQUEST"
         '404':
           description: Unknown CRN
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                status: "error"
+                error: "Unknown CRN"
+                error_code: "NOT_FOUND"
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                status: "error"
+                error: "Internal server error"
+                error_code: "SERVER_ERROR"
   /telique/ror/{crn}/plain:
     get:
       summary: Get ROR information (plain text)
       description: Retrieve Responsible Organization (ROR) information in plain text format.
       operationId: getRorInfoPlainText
+      security:
+        - ipWhitelist: []
       tags:
         - ROR
       parameters:
@@ -553,6 +887,7 @@ paths:
             format: int64
             minimum: 2000000000
             maximum: 9999999999
+            example: 2000000000
       responses:
         '200':
           description: Successful response
@@ -561,13 +896,14 @@ paths:
               schema:
                 type: string
                 description: Responsible Organization
-                example: "ROUTE1234"
+              example: "ROUTE1234"
         '400':
           description: Bad request
           content:
             text/plain:
               schema:
                 type: string
+              example: "Bad request"
         '404':
           description: Unknown CRN
           content:
@@ -575,12 +911,14 @@ paths:
               schema:
                 type: string
                 example: Unknown
+              example: Unknown
         '500':
           description: Server error
           content:
             text/plain:
               schema:
                 type: string
+              example: "Server error"
   /telique/dno/{num}:
     get:
       tags:
@@ -590,6 +928,8 @@ paths:
         Check if a phone number is in the Do Not Originate (DNO) database.
         Returns a JSON response indicating whether the number exists in the database.
       operationId: getDno
+      security:
+        - ipWhitelist: []
       parameters:
         - name: num
           in: path
@@ -606,30 +946,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DnoResponse'
+              example:
+                phoneNumber: "5551234567"
+                recordExists: false
         '400':
           description: Bad request - Invalid phone number format
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '429':
-          description: Too many requests
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                status: error
+                error: Invalid phone number format
+                error_code: INVALID_FORMAT
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                status: error
+                error: Internal server error
+                error_code: SERVER_ERROR
   /telique/dno/{num}/xml:
     get:
       tags:
@@ -639,6 +978,8 @@ paths:
         Check if a phone number is in the Do Not Originate (DNO) database.
         Returns an XML response indicating whether the number exists in the database.
       operationId: getDnoXml
+      security:
+        - ipWhitelist: []
       parameters:
         - name: num
           in: path
@@ -655,30 +996,32 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/DnoResponse'
+              examples:
+                default:
+                  summary: Default DNO XML Response
+                  value: |
+                    <response>
+                      <phoneNumber>5551234567</phoneNumber>
+                      <recordExists>false</recordExists>
+                    </response>
         '400':
           description: Bad request - Invalid phone number format
           content:
             application/xml:
               schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '429':
-          description: Too many requests
-          content:
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Error'
+                type: string
         '500':
           description: Internal server error
           content:
             application/xml:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: string
+              example: |
+                <error>
+                  <status>error</status>
+                  <message>Internal server error</message>
+                  <error_code>SERVER_ERROR</error_code>
+                </error>
   /telique/dnc/{num}:
     get:
       tags:
@@ -688,6 +1031,8 @@ paths:
         Check if a phone number is in the Do Not Call (DNC) database.
         Returns a JSON response indicating whether the number exists in the database.
       operationId: getDnc
+      security:
+        - ipWhitelist: []
       parameters:
         - name: num
           in: path
@@ -704,30 +1049,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DnoResponse'
+              example:
+                phoneNumber: "5551234567"
+                recordExists: true
         '400':
           description: Bad request - Invalid phone number format
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '429':
-          description: Too many requests
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                status: error
+                error: Invalid phone number format
+                error_code: INVALID_FORMAT
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                status: error
+                error: Internal server error
+                error_code: SERVER_ERROR
   /telique/dnc/{num}/xml:
     get:
       tags:
@@ -737,6 +1081,8 @@ paths:
         Check if a phone number is in the Do Not Call (DNC) database.
         Returns an XML response indicating whether the number exists in the database.
       operationId: getDncXml
+      security:
+        - ipWhitelist: []
       parameters:
         - name: num
           in: path
@@ -753,30 +1099,32 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/DnoResponse'
+              examples:
+                default:
+                  summary: Default DNC XML Response
+                  value: |
+                    <response>
+                      <phoneNumber>5551234567</phoneNumber>
+                      <recordExists>true</recordExists>
+                    </response>
         '400':
           description: Bad request - Invalid phone number format
           content:
             application/xml:
               schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '429':
-          description: Too many requests
-          content:
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Error'
+                type: string
         '500':
           description: Internal server error
           content:
             application/xml:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: string
+              example: |
+                <error>
+                  <status>error</status>
+                  <message>Internal server error</message>
+                  <error_code>SERVER_ERROR</error_code>
+                </error>
   /telique/dncreport:
     get:
       tags:
@@ -785,6 +1133,8 @@ paths:
       description: |
         Retrieve a report of DNC updates by area code (NPA).
       operationId: getDncReport
+      security:
+        - ipWhitelist: []
       responses:
         '200':
           description: Successful response
@@ -792,18 +1142,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DncUpdateReport'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                - npa: 555
+                  oldCount: 1200
+                  newCount: 1235
+                - npa: 800
+                  oldCount: 2500
+                  newCount: 2520
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                status: error
+                error: Internal server error
+                error_code: SERVER_ERROR
   /telique/dnx:
     get:
       tags:
@@ -812,6 +1167,8 @@ paths:
       description: |
         Check if phone numbers are in both DNO and DNC databases with a single request.
       operationId: getDnx
+      security:
+        - ipWhitelist: []
       parameters:
         - name: dno
           in: query
@@ -836,30 +1193,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DnxResponse'
+              example:
+                dnc: true
+                dno: false
         '400':
           description: Bad request - Invalid phone number format
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '429':
-          description: Too many requests
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                status: error
+                error: Invalid phone number format
+                error_code: INVALID_FORMAT
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                status: error
+                error: Internal server error
+                error_code: SERVER_ERROR
   /telique/stirshaken/validate:
     post:
       tags:
@@ -868,12 +1224,19 @@ paths:
       description: |
         Validates STIR/SHAKEN call authentication by checking the provided identity token.
       operationId: validateStirShaken
+      security:
+        - ipWhitelist: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/StirShakenRequest'
+            example:
+              token: "eyJhbGciOiJSUzI1NiIsInR5cCI6InBhc3Nwb3J0Iiwic3R..."
+              certUrl: "https://cert.example.org/cert.pem"
+              algorithm: "RS256"
+              ppt: "shaken"
       responses:
         '200':
           description: Successful response
@@ -881,226 +1244,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StirShakenResponse'
+              example:
+                valid: true
         '400':
           description: Bad request - Invalid request parameters
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                status: error
+                error: Invalid request parameters
+                error_code: INVALID_REQUEST
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: API key
-    ApiKeyAuth:
-      type: apiKey
-      in: query
-      name: api_key
-  schemas:
-    CNAMResponse:
-      type: object
-      properties:
-        phoneNumber:
-          type: string
-          description: The phone number that was looked up
-          example: "8005551234"
-        name:
-          type: string
-          description: The caller name associated with the phone number
-          example: "ACME CORPORATION"
-        status:
-          type: string
-          description: Status of the request
-          enum: [success, error]
-          example: "success"
-        error:
-          type: string
-          description: Error message (only present when status is "error")
-          example: "SS7 network not responding"
-        cacheHit:
-          type: boolean
-          description: Indicates whether the result was found in cache (true) or required an SS7 lookup (false)
-          example: true
-      required:
-        - phoneNumber
-        - name
-        - status
-        - cacheHit
-    LrnResponse:
-      type: object
-      properties:
-        phoneNumber:
-          type: string
-          description: The queried telephone number
-          example: '5551234567'
-        lrn:
-          type: string
-          description: Local Routing Number for the queried number
-          example: '5552345678'
-        spid:
-          type: string
-          nullable: true
-          description: Service Provider ID for the carrier serving this number
-          example: 'AB12'
-        ported:
-          type: boolean
-          description: Indicates whether the number has been ported (true) or not (false)
-          example: true
-      required:
-        - phoneNumber
-        - lrn
-        - ported
-    Error:
-      type: object
-      required:
-        - status
-        - error
-      properties:
-        status:
-          type: string
-          example: error
-        error:
-          type: string
-          example: Invalid phone number format
-        error_code:
-          type: string
-          example: invalid_phone_number
-    CICResponse:
-      type: object
-      properties:
-        carrier:
-          type: string
-          description: Carrier Identification Code
-          example: "0123"
-        data:
-          type: object
-          description: Additional data from the interpretation
-        ir:
-          type: object
-          description: Interpretation result data structure
-      required:
-        - carrier
-    RORResponse:
-      type: object
-      properties:
-        ror:
-          type: string
-          description: Responsible Organization
-          example: "ROUTE1234"
-      required:
-        - ror
-    CICRORResponse:
-      type: object
-      properties:
-        carrier:
-          type: string
-          description: Carrier Identification Code
-          example: "0123"
-        ror:
-          type: string
-          description: Responsible Organization
-          example: "ROUTE1234"
-        data:
-          type: object
-          description: Additional data from the interpretation
-        ir:
-          type: object
-          description: Interpretation result data structure
-      required:
-        - carrier
-        - ror
-    DnoResponse:
-      type: object
-      properties:
-        phoneNumber:
-          type: string
-          description: The phone number that was looked up
-          example: "5551234567"
-        recordExists:
-          type: boolean
-          description: Indicates whether the number exists in the database
-          example: true
-      required:
-        - phoneNumber
-        - recordExists
-    DnxResponse:
-      type: object
-      properties:
-        dnc:
-          type: boolean
-          description: Indicates whether the number exists in the DNC database
-          example: true
-        dno:
-          type: boolean
-          description: Indicates whether the number exists in the DNO database
-          example: false
-      required:
-        - dnc
-        - dno
-    DncUpdateReport:
-      type: array
-      items:
-        type: object
-        properties:
-          npa:
-            type: integer
-            description: Area code (NPA)
-            example: 555
-          oldCount:
-            type: integer
-            description: Previous count of numbers in this NPA
-            example: 1200
-          newCount:
-            type: integer
-            description: Current count of numbers in this NPA
-            example: 1235
-        required:
-          - npa
-          - oldCount
-          - newCount
-    StirShakenRequest:
-      type: object
-      properties:
-        token:
-          type: string
-          description: The identity token to validate
-          example: "eyJhbGciOiJSUzI1NiIsInR5cCI6InBhc3Nwb3J0Iiwic3R..."
-        certUrl:
-          type: string
-          description: URL of the certificate
-          example: "https://cert.example.org/cert.pem"
-        algorithm:
-          type: string
-          description: Signature algorithm used
-          example: "RS256"
-        ppt:
-          type: string
-          description: PASSporT Token Type
-          example: "shaken"
-      required:
-        - token
-        - certUrl
-        - algorithm
-        - ppt
-    StirShakenResponse:
-      type: object
-      properties:
-        valid:
-          type: boolean
-          description: Whether the provided identity is valid
-          example: true
-      required:
-        - valid 
+              example:
+                status: error
+                error: Internal server error
+                error_code: SERVER_ERROR 

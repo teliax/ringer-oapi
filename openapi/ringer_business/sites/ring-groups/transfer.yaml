@@ -1,0 +1,106 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Site Ring Group Transfer
+  description: |
+    Endpoint for transferring a ring group from one site to another within the same account.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server
+  # - url: https://api.staging.ringer.tel/v1
+  #   description: Staging server
+
+tags:
+  - name: Site Features - Ring Groups # Standardized tag
+    description: "Managing ring groups for a site."
+
+paths:
+  /sites/{siteId}/ring-groups/{ringGroupId}/transfer: # Standardized params
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId' # MODIFIED PATH
+      - $ref: './index.yaml#/components/parameters/RingGroupIdPath' # MODIFIED to ./index.yaml
+    post:
+      tags:
+        - Site Features - Ring Groups
+      summary: Transfer Ring Group to Another Site
+      description: |
+        Moves a ring group from its current site (specified in the path) 
+        to a new target site (specified in the request body) within the same customer account.
+      operationId: transferSiteRingGroup # Renamed
+      security:
+        - oAuth2: [write, admin] # Transferring is an admin-level operation
+      requestBody:
+        description: The identifier of the new site to which the ring group should be transferred.
+        required: true
+        content:
+          application/x-www-form-urlencoded: # As per original Teliax Swagger
+            schema:
+              type: object
+              properties:
+                new_site_id:
+                  type: integer
+                  format: int64
+                  description: The unique identifier of the target site for the ring group.
+                  example: 7
+              required:
+                - new_site_id
+              example: # <--- ADDED
+                new_site_id: 7
+      responses:
+        '200':
+          description: Ring Group transferred successfully. The response includes the ring group details in its new site context.
+          content:
+            application/json:
+              schema:
+                $ref: './index.yaml#/components/schemas/RingGroupResponse' # Referenced from index
+              example:
+                id: 10
+                site_id: 7 # Note: site_id now reflects the new_site_id
+                name: "Sales Team"
+                destination_codes: ["device:dev_sales1", "extension:ext_sales_mobile"]
+                destinations:
+                  - name: "Sales Phone 1"
+                    code: "device:dev_sales1"
+                  - name: "Sales Mobile Ext"
+                    code: "extension:ext_sales_mobile"
+                ring_strategy: "simultaneous"
+                timeout: 30
+                fail_over_destination_code: "voicemailbox:vm_sales"
+                fail_over_destination:
+                  name: "Sales Voicemail"
+                  code: "voicemailbox:vm_sales"
+                user_id: null
+                links:
+                  - href: "/sites/7/ring-groups/10" # Link reflects new site context
+                    rel: "self"
+                    method: "GET"
+        '400':
+          $ref: '../../common_components.yaml#/components/responses/BadRequestError' # MODIFIED PATH
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError' # MODIFIED PATH
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError' # MODIFIED PATH
+        '404':
+          description: Not Found - The original ring group, its current site, or the new target site was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '../../common_components.yaml#/components/schemas/Error' # MODIFIED PATH & target
+              example:
+                status: "error"
+                error: "Ring group, current site, or target site not found."
+                error_code: "RESOURCE_NOT_FOUND_FOR_TRANSFER"
+
+components:
+  securitySchemes:
+    oAuth2:
+      $ref: '../../common_components.yaml#/components/securitySchemes/oAuth2' # MODIFIED PATH
+  # No local schemas needed as they are referenced from index.yaml or common components. 

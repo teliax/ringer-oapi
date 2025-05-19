@@ -1,335 +1,765 @@
-# THIS IS A PARTIAL OPENAPI FILE
-# This file contains path objects intended to be referenced by main.yaml
-# The following structure is added for standalone validation purposes only
-
 openapi: 3.0.3
 info:
-  title: Ringer Business API - Plans
+  title: Ringer Business API - Plans Management
   description: |
-    Manage service plans for your Ringer Business account.
-    
-    All accounts have a plan, even if it's just the default "tryout" plan. Your plan, included packages,
-    add-on packages, usage, and monthly pricing are displayed here. Plans are made up of included and
-    optional packages. The price you set on a plan will cover all included packages. Optional packages
-    can be added or removed at any time and each optional package has its own cost, separate from the plan price.
-    
-    Plans usually provide you with additional calling features or calling minute usage for a lower price
-    than what you would pay individually. Since plans allow a certain amount of features or minutes to be
-    used during your billing cycle you should analyze your usage and select a plan that best suits your needs.
-    In some cases it could make more sense to use your account without a plan and instead be charged the individual rates.
-    
-    If you add a new plan at any time in your billing cycle your account will be charged the full amount of the plan.
-    If you're changing a plan, it's best to change it just before the end of your billing cycle.
-    
-    Some plans and add-on packages can be removed at any time. Others can only be removed by Customer Support.
-    The resources provided will remain on your account until the next billing cycle.
-    Removing a plan only removes associated resources at the next billing cycle and not the calling features themselves.
-    
-    ## Authentication
-    This API supports OAuth 2.0 authentication using:
-    - Password grant flow
-    - Client credentials grant flow
-    
-    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
-    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
+    This API provides endpoints for managing subscription plans associated with a customer account.
+    It allows developers to:
+    - List currently active plan(s) for an account.
+    - List all plans available to an account.
+    - Schedule a plan change for the next billing cycle.
+    - Remove the current plan from an account.
+    - Retrieve details of a specific plan.
+    - Manage packages (add-ons) associated with a plan.
+
+    Plan management is crucial for defining the services and features available to a customer.
   version: 1.0.0
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
   contact:
     name: Ringer API Support
-    url: https://docs.ringer.io/
-    email: support@ringer.io
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
 
 servers:
-  - url: https://api.ringer.io/v1
+  - url: https://api.ringer.tel/v1
     description: Production server
-  - url: https://api.staging.ringer.io/v1
+  - url: https://api.staging.ringer.tel/v1
     description: Staging server
-
-security:
-  - BearerAuth: []
 
 tags:
   - name: Plans
-    description: "View and manage plans available for your account."
+    description: Endpoints for viewing and managing account subscription plans and their packages.
 
 paths:
   /plans:
     get:
       tags:
         - Plans
-      summary: List Plans
-      description: Retrieve a list of all available plans.
-      operationId: list_plans
-      parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
+      summary: List Current Account Plan(s)
+      description: |
+        Retrieves a paginated list of plan(s) currently active on the authenticated customer's account.
+        Typically, an account has one primary active plan.
+      operationId: listAccountPlans
+      security:
+        - oAuth2: [read]
+      parameters: 
+        - name: page
+          in: query
+          description: Page number for pagination.
+          required: false
           schema:
-            type: string
+            type: integer
+            default: 1
+            example: 1
+        - name: page_size
+          in: query
+          description: Number of plans per page.
+          required: false
+          schema:
+            type: integer
+            default: 25
+            example: 10
       responses:
         '200':
-          description: OK
+          description: A paginated list of currently active plans for the account.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PlanList'
+                $ref: '#/components/schemas/PaginatedPlanListResponse' 
+              example:
+                plans: 
+                  - id: 1
+                    name: "Standard Business Plan"
+                    description: "Includes core calling features, 1000 domestic minutes, and basic voicemail."
+                    total_cost: "49.99"
+                    currency: "USD"
+                    removable: true
+                    active: true
+                    approved: true
+                    finalized: true
+                    items: 
+                    packages: {}
+                    links:
+                      - href: "/plans/1"
+                        rel: "self"
+                        method: "GET"
+                total_items: 1
+                total_pages: 1
+                current_page: 1
+                per_page: 25
+                links:
+                  - href: "/plans?page=1&page_size=25"
+                    rel: "self"
+                    method: "GET"
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  
-  /plans/{id}:
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /plans/available:
     get:
       tags:
         - Plans
-      summary: Plan Details
-      description: Retrieve details for a specific plan.
-      operationId: get_plan
-      parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          description: Plan ID
-          required: true
+      summary: List Available Plans
+      description: Retrieves a paginated list of all subscription plans available for the customer account to switch to.
+      operationId: listAvailablePlans
+      security:
+        - oAuth2: [read]
+      parameters: 
+        - name: page
+          in: query
+          description: Page number for pagination.
+          required: false
           schema:
             type: integer
+            default: 1
+            example: 1
+        - name: page_size
+          in: query
+          description: Number of plans per page.
+          required: false
+          schema:
+            type: integer
+            default: 25
+            example: 10
       responses:
         '200':
-          description: OK
+          description: A paginated list of available plans.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Plan'
+                $ref: '#/components/schemas/PaginatedPlanListResponse' 
+              example:
+                plans:
+                  - id: 1
+                    name: "Standard Business Plan"
+                    description: "Includes core calling features..."
+                    total_cost: "49.99"
+                    currency: "USD"
+                    removable: true
+                    active: true 
+                    approved: true
+                    finalized: true
+                    items: 
+                    packages: {}
+                    links:
+                      - href: "/plans/1"
+                        rel: "self"
+                        method: "GET"
+                  - id: 2 
+                    name: "Pro Business Plan"
+                    description: "More features for growing businesses."
+                    total_cost: "99.99"
+                    currency: "USD"
+                    removable: true
+                    active: true 
+                    approved: true
+                    finalized: true
+                    items: 
+                    packages: {}
+                    links:
+                      - href: "/plans/2"
+                        rel: "self"
+                        method: "GET"
+                total_items: 2 
+                total_pages: 1
+                current_page: 1
+                per_page: 25
+                links:
+                  - href: "/plans/available?page=1&page_size=25"
+                    rel: "self"
+                    method: "GET"
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Plan not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-    post:
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /plans/remove:
+    patch:
       tags:
         - Plans
-      summary: Add Plan to Account
-      description: Add the specified plan to the account.
-      operationId: add_plan
-      parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          description: Plan ID
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Plan'
-        '400':
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Plan not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-    delete:
-      tags:
-        - Plans
-      summary: Remove Plan from Account
-      description: Remove the specified plan from the account.
-      operationId: remove_plan
-      parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          description: Plan ID
-          required: true
-          schema:
-            type: integer
+      summary: Remove Current Plan
+      description: |
+        Removes the currently active plan from the customer's account.
+        This action might revert the account to a default or pay-as-you-go state.
+        The removal might take effect at the end of the current billing cycle.
+      operationId: removeCurrentPlan
+      security:
+        - oAuth2: [write]
       responses:
         '204':
-          description: No Content
+          description: Plan removed or scheduled for removal successfully. No content returned.
+        '400':
+          $ref: '#/components/responses/BadRequestError' 
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
         '404':
-          description: Plan not found
+          $ref: '#/components/responses/NotFoundError' 
+
+  /plans/change-plan:
+    patch:
+      tags:
+        - Plans
+      summary: Schedule Plan Change
+      description: |
+        Schedules a change to a new plan for the customer account.
+        The change typically takes effect at the start of the next billing cycle.
+      operationId: schedulePlanChange
+      security:
+        - oAuth2: [write]
+      requestBody:
+        description: The ID of the new plan to switch to.
+        required: true
+        content:
+          application/x-www-form-urlencoded: 
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  format: int64
+                  example: 2
+              required:
+                - id
+              example:
+                id: 2
+      responses:
+        '200':
+          description: Plan change scheduled successfully. Returns details of the plan that will become active.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponse' 
+              example:
+                id: 2
+                name: "Pro Business Plan"
+                description: "More features for growing businesses."
+                total_cost: "99.99"
+                currency: "USD"
+                removable: true
+                active: false
+                approved: true
+                finalized: false
+                items: 
+                packages: {}
+                links:
+                  - href: "/plans/2"
+                    rel: "self"
+                    method: "GET"
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Not Found - The specified plan ID to change to does not exist or is not available.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                status: "error"
+                error: "Plan with ID 999 not found or not available for change."
+                error_code: "TARGET_PLAN_NOT_FOUND"
+
+  /plans/{planId}:
+    parameters:
+      - $ref: '#/components/parameters/PlanIdPath'
+    get:
+      tags:
+        - Plans
+      summary: Get Plan Details
+      description: Retrieves detailed information for a specific subscription plan by its ID.
+      operationId: getPlanById
+      security:
+        - oAuth2: [read]
+      responses:
+        '200':
+          description: Successfully retrieved plan details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponse'
+              example:
+                id: 1
+                name: "Standard Business Plan"
+                description: "Includes core calling features, 1000 domestic minutes, and basic voicemail."
+                total_cost: "49.99"
+                currency: "USD"
+                removable: true
+                active: true
+                approved: true
+                finalized: true
+                items: 
+                packages: {}
+                links:
+                  - href: "/plans/1"
+                    rel: "self"
+                    method: "GET"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /plans/{planId}/packages:
+    parameters:
+      - $ref: '#/components/parameters/PlanIdPath'
+    get:
+      tags:
+        - Plans
+      summary: List Plan Packages
+      description: Retrieves a list of all packages (included and optional) associated with a specific plan.
+      operationId: listPlanPackages
+      security:
+        - oAuth2: [read]
+      responses:
+        '200':
+          description: A list of packages for the specified plan.
+          content:
+            application/json:
+              schema:
+                $ref: './packages.yaml#/components/schemas/CategorizedPackageListResponse'
+              example:
+                included_packages:
+                  - id: 10 
+                    name: "Core Calling Features"
+                    description: "Base features for calling"
+                    item_type: "feature_set"
+                    item_rules: "standard_call_handling"
+                    item_quantity: 1
+                    price: "0.00" 
+                    currency: "USD"
+                    plan_id: 1
+                    included: true
+                    removable: false
+                    category: "base_plan"
+                    renewable: true
+                optional_packages:
+                  - id: 22
+                    name: "International Calling Pack - 100 Mins"
+                    description: "100 minutes for specific international zones"
+                    item_type: "usage_minutes"
+                    item_rules: "international_zone_a"
+                    item_quantity: 100
+                    price: "10.00"
+                    currency: "USD"
+                    plan_id: 1
+                    included: false
+                    removable: true
+                    category: "add_on"
+                    renewable: true
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Not Found - The specified plan ID was not found, or no packages are associated with it.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                status: "error"
+                error: "Plan with ID 1 not found when listing packages."
+                error_code: "PLAN_NOT_FOUND_FOR_PACKAGES"
+
+  /plans/{planId}/add-package:
+    parameters:
+      - $ref: '#/components/parameters/PlanIdPath'
+    patch:
+      tags:
+        - Plans
+      summary: Add Package to Plan
+      description: Adds an optional package to the customer's current plan or a plan being configured.
+      operationId: addPackageToPlan
+      security:
+        - oAuth2: [write]
+      requestBody:
+        description: The ID of the package to add to the plan.
+        required: true
+        content:
+          application/x-www-form-urlencoded: 
+            schema:
+              type: object
+              properties:
+                package_id:
+                  type: integer
+                  format: int64
+                  example: 22
+              required:
+                - package_id
+              example:
+                package_id: 22
+      responses:
+        '200':
+          description: Package added successfully to the plan. Returns details of the added package.
+          content:
+            application/json:
+              schema:
+                $ref: './packages.yaml#/components/schemas/PackageResponse'
+              example:
+                id: 22
+                name: "International Calling Pack - 100 Mins"
+                description: "100 minutes for specific international zones"
+                item_type: "usage_minutes"
+                item_rules: "international_zone_a"
+                item_quantity: 100
+                price: "10.00"
+                currency: "USD"
+                plan_id: 1
+                included: false
+                removable: true
+                category: "add_on"
+                renewable: true
+        '400':
+          $ref: '#/components/responses/BadRequestError' 
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Not Found - The specified plan ID or package ID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                status: "error"
+                error: "Plan ID 1 or Package ID 999 not found."
+                error_code: "PLAN_OR_PACKAGE_NOT_FOUND"
+
+  /plans/{planId}/remove-package:
+    parameters:
+      - $ref: '#/components/parameters/PlanIdPath'
+    patch:
+      tags:
+        - Plans
+      summary: Remove Package from Plan
+      description: Removes an optional package from the customer's current plan.
+      operationId: removePackageFromPlan
+      security:
+        - oAuth2: [write]
+      requestBody:
+        description: The ID of the package to remove from the plan.
+        required: true
+        content:
+          application/x-www-form-urlencoded: 
+            schema:
+              type: object
+              properties:
+                package_id:
+                  type: integer
+                  format: int64
+                  example: 22
+              required:
+                - package_id
+              example:
+                package_id: 22
+      responses:
+        '204':
+          description: Package removed successfully from the plan. No content returned.
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Not Found - The specified plan ID or package ID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                status: "error"
+                error: "Plan ID 1 or Package ID 22 not found for removal."
+                error_code: "PLAN_OR_PACKAGE_NOT_FOUND_FOR_REMOVE"
 
 components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-  
+  parameters:
+    PlanIdPath:
+      name: planId
+      in: path
+      description: The unique identifier of the plan.
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 1
+
   schemas:
-    PlanList:
-      type: object
-      properties:
-        plans:
-          type: array
-          description: Array of Plans
-          items:
-            $ref: '#/components/schemas/Plan'
-        total_items:
-          type: string
-          example: "350"
-          description: Total number of items
-          readOnly: true
-        total_pages:
-          type: string
-          example: "7"
-          description: Total number of pages
-          readOnly: true
-        links:
-          type: array
-          items:
-            $ref: '#/components/schemas/linkDescription'
-    
-    Plan:
+    PlanCore: 
       type: object
       properties:
         id:
           type: integer
-          example: 12345
+          format: int64
+          example: 1
         name:
           type: string
-          example: "Standard Business"
+          example: "Standard Business Plan"
         description:
           type: string
-          example: "Standard business plan with 2000 minutes and 5 users"
-        price:
-          type: number
-          format: float
-          example: 49.99
+          nullable: true
+          example: "Includes core calling features, 1000 domestic minutes, and basic voicemail."
+        total_cost:
+          type: string 
+          example: "49.99"
         currency:
           type: string
+          default: "USD"
           example: "USD"
-        billing_cycle:
-          type: string
-          enum: [monthly, quarterly, annual]
-          example: "monthly"
-        feature_list:
-          type: array
-          items:
-            $ref: '#/components/schemas/PlanFeature'
+        removable:
+          type: boolean
+          example: true
         active:
           type: boolean
           example: true
+        approved: 
+          type: boolean
+          example: true
+        finalized: 
+          type: boolean
+          example: true
+      required:
+        - id
+        - name
+        - total_cost
+        - currency
+        - removable
+        - active
+        - approved
+        - finalized
+
+    PlanResponse: 
+      allOf:
+        - $ref: '#/components/schemas/PlanCore'
+        - type: object
+          properties:
+            items:
+              type: array
+              description: A list of individual billable items or features included or defined by this plan.
+              items:
+                $ref: './items.yaml#/components/schemas/ItemResponse'
+              nullable: true
+            packages: 
+              type: object
+              description: Included and optional packages associated with this plan.
+              properties:
+                included_packages:
+                  type: array
+                  items:
+                    $ref: './packages.yaml#/components/schemas/PackageResponse'
+                  description: Packages that are automatically part of this plan.
+                optional_packages:
+                  type: array
+                  items:
+                    $ref: './packages.yaml#/components/schemas/PackageResponse'
+                  description: Additional packages that can be added to this plan at an extra cost.
+              nullable: true
+            links:
+              type: array
+              description: HATEOAS links related to this plan.
+              items:
+                $ref: '#/components/schemas/Link'
+              nullable: true
+      description: Detailed information about a subscription plan.
+      example:
+        id: 1
+        name: "Standard Business Plan"
+        description: "Includes core calling features, 1000 domestic minutes, and basic voicemail."
+        total_cost: "49.99"
+        currency: "USD"
+        removable: true
+        active: true
+        approved: true
+        finalized: true
+        items: 
+          - id: 449 
+            name: "Emergency Call Service"
+            item_type: "service_fee"
+            item_rules: "e911_access"
+            item_price: "1.50"
+            currency: "USD"
+        packages:
+          included_packages:
+            - id: 10 
+              name: "Core Calling Features"
+              item_type: "feature_set"
+              item_rules: "standard_call_handling"
+              item_quantity: 1
+              price: "0.00" 
+              currency: "USD"
+              plan_id: 1
+              included: true
+              removable: false
+          optional_packages:
+            - id: 22
+              name: "International Calling Pack - 100 Mins"
+              item_type: "usage_minutes"
+              item_rules: "international_zone_a"
+              item_quantity: 100
+              price: "10.00"
+              currency: "USD"
+              plan_id: 1
+              included: false
+              removable: true
+        links:
+          - href: "/plans/1"
+            rel: "self"
+            method: "GET"
+          - href: "/plans/1/packages"
+            rel: "listPackages"
+            method: "GET"
+
+    PaginatedPlanListResponse: # Renamed from PlanListResponse
+      type: object
+      description: A paginated list of subscription plans.
+      properties:
+        plans:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanResponse'
+        total_items:
+          type: integer
+          example: 10
+        total_pages:
+          type: integer
+          example: 1
+        current_page:
+          type: integer
+          example: 1
+        per_page:
+          type: integer
+          example: 25
         links:
           type: array
           items:
-            $ref: '#/components/schemas/linkDescription'
-      required:
-        - id
-        - name
-        - price
-        - currency
-        - billing_cycle
-        - active
-    
-    PlanFeature:
-      type: object
-      properties:
-        id:
-          type: integer
-          example: 101
-        name:
-          type: string
-          example: "Unlimited Domestic Calling"
-        included:
-          type: boolean
-          example: true
-        additional_cost:
-          type: number
-          format: float
+            $ref: '#/components/schemas/Link'
           nullable: true
-          example: null
       required:
-        - id
-        - name
-        - included
-    
-    linkDescription:
+        - plans
+        - total_items
+        - total_pages
+        - current_page
+        - per_page
+      example:
+        plans:
+          - $ref: '#/components/schemas/PlanResponse/example'
+        total_items: 1
+        total_pages: 1
+        current_page: 1
+        per_page: 25
+        links:
+          - href: "/plans?page=1&page_size=25"
+            rel: "self"
+            method: "GET"
+
+    Link: 
       type: object
-      required:
-        - href
-        - rel
+      description: Represents a HATEOAS link.
       properties:
         href:
           type: string
-          description: "URI template, as defined by RFC 6570, with the addition of the $, ( and ) characters for pre-processing"
+          format: uri-reference
         rel:
           type: string
-          description: Relation to the target resource of the link
         title:
           type: string
-          description: A title for the link
+          nullable: true
         method:
           type: string
-          description: HTTP method for requesting the target of the link (e.g. "GET" or "POST")
-    
-    Error:
+          enum: [GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD]
+      required:
+        - href
+        - rel
+
+    Error: 
       type: object
+      description: Standard error response format.
       properties:
         status:
           type: string
-          description: Error status
           example: "error"
         error:
           type: string
-          description: Error message
-          example: "Invalid input parameters"
         error_code:
           type: string
-          description: Error code for machine processing
-          example: "INVALID_INPUT"
+        details:
+          type: array
+          nullable: true
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              issue:
+                type: string
       required:
         - status
         - error
+        - error_code
+      example:
+        status: "error"
+        error: "A generic plan error occurred."
+        error_code: "PLAN_GENERIC_ERROR"
+
+  responses: 
+    UnauthorizedError:
+      description: Unauthorized - Authentication token is missing, invalid, or does not have permissions for this resource.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Authentication required."
+            error_code: "UNAUTHORIZED"
+    ForbiddenError:
+      description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "You do not have permission to perform this action on plans."
+            error_code: "FORBIDDEN"
+    NotFoundError:
+      description: Not Found - The requested resource (e.g., specific plan) could not be found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "The requested plan was not found."
+            error_code: "PLAN_NOT_FOUND"
+    BadRequestError:
+      description: Bad Request - Invalid data provided.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Invalid plan data provided."
+            error_code: "VALIDATION_ERROR"
+
+  securitySchemes:
+    oAuth2:
+      type: oauth2
+      description: OAuth 2.0 Authentication for securing API endpoints.
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ringer.tel/v1/auth/token
+          scopes:
+            read: Read access to API resources
+            write: Write access to API resources
+            admin: Administrative access.

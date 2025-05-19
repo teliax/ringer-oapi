@@ -1,0 +1,97 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Site Menu Transfer
+  description: |
+    Endpoint for transferring a menu from one site to another within the same account.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server
+
+tags:
+  - name: Site Features - Menus # Standardized tag
+    description: "Managing menus (auto attendants) associated with sites."
+
+paths:
+  /sites/{siteId}/menus/{menuId}/transfer: # Standardized params
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId'
+      - $ref: './index.yaml#/components/parameters/MenuIdPath'
+    post:
+      tags:
+        - Site Features - Menus
+      summary: Transfer Menu to Another Site
+      description: |
+        Moves a menu from its current site (specified in the path) 
+        to a new target site (specified in the request body) within the same customer account.
+      operationId: transferSiteMenu # Renamed
+      security:
+        - oAuth2: [write, admin] 
+      requestBody:
+        description: The identifier of the new site to which the menu should be transferred.
+        required: true
+        content:
+          application/x-www-form-urlencoded: 
+            schema:
+              type: object
+              properties:
+                new_site_id:
+                  type: integer
+                  format: int64
+                  description: The unique identifier of the target site for the menu.
+                  example: 7
+              required:
+                - new_site_id
+              example:
+                new_site_id: 7
+      responses:
+        '200':
+          description: Menu transferred successfully. The response includes the menu details in its new site context.
+          content:
+            application/json:
+              schema:
+                $ref: './index.yaml#/components/schemas/MenuResponse'
+              example:
+                id: 55
+                site_id: 7 # Note: site_id now reflects the new_site_id
+                name: "Main Menu"
+                pin: "1234"
+                fail_over_destination_code: "voicemailbox:general_vm"
+                options:
+                  "0": "ring_group:sales_rg_new_site"
+                  "1": "extension:1002_new_site"
+                greeting_url: "https://cdn.example.com/greetings/menu_55_moved.mp3"
+                links:
+                  - href: "/sites/7/menus/55"
+                    rel: "self"
+                    method: "GET"
+        '400':
+          $ref: '../../common_components.yaml#/components/responses/BadRequestError'
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          description: Not Found - The original menu, its current site, or the new target site was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '../../common_components.yaml#/components/schemas/Error'
+              example:
+                status: "error"
+                error: "Menu, current site, or target site not found."
+                error_code: "RESOURCE_NOT_FOUND_FOR_TRANSFER"
+
+components:
+  securitySchemes:
+    oAuth2:
+      $ref: '../../common_components.yaml#/components/securitySchemes/oAuth2'
+  # No local schemas needed as they are referenced from index.yaml or common components. 

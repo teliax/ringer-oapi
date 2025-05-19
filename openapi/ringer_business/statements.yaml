@@ -1,252 +1,412 @@
-# THIS IS A PARTIAL OPENAPI FILE
-# This file contains path objects intended to be referenced by main.yaml
-# The following structure is added for standalone validation purposes only
-
 openapi: 3.0.3
 info:
   title: Ringer Business API - Statements
   description: |
-    Access and view your account statements and receipts.
-    
-    You can view your account statements (receipts) here. Statements are generated at the 
-    end of your previous service interval (e.g., 2014-11-25 to 2014-12-25).
-    
-    ## Authentication
-    This API supports OAuth 2.0 authentication using:
-    - Password grant flow
-    - Client credentials grant flow
-    
-    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
-    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
+    This API provides endpoints for accessing account statements (receipts).
+    Statements are typically generated at the end of a service interval and provide a summary of charges and payments.
+    Developers can use this API to retrieve a list of statements or the details of a specific statement.
   version: 1.0.0
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
   contact:
     name: Ringer API Support
-    url: https://docs.ringer.io/
-    email: support@ringer.io
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
 
 servers:
-  - url: https://api.ringer.io/v1
+  - url: https://api.ringer.tel/v1
     description: Production server
-  - url: https://api.staging.ringer.io/v1
+  - url: https://api.staging.ringer.tel/v1
     description: Staging server
-
-security:
-  - BearerAuth: []
 
 tags:
   - name: Statements
-    description: "You can view your account statements (receipts) here. Statements are generated at the end of your previous service interval (e.g., 2014-11-25 to 2014-12-25)."
+    description: Endpoints for retrieving account statements.
 
 paths:
   /statements:
     get:
       tags:
         - Statements
-      summary: List Statements
-      description: "You can view your account statements (receipts) here. Statements are generated at the end of your previous service interval."
-      operationId: list_statements
+      summary: List Account Statements
+      description: |
+        Retrieves a list of account statements (receipts) for the authenticated user's account.
+        Statements are generated at the end of each service interval (e.g., monthly) and are typically paginated.
+      operationId: listStatements
+      security:
+        - oAuth2: [read]
       parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
+        - name: page_size
+          in: query
+          description: The number of statement entries to return per page.
+          required: false
           schema:
-            type: string
+            type: integer
+            default: 25 
+            minimum: 1
+            maximum: 100
+            example: 25
+        - name: page
+          in: query
+          description: The page number of the result set to return.
+          required: false
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+            example: 1
       responses:
         '200':
-          description: Array of Statements
+          description: A list of account statements.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StatementList'
-        '400':
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/StatementListResponse'
+              example:
+                statements:
+                  - id: 501
+                    statement_number: "STMT-2023-10-001"
+                    period_start: "2023-10-01T00:00:00Z"
+                    period_end: "2023-10-31T23:59:59Z"
+                    issue_date: "2023-11-01T00:00:00Z"
+                    due_date: "2023-11-15T00:00:00Z"
+                    total_amount: "150.75"
+                    currency: "USD"
+                    status: "paid"
+                    created_at_original: "02/02/2018"
+                    closed_at_original: "02/02/2018"
+                    image_url: "https://cdn.example.com/statements/stmt_501.png"
+                    pdf_url: "https://cdn.example.com/statements/stmt_501.pdf"
+                    cdr_export_url: "https://cdn.example.com/reports/cdr_stmt_501.csv"
+                    links:
+                      - href: "/statements/501"
+                        rel: "self"
+                        method: "GET"
+                total_items: 1
+                total_pages: 1
+                current_page: 1
+                per_page: 25
+                links:
+                  - href: "/statements?page=1&page_size=25"
+                    rel: "self"
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  
-  /statements/{id}:
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /statements/{statementId}:
+    parameters:
+      - name: statementId
+        in: path
+        description: The unique identifier of the statement.
+        required: true
+        schema:
+          type: integer
+          format: int64
+          example: 501
     get:
       tags:
         - Statements
-      summary: Statement Details
-      description: "You can view your account statement detail. Statement is generated at the end of your previous service interval (e.g., 2014-11-25 to 2014-12-25)."
-      operationId: show_statement
-      parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          description: Statement ID
-          required: true
-          schema:
-            type: integer
+      summary: Get Statement Details
+      description: Retrieves detailed information for a specific account statement by its ID.
+      operationId: getStatementById
+      security:
+        - oAuth2: [read]
       responses:
         '200':
-          description: Statement Detail
+          description: Successfully retrieved statement details.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Statement'
-        '400':
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/StatementResponse'
+              example:
+                id: 501
+                statement_number: "STMT-2023-10-001"
+                period_start: "2023-10-01T00:00:00Z"
+                period_end: "2023-10-31T23:59:59Z"
+                issue_date: "2023-11-01T00:00:00Z"
+                due_date: "2023-11-15T00:00:00Z"
+                total_amount: "150.75"
+                currency: "USD"
+                status: "paid"
+                created_at_original: "02/02/2018"
+                closed_at_original: "02/02/2018"
+                image_url: "https://cdn.example.com/statements/stmt_501.png"
+                pdf_url: "https://cdn.example.com/statements/stmt_501.pdf"
+                cdr_export_url: "https://cdn.example.com/reports/cdr_stmt_501.csv"
+                links:
+                  - href: "/statements/501"
+                    rel: "self"
+                    method: "GET"
+                  - href: "/statements/501/download?format=pdf"
+                    rel: "download"
+                    title: "Download PDF"
+                    method: "GET"
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
         '404':
-          description: Statement not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/NotFoundError'
 
 components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-    
   schemas:
-    StatementList:
+    StatementCore:
       type: object
-      properties:
-        statements:
-          type: array
-          description: Array of Statements
-          items:
-            $ref: '#/components/schemas/Statement'
-        total_items:
-          type: string
-          example: "350"
-          description: Total number of items
-          readOnly: true
-        total_pages:
-          type: string
-          example: "7"
-          description: Total number of pages
-          readOnly: true
-        links:
-          type: array
-          items:
-            $ref: '#/components/schemas/linkDescription'
-      example:
-        statements:
-        - id: 1
-          created_at: 02/02/2023
-          closed_at: 02/02/2023
-          image: http://example.com/image.jpg
-          export: http://example.com/image.pdf
-          cdr: http://example.com/cdr/export.csv
-          links:
-          - href: /statements/1
-            rel: self
-            method: GET
-        total_items: "350"
-        total_pages: "7"
-        links:
-        - href: /statements?page_size=50&page=3
-          rel: self
-          title: Self
-        - href: /statements?page_size=50&page=1
-          rel: first
-          title: First Page
-        - href: /statements?page_size=50&page=4
-          rel: next
-          title: Next Page
-        - href: /statements?page_size=50&page=2
-          rel: prev
-          title: Previous Page
-        - href: /statements?page_size=50&page=5
-          rel: last
-          title: Last Page
-    
-    Statement:
       properties:
         id:
           type: integer
-        created_at:
+          format: int64
+          description: Unique identifier for the statement.
+          example: 501
+        statement_number:
           type: string
-        closed_at:
+          nullable: true
+          description: A human-readable identifier for the statement (e.g., STMT-2023-10-001).
+          example: "STMT-2023-10-001"
+        period_start:
           type: string
-        image:
+          format: date-time
+          description: The start date and time of the service period covered by this statement.
+          example: "2023-10-01T00:00:00Z"
+        period_end:
           type: string
-        export:
+          format: date-time
+          description: The end date and time of the service period covered by this statement.
+          example: "2023-10-31T23:59:59Z"
+        issue_date:
           type: string
-        cdr:
+          format: date-time
+          description: The date when the statement was issued.
+          example: "2023-11-01T00:00:00Z"
+        due_date:
           type: string
+          format: date-time
+          nullable: true
+          description: The date when payment for this statement is due.
+          example: "2023-11-15T00:00:00Z"
+        total_amount:
+          type: string
+          description: The total amount due or charged on this statement.
+          example: "150.75"
+        currency:
+          type: string
+          description: Three-letter ISO currency code for the amounts on the statement.
+          default: "USD"
+          example: "USD"
+        status:
+          type: string
+          description: The current status of the statement.
+          enum: [open, paid, overdue, void, uncollectible]
+          example: "paid"
+        created_at_original:
+          type: string
+          description: Original creation date string from legacy system, if applicable.
+          example: "02/02/2018"
+          nullable: true
+        closed_at_original:
+          type: string
+          description: Original closing date string from legacy system, if applicable.
+          example: "02/02/2018"
+          nullable: true
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to an image representation of the statement (e.g., a PNG or JPG).
+          example: "https://cdn.example.com/statements/stmt_501.png"
+        pdf_url:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to download the statement in PDF format.
+          example: "https://cdn.example.com/statements/stmt_501.pdf"
+        cdr_export_url:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to download associated Call Detail Records (CDRs) for this statement period, typically in CSV format.
+          example: "https://cdn.example.com/reports/cdr_stmt_501.csv"
+      required:
+        - id
+        - period_start
+        - period_end
+        - issue_date
+        - total_amount
+        - currency
+        - status
+
+    StatementResponse:
+      allOf:
+        - $ref: '#/components/schemas/StatementCore'
+        - type: object
+          properties:
+            links:
+              type: array
+              description: HATEOAS links related to this statement.
+              items:
+                $ref: '#/components/schemas/Link'
+              nullable: true
+      description: Detailed information about a specific account statement.
+      example:
+        id: 501
+        statement_number: "STMT-2023-10-001"
+        period_start: "2023-10-01T00:00:00Z"
+        period_end: "2023-10-31T23:59:59Z"
+        issue_date: "2023-11-01T00:00:00Z"
+        due_date: "2023-11-15T00:00:00Z"
+        total_amount: "150.75"
+        currency: "USD"
+        status: "paid"
+        created_at_original: "02/02/2018"
+        closed_at_original: "02/02/2018"
+        image_url: "https://cdn.example.com/statements/stmt_501.png"
+        pdf_url: "https://cdn.example.com/statements/stmt_501.pdf"
+        cdr_export_url: "https://cdn.example.com/reports/cdr_stmt_501.csv"
         links:
+          - href: "/statements/501"
+            rel: "self"
+            method: "GET"
+
+    StatementListResponse:
+      type: object
+      description: A paginated list of account statements.
+      properties:
+        statements:
           type: array
           items:
-            $ref: '#/components/schemas/linkDescription'
-      example:
-        id: 1
-        created_at: 02/02/2023
-        closed_at: 02/02/2023
-        image: http://example.com/image.jpg
-        export: http://example.com/export.csv
-        cdr: http://example.com/cdr/export.csv
+            $ref: '#/components/schemas/StatementResponse'
+        total_items:
+          type: integer
+          description: Total number of statements matching the query.
+          example: 120
+        total_pages:
+          type: integer
+          description: Total number of pages based on `per_page`.
+          example: 5
+        current_page:
+          type: integer
+          description: The current page number being displayed.
+          example: 1
+        per_page:
+          type: integer
+          description: The number of items per page.
+          example: 25
         links:
-        - href: /statements/1
-          rel: self
-          title: Self
-          method: GET
-    
-    linkDescription:
-      type: object
+          type: array
+          description: HATEOAS links for pagination and related resources.
+          items:
+            $ref: '#/components/schemas/Link'
+          nullable: true
       required:
-        - href
-        - rel
+        - statements
+        - total_items
+        - total_pages
+        - current_page
+        - per_page
+      example:
+        statements:
+          - id: 501
+            statement_number: "STMT-2023-10-001"
+            period_start: "2023-10-01T00:00:00Z"
+            period_end: "2023-10-31T23:59:59Z"
+            issue_date: "2023-11-01T00:00:00Z"
+            due_date: "2023-11-15T00:00:00Z"
+            total_amount: "150.75"
+            currency: "USD"
+            status: "paid"
+            pdf_url: "https://cdn.example.com/statements/stmt_501.pdf"
+            links:
+              - href: "/statements/501"
+                rel: "self"
+                method: "GET"
+        total_items: 1
+        total_pages: 1
+        current_page: 1
+        per_page: 25
+        links:
+          - href: "/statements?page=1&page_size=25"
+            rel: "self"
+            method: "GET"
+
+    Link:
+      type: object
+      description: Represents a HATEOAS link.
       properties:
         href:
           type: string
-          description: "URI template, as defined by RFC 6570, with the addition of the $, ( and ) characters for pre-processing"
+          format: uri-reference
         rel:
           type: string
-          description: Relation to the target resource of the link
         title:
           type: string
-          description: A title for the link
+          nullable: true
         method:
           type: string
-          description: HTTP method for requesting the target of the link (e.g. "GET" or "POST")
-    
+          enum: [GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD]
+      required:
+        - href
+        - rel
+
     Error:
       type: object
+      description: Standard error response format.
       properties:
         status:
           type: string
-          description: Error status
           example: "error"
         error:
           type: string
-          description: Error message
-          example: "Invalid input parameters"
+          example: "Statement not found."
         error_code:
           type: string
-          description: Error code for machine processing
-          example: "INVALID_INPUT"
+          example: "STATEMENT_NOT_FOUND"
       required:
         - status
         - error
+        - error_code
+
+  responses:
+    UnauthorizedError:
+      description: Unauthorized - Authentication token is missing, invalid, or does not have permissions for this resource.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Authentication required."
+            error_code: "UNAUTHORIZED"
+    ForbiddenError:
+      description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "You do not have permission to access this resource."
+            error_code: "FORBIDDEN"
+    NotFoundError:
+      description: Not Found - The requested resource (e.g., specific statement) could not be found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "The requested statement was not found."
+            error_code: "RESOURCE_NOT_FOUND"
+
+  securitySchemes:
+    oAuth2:
+      type: oauth2
+      description: OAuth 2.0 Authentication for securing API endpoints.
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ringer.tel/v1/auth/token
+          scopes:
+            read: Read access to API resources
+            write: Write access to API resources
+            admin: Administrative access.

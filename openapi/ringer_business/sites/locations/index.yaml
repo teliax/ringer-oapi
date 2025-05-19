@@ -1,0 +1,384 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Site Locations (Collection)
+  description: |
+    Endpoints for listing locations associated with a specific site and creating new locations for that site.
+    Locations can be used for E911 mapping and associating devices or SIP trunks to a physical address within a site.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1 # Should be relative or overridden
+    description: Production server
+
+tags:
+  - name: Site Features - Locations
+    description: Managing physical locations within a site, often used for E911 purposes.
+
+paths:
+  /sites/{siteId}/locations:
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId'
+    get:
+      tags:
+        - Site Features - Locations
+      summary: List Locations for a Site
+      description: Retrieves a paginated list of all physical locations defined for the specified site.
+      operationId: listSiteLocations
+      security:
+        - oAuth2: [read]
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination.
+          required: false
+          schema:
+            type: integer
+            default: 1
+            example: 1
+        - name: page_size
+          in: query
+          description: Number of locations per page.
+          required: false
+          schema:
+            type: integer
+            default: 25
+            example: 10
+      responses:
+        '200':
+          description: A paginated list of locations for the site.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLocationListResponse'
+              example:
+                locations:
+                  - id: 9
+                    site_id: 6
+                    name: "Main Office - Denver"
+                    house_number: "2150"
+                    street: "West 29th Ave"
+                    city: "Denver"
+                    state_province: "CO"
+                    postal_code: "80211"
+                    country_code: "US"
+                    caller_id_name: "Teliax Office Denver"
+                    e911_enabled: true
+                    e911_id: 123
+                    links:
+                      - href: "/sites/6/locations/9"
+                        rel: "self"
+                        method: "GET"
+                total_items: 1
+                total_pages: 1
+                current_page: 1
+                per_page: 25
+                links:
+                  - href: "/sites/6/locations?page=1&page_size=25"
+                    rel: "self"
+                    method: "GET"
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/SiteNotFoundError'
+
+    post:
+      tags:
+        - Site Features - Locations
+      summary: Create a Location for a Site
+      description: |
+        Adds a new physical location to the specified site.
+        This location can then be used for E911 address validation and associating other resources.
+      operationId: createSiteLocation # was create_location
+      security:
+        - oAuth2: [write]
+      requestBody:
+        description: Details for the new location.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationCreateRequest' # Based on LocationParams
+            example:
+              name: "Warehouse A"
+              house_number: "100"
+              street: "Distribution Rd"
+              city: "Commerce City"
+              state_province: "CO"
+              postal_code: "80022"
+              country_code: "US"
+              caller_id_name: "Warehouse A Caller ID"
+              e911_enabled: true
+      responses:
+        '201':
+          description: Location created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationResponse' # Full location details including new ID
+              example:
+                id: 10
+                site_id: 6
+                name: "Warehouse A"
+                house_number: "100"
+                street: "Distribution Rd"
+                city: "Commerce City"
+                state_province: "CO"
+                postal_code: "80022"
+                country_code: "US"
+                caller_id_name: "Warehouse A Caller ID"
+                e911_enabled: true
+                e911_id: 124 # Assuming e911_id is generated or linked upon creation
+                links: 
+        '400':
+          $ref: '../../common_components.yaml#/components/responses/BadRequestError'
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/SiteNotFoundError'
+
+components:
+  schemas:
+    LocationCore: # Common attributes for a location
+      type: object
+      properties:
+        name:
+          type: string
+          description: A user-friendly name for this location (e.g., "Main Building", "Floor 2 Office").
+          example: "Headquarters - Reception"
+        house_number:
+          type: string
+          description: The street number of the address.
+          example: "2150"
+        house_number_suffix:
+          type: string
+          nullable: true
+          description: Suffix for the street number, if any (e.g., "A", "1/2").
+          example: "Ste 310"
+        street:
+          type: string
+          description: The street name.
+          example: "West 29th Ave"
+        city:
+          type: string
+          description: The city name.
+          example: "Denver"
+        state_province:
+          type: string
+          description: The state or province code (e.g., "CO", "ON").
+          example: "CO"
+        postal_code:
+          type: string
+          description: The postal or ZIP code.
+          example: "80211"
+        country_code:
+          type: string
+          description: Two-letter ISO 3166-1 alpha-2 country code.
+          example: "US"
+        caller_id_name:
+          type: string
+          nullable: true
+          description: Caller ID name to be used for E911 calls originating from this location.
+          example: "Teliax Office Main"
+        e911_enabled:
+          type: boolean
+          description: Indicates if E911 service is enabled for this location. Geocoding and validation occur upon setting this.
+          default: true
+          example: true
+      required:
+        - name
+        - house_number
+        - street
+        - city
+        - state_province
+        - postal_code
+        - country_code
+      example:
+        name: "Satellite Office"
+        house_number: "1000"
+        street: "Commerce St"
+        city: "Dallas"
+        state_province: "TX"
+        postal_code: "75201"
+        country_code: "US"
+        caller_id_name: "Dallas Office"
+        e911_enabled: true
+
+    LocationCreateRequest: # Based on LocationParams
+      allOf:
+        - $ref: '#/components/schemas/LocationCore'
+      description: Data required to create a new location for a site.
+      example:
+        name: "Remote Warehouse"
+        house_number: "50"
+        street: "Storage Ln"
+        city: "Aurora"
+        state_province: "CO"
+        postal_code: "80011"
+        country_code: "US"
+        caller_id_name: "Warehouse E911"
+        e911_enabled: false
+
+    LocationResponse: # Based on Location definition
+      allOf:
+        - $ref: '#/components/schemas/LocationCore'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+              description: Unique identifier for the location record.
+              example: 9
+            site_id:
+              type: integer
+              format: int64
+              description: Identifier of the site this location belongs to.
+              example: 6
+            e911_id:
+              type: integer
+              format: int64
+              nullable: true
+              description: Identifier of the associated E911 record/validation, if e911_enabled is true.
+              example: 123
+            updated_by:
+              type: string
+              nullable: true
+              readOnly: true
+              description: Identifier of the user who last updated this location.
+              example: "jane.doe@example.com"
+            latitude:
+              type: string
+              nullable: true
+              readOnly: true
+            longitude:
+              type: string
+              nullable: true
+              readOnly: true
+            links:
+              type: array
+              description: HATEOAS links related to this location.
+              items:
+                $ref: '../../common_components.yaml#/components/schemas/Link'
+              nullable: true
+          required:
+            - id
+            - site_id
+            - name
+            - house_number
+            - street
+            - city
+            - state_province
+            - postal_code
+            - country_code
+      description: Detailed information about a site location.
+      example:
+        id: 9
+        site_id: 6
+        name: "Main Office - Denver"
+        house_number: "2150"
+        house_number_suffix: "Ste 310"
+        street: "West 29th Ave"
+        city: "Denver"
+        state_province: "CO"
+        postal_code: "80211"
+        country_code: "US"
+        caller_id_name: "Teliax Office Denver"
+        e911_enabled: true
+        e911_id: 123
+        updated_by: "system"
+        latitude: "39.759000"
+        longitude: "-105.015000"
+        links:
+          - href: "/sites/6/locations/9"
+            rel: "self"
+            method: "GET"
+
+    PaginatedLocationListResponse:
+      type: object
+      description: A paginated list of locations for a site.
+      properties:
+        locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocationResponse'
+        total_items:
+          type: integer
+          example: 50
+        total_pages:
+          type: integer
+          example: 5
+        current_page:
+          type: integer
+          example: 1
+        per_page:
+          type: integer
+          example: 10
+        links:
+          type: array
+          items:
+            $ref: '../../common_components.yaml#/components/schemas/Link'
+          nullable: true
+      required:
+        - locations
+        - total_items
+        - total_pages
+        - current_page
+        - per_page
+      example:
+        locations:
+          - id: 9
+            site_id: 6
+            name: "Main Office - Denver"
+            house_number: "2150"
+            house_number_suffix: "Ste 310"
+            street: "West 29th Ave"
+            city: "Denver"
+            state_province: "CO"
+            postal_code: "80211"
+            country_code: "US"
+            caller_id_name: "Teliax Office Denver"
+            e911_enabled: true
+            e911_id: 123
+            updated_by: "system"
+            latitude: "39.759000"
+            longitude: "-105.015000"
+            links:
+              - href: "/sites/6/locations/9"
+                rel: "self"
+                method: "GET"
+        total_items: 1
+        total_pages: 1
+        current_page: 1
+        per_page: 25
+        links:
+          - href: "/sites/6/locations?page=1&page_size=25"
+            rel: "self"
+            method: "GET"
+
+  # Security Schemes and common responses would be referenced from a higher level
+  securitySchemes:
+    oAuth2:
+      $ref: '../../common_components.yaml#/components/securitySchemes/oAuth2'
+
+  parameters:
+    SiteIdPath:
+      $ref: '../../common_components.yaml#/components/parameters/SiteId' # Ensuring consistency
+    LocationIdPath: # ADDING LocationId
+      name: locationId
+      in: path
+      description: The unique identifier of the location record.
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 9

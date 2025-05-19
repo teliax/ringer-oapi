@@ -45,7 +45,7 @@ rules:
   info-contact:
     description: Info object should contain a contact object
     given: $.info
-    severity: warn
+    severity: error # Changed from warn to error
     then:
       field: contact
       function: truthy
@@ -57,3 +57,59 @@ rules:
     then:
       field: description
       function: truthy 
+      
+  # New rules to match our API standards
+  ringer-contact-email:
+    description: Contact email should use the ringer.tel domain
+    given: $.info.contact.email
+    severity: error
+    then:
+      function: pattern
+      functionOptions:
+        match: "@ringer\\.tel$"
+        
+  security-schemes-defined:
+    description: API must define security schemes
+    given: $.components
+    severity: error
+    then:
+      field: securitySchemes
+      function: truthy
+      
+  operation-security-defined:
+    description: Each operation should have security defined
+    given: $.paths.*.*
+    severity: warn
+    then:
+      field: security
+      function: truthy
+      
+  schema-examples-provided:
+    description: Schema objects should have examples
+    given: $..schema
+    severity: warn
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          type: object
+          required: ["example"]
+          
+  operation-examples-provided:
+    description: Response content should include examples
+    given: $.paths.*.*.responses.*.content.*
+    severity: warn
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          type: object
+          required: ["example"]
+          
+  required-fields-specified:
+    description: Schema objects should specify required fields
+    given: $.components.schemas.*
+    severity: warn
+    then:
+      field: required
+      function: truthy

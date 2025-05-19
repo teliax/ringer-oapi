@@ -1,50 +1,37 @@
-# THIS IS A PARTIAL OPENAPI FILE
-# This file contains path objects intended to be referenced by main.yaml
-# The following structure is added for standalone validation purposes only
-
 openapi: 3.0.3
 info:
-  title: Ringer Business API - Templates
+  title: Ringer Business API - Template Management
   description: |
-    Manage templates used for configuring standard feature sets across multiple users.
-    
-    Templates provide an easy way to configure resources when a new seat needs to be added to customer accounts. 
-    Users can create one or more templates with different types of resources. Examples include:
-    - Normal employee: phone number, ring group, 2 devices, voicemail
-    - Receptionist: 1 device and failover destination
-    - Sales: phone number, ring group, 1 device, voicemail
-    - Common area phone: device
-    
-    ## Authentication
-    This API supports OAuth 2.0 authentication using:
-    - Password grant flow
-    - Client credentials grant flow
-    
-    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
-    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
+    This API provides endpoints for managing service templates within a Ringer Business account.
+    Templates offer a pre-configured set of resources (e.g., phone numbers, devices, voicemail) that can be quickly deployed for new users or seats, ensuring consistency and simplifying setup.
+
+    Functionality includes:
+    - Listing available templates.
+    - Creating a new template.
+    - Retrieving details of a specific template.
+    - Updating an existing template.
+    - Deleting a template.
+    - Cloning an existing template to create a new one.
   version: 1.0.0
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
   contact:
     name: Ringer API Support
-    url: https://docs.ringer.io/
-    email: support@ringer.io
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
 
 servers:
-  - url: https://api.ringer.io/v1
+  - url: https://api.ringer.tel/v1
     description: Production server
-  - url: https://api.staging.ringer.io/v1
+  - url: https://api.staging.ringer.tel/v1
     description: Staging server
 
-security:
-  - BearerAuth: []
+# Global security removed, will be defined per operation
 
 tags:
   - name: Templates
-    description: |
-      Templates provide an easy way to configure resources when a new seat needs to be added to customer accounts.
-      Users can create multiple templates with different types of resources to simplify provisioning.
+    description: Endpoints for managing service configuration templates.
 
 paths:
   /templates:
@@ -52,243 +39,523 @@ paths:
       tags:
         - Templates
       summary: List Templates
-      description: Retrieve information about account's templates. The sort order of the entries in the collection is ordered by name.
-      operationId: list_templates
+      description: |
+        Retrieves a list of service templates available to the authenticated account.
+        Can be paginated and filtered, for example, to show all templates in the system (with `all=true`) or search by name (`q`).
+      operationId: listTemplates
+      security:
+        - oAuth2: [read]
       parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
-          schema:
-            type: string
         - name: page_size
           in: query
-          description: The number of template entries in the resultset. System default is used unless specified.
+          description: Number of template entries per page.
           required: false
           schema:
             type: integer
+            default: 25
+            example: 10
         - name: page
           in: query
-          description: The first index of the entire list of template entries to return in the response.
+          description: Page number of the result set.
           required: false
           schema:
             type: integer
+            default: 1
+            example: 1
         - name: all
           in: query
-          description: True if fetch all templates in the system. Otherwise just fetch current account's templates.
+          description: If true, fetches all templates in the system (admin); otherwise, fetches current account's templates.
           required: false
           schema:
             type: boolean
+            default: false
         - name: q
           in: query
-          description: Free text search on Template name.
+          description: Free text search string to filter templates by name.
           required: false
           schema:
             type: string
+            example: "Sales Profile"
       responses:
         '200':
-          description: Array of Templates
+          description: A list of templates.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TemplateList'
+                $ref: '#/components/schemas/TemplateListResponse'
+              example:
+                templates:
+                  - $ref: '#/components/schemas/TemplateResponse/example'
+                total_items: 1
+                total_pages: 1
+                current_page: 1
+                per_page: 25
+                links:
+                  - href: "/templates?page=1&page_size=25"
+                    rel: "self"
+                    method: "GET"
         '400':
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/BadRequestError'
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-    
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
     post:
       tags:
         - Templates
-      summary: Create Template
+      summary: Create a New Template
       description: |
-        Templates give an easy way to configure different types of features for users in your system. 
-        Create a template for the most common type of features you want to add to users.
-      operationId: create_template
-      parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
-          schema:
-            type: string
+        Creates a new service template with a defined set of features and their configurations.
+        This allows for streamlined provisioning of new users or services.
+      operationId: createTemplate
+      security:
+        - oAuth2: [write]
       requestBody:
+        description: Configuration details for the new template.
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TemplateParams'
+              $ref: '#/components/schemas/TemplateCreateRequest'
+            example:
+              name: "Standard Employee Setup"
+              features:
+                switchable: "PhoneNumber"
+                position: 1
+                attrs:
+                  - name: "name"
+                    derivative: "calculated"
+                    default: "User Phone"
+                destinations:
+                  - switchable: "Device"
+                    position: 2
+                    target_type: "destination"
+                    attrs:
+                      - name: "name"
+                        derivative: "calculated"
+                        default: "Desk Phone"
       responses:
         '201':
-          description: Template Created
+          description: Template created successfully.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Template'
+                $ref: '#/components/schemas/TemplateResponse'
         '400':
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/BadRequestError'
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /templates/{templateId}:
+    parameters:
+      - name: templateId
+        in: path
+        description: The unique identifier of the template.
+        required: true
+        schema:
+          type: integer
+          format: int64
+          example: 1
+    get:
+      tags:
+        - Templates
+      summary: Get Template Details
+      description: Retrieves detailed information for a specific service template by its ID.
+      operationId: getTemplateById
+      security:
+        - oAuth2: [read]
+      responses:
+        '200':
+          description: Successfully retrieved template details.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/TemplateResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    put:
+      tags:
+        - Templates
+      summary: Update an Existing Template
+      description: Updates the configuration of an existing service template.
+      operationId: updateTemplateById
+      security:
+        - oAuth2: [write]
+      requestBody:
+        description: Template attributes to update.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplateUpdateRequest'
+            example:
+              name: "Standard Employee Setup - Revised"
+              features:
+                switchable: "PhoneNumber"
+                position: 1
+                attrs:
+                  - name: "name"
+                    derivative: "calculated"
+                    default: "User Direct Line"
+      responses:
+        '200':
+          description: Template updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    delete:
+      tags:
+        - Templates
+      summary: Delete a Template
+      description: Permanently deletes a specific service template. This action cannot be undone.
+      operationId: deleteTemplateById
+      security:
+        - oAuth2: [write, admin]
+      parameters:
+        - $ref: '#/components/parameters/TemplateIdPath'
+      responses:
+        '204':
+          description: Template deleted successfully. No content is returned.
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /templates/{templateId}/clone:
+    parameters:
+      - name: templateId
+        in: path
+        description: The unique identifier of the template to clone.
+        required: true
+        schema:
+          type: integer
+          format: int64
+          example: 1
+    post:
+      tags:
+        - Templates
+      summary: Clone an Existing Template
+      description: |
+        Creates a new template by cloning an existing one.
+        The new template will have a new ID and can be subsequently modified.
+      operationId: cloneTemplateById
+      security:
+        - oAuth2: [write] # Cloning creates a new resource
+      responses:
+        '201':
+          description: Template cloned successfully. Returns the details of the new template.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
 
 components:
   securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+    oAuth2:
+      type: oauth2
+      description: OAuth 2.0 Authentication for securing API endpoints.
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ringer.tel/v1/auth/token
+          scopes:
+            read: Read access to API resources
+            write: Write access to API resources
+            admin: Administrative access.
   
+  parameters:
+    TemplateIdPath:
+      name: templateId
+      in: path
+      description: The unique identifier of the template.
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 1
+
   schemas:
-    TemplateList:
+    TemplateFeatureAttribute:
       type: object
-      properties:
-        templates:
-          type: array
-          description: Array of templates
-          items:
-            $ref: '#/components/schemas/Template'
-        total_items:
-          type: string
-          example: "350"
-          description: Total number of items
-          readOnly: true
-        total_pages:
-          type: string
-          example: "7"
-          description: Total number of pages
-          readOnly: true
-        links:
-          type: array
-          items:
-            $ref: '#/components/schemas/linkDescription'
-    
-    Template:
-      allOf:
-        - $ref: '#/components/schemas/TemplateParams'
-        - required:
-          - id
-          properties:
-            id:
-              type: integer
-              example: 1
-            last_updated_by:
-              type: string
-              example: John Doe
-            owner:
-              type: string
-              example: Leap Tel
-            links:
-              type: array
-              items:
-                $ref: '#/components/schemas/linkDescription'
-    
-    TemplateParams:
-      required:
-        - name
-        - features
+      description: Defines an attribute for a feature within a template.
       properties:
         name:
           type: string
-          example: Sales Team
-        features:
-          $ref: '#/components/schemas/TemplateSwitchable'
-    
-    TemplateSwitchable:
+          description: The name of the feature attribute (e.g., "name", "timeout", "caller_id_name").
+        derivative:
+          type: string
+          enum: [calculated, predefined, prompt]
+          description: How the attribute's value is determined.
+        default:
+          type: string 
+          nullable: true
+          description: Default value or prompt text.
+      required:
+        - name
+        - derivative
+      example:
+        name: "timeout"
+        derivative: "predefined"
+        default: "120"
+
+    TemplateFeature:
+      type: object
+      description: Represents a configurable feature (switchable) within a template, forming a tree structure.
       properties:
         switchable:
           type: string
         position:
           type: integer
         attrs:
-          type: object
-          properties:
-            name:
-              type: string
-            derivative:
-              type: string
-            default:
-              type: string
+          type: array
+          items:
+            $ref: '#/components/schemas/TemplateFeatureAttribute'
         destinations:
           type: array
           items:
-            $ref: '#/components/schemas/TemplateSwitchable'
+            $ref: '#/components/schemas/TemplateFeature'
+          nullable: true
+        feature_type:
+          type: string
+          description: Type of feature (e.g., device, extension, menu, voicemail).
+          example: "device"
         failover:
-          $ref: '#/components/schemas/TemplateSwitchable'
+          description: "Optional. System code for the failover destination if this feature is unavailable."
+          nullable: true
+          allOf:
+            - $ref: './common_components.yaml#/components/schemas/SiteDestination'
         target_type:
           type: string
+          description: The type of the target object for the feature (e.g. Device, RingGroup).
+      required:
+        - switchable
+        - position
       example:
-        switchable: PhoneNumber
+        switchable: "PhoneNumber"
         position: 1
         attrs:
-          name: name
-          derivative: calculated
-          default: Phone Number
-        destinations:
-          - switchable: RingGroup
-            position: 2
-            target_type: destination
-            attrs:
-              name: name
-              derivative: calculated
-              default: Ring Group
-            destinations:
-              - switchable: Device
-                target_type: destination
-                position: 3
-                attrs:
-                  name: name
-                  derivative: calculated
-                  default: Device
-                  
-    linkDescription:
+          - name: "name"
+            derivative: "calculated"
+            default: "Phone Number"
+
+    TemplateCore:
       type: object
+      properties:
+        name:
+          type: string
+        features:
+          $ref: '#/components/schemas/TemplateFeature'
       required:
-        - href
-        - rel
+        - name
+        - features
+
+    TemplateCreateRequest:
+      allOf:
+        - $ref: '#/components/schemas/TemplateCore'
+
+    TemplateUpdateRequest:
+      allOf:
+        - $ref: '#/components/schemas/TemplateCore'
+
+    TemplateResponse:
+      allOf:
+        - $ref: '#/components/schemas/TemplateCore'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+            last_updated_by:
+              type: string
+              nullable: true
+            owner:
+              type: string
+              nullable: true
+            links:
+              type: array
+              items:
+                $ref: '#/components/schemas/Link'
+              nullable: true
+          required:
+            - id
+      example:
+        id: 1
+        name: "Sales Team Standard Setup"
+        features:
+          switchable: "PhoneNumber"
+          position: 1
+          attrs:
+            - name: "name"
+              derivative: "calculated"
+              default: "Phone Number"
+        last_updated_by: "jane.doe@example.com"
+        owner: "Account ABC"
+        links:
+          - href: "/templates/1"
+            rel: "self"
+            method: "GET"
+
+    TemplateListResponse:
+      type: object
+      description: A list of service templates.
+      properties:
+        templates:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemplateResponse'
+        total_items:
+          type: integer
+          format: int32
+        total_pages:
+          type: integer
+          format: int32
+        current_page: # Added for pagination consistency
+          type: integer
+          format: int32
+          example: 1
+        per_page: # Added for pagination consistency
+          type: integer
+          format: int32
+          example: 25
+        links: # Added for pagination HATEOAS
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+          nullable: true
+      required:
+        - templates
+        - total_items
+        - total_pages
+        - current_page
+        - per_page
+      example:
+        templates:
+          - $ref: '#/components/schemas/TemplateResponse/example'
+        total_items: 1
+        total_pages: 1
+        current_page: 1
+        per_page: 25
+        links:
+          - href: "/templates?page=1&page_size=25"
+            rel: "self"
+            method: "GET"
+
+    Link:
+      type: object
+      description: Represents a HATEOAS link.
       properties:
         href:
           type: string
-          description: "URI template, as defined by RFC 6570, with the addition of the $, ( and ) characters for pre-processing"
+          format: uri-reference
         rel:
           type: string
-          description: Relation to the target resource of the link
         title:
           type: string
-          description: A title for the link
+          nullable: true # Title is often optional
         method:
           type: string
-          description: HTTP method for requesting the target of the link (e.g. "GET" or "POST")
-    
+          enum: [GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD]
+      required:
+        - href
+        - rel
+
     Error:
       type: object
+      description: Standard error response format.
       properties:
         status:
           type: string
-          description: Error status
           example: "error"
         error:
           type: string
-          description: Error message
-          example: "Invalid input parameters"
+          example: "An error occurred."
         error_code:
           type: string
-          description: Error code for machine processing
-          example: "INVALID_INPUT"
+          example: "GENERIC_ERROR"
+        details:
+          type: array
+          nullable: true
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              issue:
+                type: string
       required:
         - status
-        - error 
+        - error
+        - error_code
+      example:
+        status: "error"
+        error: "A template processing error occurred."
+        error_code: "TEMPLATE_ERROR"
+
+  responses:
+    UnauthorizedError:
+      description: Unauthorized - Authentication token is missing or invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Authentication required."
+            error_code: "UNAUTHORIZED"
+    ForbiddenError:
+      description: Forbidden - The authenticated user does not have permission.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Permission denied."
+            error_code: "FORBIDDEN"
+    NotFoundError:
+      description: Not Found - The requested resource could not be found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Template not found."
+            error_code: "TEMPLATE_NOT_FOUND"
+    BadRequestError:
+      description: Bad Request - Invalid data provided.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Invalid template data provided."
+            error_code: "VALIDATION_ERROR"

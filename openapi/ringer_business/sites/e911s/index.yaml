@@ -1,0 +1,239 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Site E911 Records (Collection)
+  description: |
+    Endpoint for listing E911 records associated with a specific site.
+    E911 records link a physical address (often derived from a Location) with a phone number for emergency service dispatch.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server
+
+tags:
+  - name: Site Features - E911
+    description: Managing E911 records and address validation for emergency services for a site.
+
+paths:
+  /sites/{siteId}/e911s:
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId'
+    get:
+      tags:
+        - Site Features - E911
+      summary: List E911 Records for a Site
+      description: Retrieves a list of all E911 records (validated emergency addresses) associated with the specified site.
+      operationId: listSiteE911Records
+      security:
+        - oAuth2: [read]
+      responses:
+        '200':
+          description: A list of E911 records for the site.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/E911ListResponse'
+              example:
+                e911_records:
+                  - id: 19
+                    site_id: 6
+                    name: "Main Office E911"
+                    house_number: "2150"
+                    street: "West 29th Ave"
+                    city: "Denver"
+                    state_province: "CO"
+                    postal_code: "80211"
+                    country_code: "US"
+                    caller_id_name: "Teliax Office Emergency"
+                    validated: true
+                    did_number: "+13035550100"
+                    links:
+                      - href: "/sites/6/e911s/19"
+                        rel: "self"
+                        method: "GET"
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/SiteNotFoundError'
+
+components:
+  parameters:
+    SiteIdPath:
+      $ref: '../../common_components.yaml#/components/parameters/SiteId'
+    E911IdPath:
+      name: e911Id
+      in: path
+      description: The unique identifier of the E911 record.
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 19
+
+  schemas:
+    E911Core:
+      type: object
+      description: Core address and identification information for an E911 record.
+      properties:
+        name:
+          type: string
+          description: A descriptive name for this E911 record.
+          example: "Headquarters - Main Lobby E911"
+        caller_id_name:
+          type: string
+          description: The name to be displayed to the PSAP for 911 calls from this address.
+          example: "Innovatech Solutions - Lobby"
+        house_number:
+          type: string
+          description: Street number.
+          example: "2150"
+        house_number_suffix:
+          type: string
+          nullable: true
+          description: Street number suffix (e.g., "A", "Unit 100").
+          example: "Suite 100"
+        street:
+          type: string
+          description: Street name.
+          example: "West 29th Avenue"
+        city:
+          type: string
+          description: City name.
+          example: "Denver"
+        state_province:
+          type: string
+          description: State or province code.
+          example: "CO"
+        postal_code:
+          type: string
+          description: Postal or ZIP code.
+          example: "80211"
+        country_code:
+          type: string
+          description: Two-letter ISO 3166-1 alpha-2 country code.
+          example: "US"
+      required:
+        - name
+        - caller_id_name
+        - house_number
+        - street
+        - city
+        - state_province
+        - postal_code
+        - country_code
+      example:
+        name: "Shipping Dock E911"
+        caller_id_name: "Innovatech Shipping"
+        house_number: "100"
+        street: "Industrial Way"
+        city: "Warehouseville"
+        state_province: "TX"
+        postal_code: "75000"
+        country_code: "US"
+
+    E911Response:
+      allOf:
+        - $ref: '#/components/schemas/E911Core'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+              description: Unique identifier for the E911 record.
+              example: 19
+            site_id:
+              type: integer
+              format: int64
+              description: Identifier of the site this E911 record is associated with.
+              example: 6
+            validated:
+              type: boolean
+              description: Indicates if the address has been successfully validated for E911 services.
+              readOnly: true
+              example: true
+            did_number:
+              type: string
+              nullable: true
+              readOnly: true
+              description: The DID number automatically assigned to this E911 location for callback purposes.
+              example: "+13035550100"
+            links:
+              type: array
+              description: HATEOAS links related to this E911 record.
+              items:
+                $ref: '../../common_components.yaml#/components/schemas/Link'
+              nullable: true
+          required:
+            - id
+            - site_id
+            - validated
+            - name
+            - caller_id_name
+            - house_number
+            - street
+            - city
+            - state_province
+            - postal_code
+            - country_code
+      description: Detailed information about a specific E911 record.
+      example:
+        id: 19
+        site_id: 6
+        name: "Main Office E911"
+        caller_id_name: "Teliax Office Emergency"
+        house_number: "2150"
+        house_number_suffix: "Ste 310"
+        street: "West 29th Ave"
+        city: "Denver"
+        state_province: "CO"
+        postal_code: "80211"
+        country_code: "US"
+        validated: true
+        did_number: "+13035550123"
+        links:
+          - href: "/sites/6/e911s/19"
+            rel: "self"
+            method: "GET"
+
+    E911ListResponse:
+      type: object
+      description: A list of E911 records for a site.
+      properties:
+        e911_records:
+          type: array
+          items:
+            $ref: '#/components/schemas/E911Response'
+      required:
+        - e911_records
+      example:
+        e911_records:
+          - id: 19
+            site_id: 6
+            name: "Main Office E911"
+            caller_id_name: "Teliax Office Emergency"
+            house_number: "2150"
+            house_number_suffix: "Ste 310"
+            street: "West 29th Ave"
+            city: "Denver"
+            state_province: "CO"
+            postal_code: "80211"
+            country_code: "US"
+            validated: true
+            did_number: "+13035550123"
+            links:
+              - href: "/sites/6/e911s/19"
+                rel: "self"
+                method: "GET"
+
+  securitySchemes:
+    oAuth2:
+      $ref: '../../common_components.yaml#/components/securitySchemes/oAuth2' 

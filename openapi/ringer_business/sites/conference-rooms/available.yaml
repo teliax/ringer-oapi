@@ -1,0 +1,78 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - List Available Conference Rooms for Site/User
+  description: |
+    Endpoint for listing conference rooms that are available to be associated with a specific site or user.
+    This could include conference rooms in an account's inventory not yet assigned to the target site/user,
+    or potentially filtered based on user context if a `user_id` is provided.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1 # Should be relative or overridden
+    description: Production server
+
+tags:
+  - name: Site Features - Conference Rooms
+    description: Managing conference rooms (audio bridges) associated with a site.
+
+paths:
+  /sites/{siteId}/conference-rooms/available:
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId'
+    get:
+      tags:
+        - Site Features - Conference Rooms
+      summary: List Available Conference Rooms for a Site/User
+      description: |
+        Retrieves a list of conference rooms available for assignment to the specified site.
+        The original Teliax API included an optional `user_id` query parameter, which might imply that availability
+        could also be filtered or contextualized by a user. This parameter is included here.
+      operationId: listSiteAvailableConferenceRooms # was list_available_conference-rooms
+      security:
+        - oAuth2: [read]
+      parameters:
+        - name: user_id
+          in: query
+          description: Optional. Identifier of a user to filter or contextualize available conference rooms.
+          required: false
+          schema:
+            type: integer
+            format: int64
+            example: 10
+      responses:
+        '200':
+          description: A list of available conference rooms.
+          content:
+            application/json:
+              schema:
+                $ref: './index.yaml#/components/schemas/ConferenceRoomListResponse' # Reuses ConferenceRoomListResponse
+              example:
+                conference_rooms:
+                  - id: 15 # Example of an unassigned conference room from inventory
+                    site_id: null # Or a special inventory site_id
+                    name: "Ad-hoc Meeting Room A"
+                    profile: "default"
+                    # PINs would typically be set upon assignment or be pre-defined if it's a reservable resource pool
+                    pin: null
+                    moderator_pin: null
+                    user_id: null # Not yet assigned to a specific user
+                    links: 
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/SiteNotFoundError'
+
+components:
+  # Security Schemes and common responses would be referenced from a higher level
+  securitySchemes:
+    oAuth2:
+      $ref: '../../common_components.yaml#/components/securitySchemes/oAuth2' 

@@ -1,110 +1,77 @@
-# THIS IS A PARTIAL OPENAPI FILE
-# This file contains path objects intended to be referenced by main.yaml
-# The following structure is added for standalone validation purposes only
-
 openapi: 3.0.3
 info:
   title: Ringer Business API - Country Codes
-  description: |
-    Reference list of country codes and their regions for use with Ringer Business services.
-    
-    Country codes are used for configuring permitted outbound dialing destinations.
-    When setting up a Site/PBX the customer can setup Permitted Outbound Country Codes.
-    Outbound Country Codes must be explicitly set, including separate zones
-    for +1 US, +1 Canada, and +1 outside of the US and Canada as specified by area code
-    along with any other international destinations needed.
-    
-    ## Authentication
-    This API supports OAuth 2.0 authentication using:
-    - Password grant flow
-    - Client credentials grant flow
-    
-    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
-    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
   version: 1.0.0
+  description: Lists country codes.
   license:
-    name: MIT License
+    name: MIT
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
   contact:
     name: Ringer API Support
-    url: https://docs.ringer.io/
-    email: support@ringer.io
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
 
 servers:
-  - url: https://api.ringer.io/v1
-    description: Production server
-  - url: https://api.staging.ringer.io/v1
-    description: Staging server
+  - url: https://api.ringer.tel/v1
 
-security:
-  - BearerAuth: []
+# Global security removed
 
 tags:
   - name: Country Codes
-    description: |
-      While setting up a Site/PBX the customer can setup Permitted Outbound Country Codes. 
-      Outbound Country Codes must be explicitly set, including separate zones for +1 US, +1 Canada, 
-      and +1 outside of the US and Canada as specified by area code along with any other international 
-      destinations you need calling to. It is strongly recommended that you only add destinations you need 
-      to dial to reduce your exposure to international toll fraud.
+    description: Endpoint for listing supported country codes and their regions.
 
 paths:
   /country-codes:
     get:
       tags:
         - Country Codes
-      summary: List Country Codes
-      description: Retrieve a list of country codes available for configuration of outbound dialing.
-      operationId: list_country_codes
-      parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
-          schema:
-            type: string
+      summary: List Available Country Codes
+      description: |
+        Retrieves a list of all country codes supported by the system, often grouped by region or zone.
+        This information is useful for configuring features like outbound call permissions on Sites.
+      operationId: listAvailableCountryCodes
+      security:
+        - oAuth2: [read]
       responses:
         '200':
-          description: Array of Country Codes
+          description: A list of available country codes.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CountryCodeList'
-        '400':
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/CountryCodeListResponse'
+              example:
+                country_codes:
+                  - id: "US"
+                    name: "United States - 1"
+                    code: "INTERSTATE|INTRASTATE|LOCAL|TOLLFREE"
+                    region: "Zone 1: North America"
+                  - id: "EG"
+                    name: "Egypt - 20"
+                    code: "20"
+                    region: "Zone 2: Africa"
+                  - id: "CA"
+                    name: "Canada - 1"
+                    code: "1"
+                    region: "Zone 1: North America"
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
 
 components:
   securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-    
+    oAuth2:
+      type: oauth2
+      description: OAuth 2.0 Authentication for securing API endpoints.
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ringer.tel/v1/auth/token
+          scopes:
+            read: Read
+
   schemas:
-    CountryCodeList:
-      properties:
-        countries:
-          type: array
-          description: Array of Countries
-          items:
-            $ref: '#/components/schemas/CountryCode'
-    
     CountryCode:
-      required:
-        - code
-        - id
-        - name
-        - region
+      type: object
       properties:
         id:
           type: string
@@ -114,31 +81,82 @@ components:
           type: string
         region:
           type: string
+          nullable: true
+      required:
+        - id
+        - name
+        - code
       example:
-        - id: INTERSTATE|INTRASTATE|LOCAL|TOLLFREE
-          name: United States - 1
-          code: INTERSTATE|INTRASTATE|LOCAL|TOLLFREE
-          region: "Zone 1: North America"
-        - id: "20"
-          name: Egypt - 20
-          code: "20"
-          region: "Zone 2: Africa"
-    
+        id: "GB"
+        name: "United Kingdom - 44"
+        code: "44"
+        region: "Europe"
+
+    CountryCodeListResponse:
+      type: object
+      description: "A list of available country codes."
+      properties:
+        country_codes:
+          type: array
+          items:
+            $ref: '#/components/schemas/CountryCode'
+      required:
+        - country_codes
+      example:
+        country_codes:
+          - id: "US"
+            name: "United States - 1"
+            code: "INTERSTATE|INTRASTATE|LOCAL|TOLLFREE"
+            region: "Zone 1: North America"
+          - id: "CA"
+            name: "Canada - 1"
+            code: "1"
+            region: "Zone 1: North America"
+          - id: "GB"
+            name: "United Kingdom - 44"
+            code: "44"
+            region: "Europe"
+
     Error:
       type: object
+      description: "Standard error response format."
       properties:
         status:
           type: string
-          description: Error status
           example: "error"
         error:
           type: string
-          description: Error message
-          example: "Invalid input parameters"
+          example: "Failed to retrieve country codes."
         error_code:
           type: string
-          description: Error code for machine processing
-          example: "INVALID_INPUT"
+          example: "COUNTRY_CODE_LIST_ERROR"
       required:
         - status
-        - error 
+        - error
+        - error_code
+      example:
+        status: "error"
+        error: "An error occurred with country codes."
+        error_code: "COUNTRY_CODE_GENERIC_ERROR"
+
+  responses:
+    UnauthorizedError:
+      description: "Unauthorized - Authentication token is missing, invalid, or does not have permissions for this resource."
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Authentication required for country codes."
+            error_code: "UNAUTHORIZED_COUNTRY_CODES"
+    ForbiddenError:
+      description: "Forbidden - The authenticated user does not have the necessary permissions to perform this action."
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Permission denied for country codes."
+            error_code: "FORBIDDEN_COUNTRY_CODES" 

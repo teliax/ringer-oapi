@@ -1,0 +1,341 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Site Schedule (Individual Operations)
+  description: API endpoints for viewing, updating, and deleting an individual schedule for a site.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server
+  # - url: https://api.staging.ringer.tel/v1
+  #   description: Staging server
+
+tags:
+  - name: Site Features - Schedules
+    description: "Managing time-based routing schedules for a site."
+
+paths:
+  /sites/{siteId}/schedules/{scheduleId}:
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId'
+      - $ref: './index.yaml#/components/parameters/ScheduleIdPath'
+    get:
+      tags:
+        - Site Features - Schedules
+      summary: Get Schedule Details
+      operationId: getSiteScheduleById
+      description: Retrieves the details of a specific Schedule.
+      security:
+        - oAuth2: [read]
+      responses:
+        '200':
+          description: Schedule details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: './index.yaml#/components/schemas/ScheduleResponse'
+              example:
+                data:
+                  id: "7"
+                  type: "schedule"
+                  attributes:
+                    name: "Business Hours Rule"
+                    time_zone: "America/Denver"
+                    start_hour: "09"
+                    start_minute: "00"
+                    end_hour: "17"
+                    end_minute: "00"
+                    start_weekday: "Mon"
+                    end_weekday: "Fri"
+                    exceptions: "12/25,01/01"
+                    positive_destination_code: "menu:day_menu"
+                    negative_destination_code: "voicemailbox:after_hours_vm"
+                    site_id: 6
+                    positive_destination:
+                      name: "Day Menu"
+                      code: "menu:day_menu"
+                    negative_destination:
+                      name: "After Hours Voicemail"
+                      code: "voicemailbox:after_hours_vm"
+                  links:
+                    self:
+                      href: "/sites/6/schedules/7"
+                      rel: "self"
+                      method: "GET"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    put:
+      tags:
+        - Site Features - Schedules
+      summary: Update Schedule
+      operationId: updateSiteScheduleById
+      description: Updates an existing Schedule. Provide only the fields to be changed.
+      security:
+        - oAuth2: [write]
+      requestBody:
+        description: Schedule attributes to update.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleUpdateRequest'
+            example:
+              data:
+                type: "schedule"
+                attributes:
+                  name: "After Hours Support"
+                  time_zone: "America/Los_Angeles"
+                  start_hour: "18"
+                  start_minute: "00"
+                  end_hour: "23"
+                  end_minute: "59"
+                  start_weekday: "Mon"
+                  end_weekday: "Fri"
+                  exceptions: "12/24,12/31"
+                  positive_destination_code: "menu:support_night_menu"
+                  negative_destination_code: "voicemailbox:general_support_vm"
+                  site_id: 6
+                  positive_destination:
+                    name: "Support Night Menu"
+                    code: "menu:support_night_menu"
+                  negative_destination:
+                    name: "General Support Voicemail"
+                    code: "voicemailbox:general_support_vm"
+      responses:
+        '200':
+          description: Schedule updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: './index.yaml#/components/schemas/ScheduleResponse'
+              example:
+                data:
+                  id: "7"
+                  type: "schedule"
+                  attributes:
+                    name: "After Hours Support"
+                    time_zone: "America/Los_Angeles"
+                    start_hour: "18"
+                    start_minute: "00"
+                    end_hour: "23"
+                    end_minute: "59"
+                    start_weekday: "Mon"
+                    end_weekday: "Fri"
+                    exceptions: "12/24,12/31"
+                    positive_destination_code: "menu:support_night_menu"
+                    negative_destination_code: "voicemailbox:general_support_vm"
+                    site_id: 6
+                    positive_destination:
+                      name: "Support Night Menu"
+                      code: "menu:support_night_menu"
+                    negative_destination:
+                      name: "General Support Voicemail"
+                      code: "voicemailbox:general_support_vm"
+                  links:
+                    self:
+                      href: "/sites/6/schedules/7"
+                      rel: "self"
+                      method: "GET"
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    delete:
+      tags:
+        - Site Features - Schedules
+      summary: Delete a Schedule
+      operationId: deleteSiteScheduleById
+      description: Permanently deletes a Schedule.
+      security:
+        - oAuth2: [write, admin]
+      responses:
+        '204':
+          description: Schedule deleted successfully.
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+components:
+  parameters:
+    SiteIdPath:
+      name: siteId
+      in: path
+      description: The unique identifier of the site.
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 6
+    ScheduleIdPath:
+      name: scheduleId
+      in: path
+      description: The unique identifier of the Schedule.
+      required: true
+      schema:
+        type: string
+        example: "7"
+
+  securitySchemes:
+    oAuth2:
+      $ref: '../../common_components.yaml#/components/securitySchemes/oAuth2'
+
+  schemas:
+    ScheduleUpdateRequest:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - type
+            - attributes
+          properties:
+            type:
+              type: string
+              enum: [schedule]
+            attributes:
+              type: object
+              properties:
+                name:
+                  type: string
+                  nullable: true
+                time_zone:
+                  type: string
+                  nullable: true
+                start_hour:
+                  type: string
+                  nullable: true
+                start_minute:
+                  type: string
+                  nullable: true
+                end_hour:
+                  type: string
+                  nullable: true
+                end_minute:
+                  type: string
+                  nullable: true
+                start_weekday:
+                  type: string
+                  nullable: true
+                end_weekday:
+                  type: string
+                  nullable: true
+                exceptions:
+                  type: string
+                  nullable: true
+                positive_destination_code:
+                  type: string
+                  nullable: true
+                negative_destination_code:
+                  type: string
+                  nullable: true
+      description: Data for updating an existing Schedule. Only provided fields are updated.
+      example:
+        data:
+          type: "schedule"
+          attributes:
+            name: "Holiday Hours 2024"
+            exceptions: "12/24,12/25,12/31,01/01"
+            time_zone: "America/New_York"
+            start_hour: "00"
+            start_minute: "00"
+            end_hour: "23"
+            end_minute: "59"
+            start_weekday: "Mon"
+            end_weekday: "Sun"
+            positive_destination_code: "announcement:holiday_closed"
+            negative_destination_code: "announcement:holiday_closed"
+
+    Error:
+      type: object
+      description: Standard error response format.
+      properties:
+        status:
+          type: string
+          example: "error"
+        error:
+          type: string
+          description: A human-readable description of the error.
+        error_code:
+          type: string
+          description: A machine-parsable error code.
+        details:
+          type: array
+          nullable: true
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                description: JSON pointer to the field that caused the error.
+              issue:
+                type: string
+                description: Specific issue with the field.
+      required:
+        - status
+        - error
+        - error_code
+
+    # ScheduleResponse is referenced from ./index.yaml#/components/schemas/ScheduleResponse
+    # Link schema would be defined in index.yaml if ScheduleResponse uses it.
+
+  responses:
+    UnauthorizedError:
+      description: Unauthorized - Authentication token is missing or invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Authentication required."
+            error_code: "UNAUTHORIZED"
+    ForbiddenError:
+      description: Forbidden - The authenticated user does not have permission.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Permission denied."
+            error_code: "FORBIDDEN"
+    NotFoundError:
+      description: Not Found - The requested resource could not be found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Resource not found."
+            error_code: "RESOURCE_NOT_FOUND"
+    BadRequestError:
+      description: Bad Request - Invalid data provided.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Invalid request parameters."
+            error_code: "VALIDATION_ERROR" 

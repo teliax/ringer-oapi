@@ -1,0 +1,195 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Site Schedule Transfer
+  description: API endpoint for transferring a schedule between sites.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server
+  # - url: https://api.staging.ringer.tel/v1
+  #   description: Staging server
+
+tags:
+  - name: Site Features - Schedules
+    description: "Managing time-based routing schedules for a site."
+
+paths:
+  /sites/{siteId}/schedules/{scheduleId}/transfer:
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId'
+      - $ref: './index.yaml#/components/parameters/ScheduleIdPath'
+    post:
+      tags:
+        - Site Features - Schedules
+      summary: Transfer Schedule to Another Site
+      operationId: transferSiteSchedule
+      description: Moves a schedule from its current site to a new target site.
+      security:
+        - oAuth2: [write, admin]
+      requestBody:
+        description: The identifier of the new site for the schedule.
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                new_site_id:
+                  type: integer
+                  format: int64
+                  description: The unique identifier of the target site.
+                  example: 8
+              required:
+                - new_site_id
+              example:
+                new_site_id: 8
+      responses:
+        '200':
+          description: Schedule transferred successfully. Returns the schedule in its new site context.
+          content:
+            application/json:
+              schema:
+                $ref: './index.yaml#/components/schemas/ScheduleResponse'
+              example:
+                data:
+                  id: "7"
+                  type: "schedule"
+                  attributes:
+                    name: "Business Hours Rule"
+                    time_zone: "America/Denver"
+                    start_hour: "09"
+                    start_minute: "00"
+                    end_hour: "17"
+                    end_minute: "00"
+                    start_weekday: "Mon"
+                    end_weekday: "Fri"
+                    exceptions: "12/25,01/01"
+                    positive_destination_code: "menu:day_menu"
+                    negative_destination_code: "voicemailbox:after_hours_vm"
+                    site_id: 8
+                    positive_destination:
+                      name: "Day Menu"
+                      code: "menu:day_menu"
+                    negative_destination:
+                      name: "After Hours Voicemail"
+                      code: "voicemailbox:after_hours_vm"
+                  links:
+                    self:
+                      href: "/sites/8/schedules/7"
+                      rel: "self"
+                      method: "GET"
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+components:
+  parameters:
+    SiteIdPath:
+      name: siteId
+      in: path
+      description: The unique identifier of the site.
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 6
+    ScheduleIdPath:
+      name: scheduleId
+      in: path
+      description: The unique identifier of the Schedule.
+      required: true
+      schema:
+        type: string
+        example: "7"
+
+  securitySchemes:
+    oAuth2:
+      $ref: '../../common_components.yaml#/components/securitySchemes/oAuth2'
+
+  schemas:
+    Error:
+      type: object
+      description: Standard error response format.
+      properties:
+        status:
+          type: string
+          example: "error"
+        error:
+          type: string
+          description: A human-readable description of the error.
+        error_code:
+          type: string
+          description: A machine-parsable error code.
+        details:
+          type: array
+          nullable: true
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              issue:
+                type: string
+      required:
+        - status
+        - error
+        - error_code
+      example:
+        status: "error"
+        error: "An error occurred during schedule transfer."
+        error_code: "SCHEDULE_TRANSFER_ERROR"
+
+  responses:
+    UnauthorizedError:
+      description: Unauthorized - Authentication token is missing or invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Authentication required."
+            error_code: "UNAUTHORIZED"
+    ForbiddenError:
+      description: Forbidden - The authenticated user does not have permission.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Permission denied."
+            error_code: "FORBIDDEN"
+    NotFoundError:
+      description: Not Found - The requested resource (e.g., schedule, site) could not be found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Resource not found."
+            error_code: "RESOURCE_NOT_FOUND"
+    BadRequestError:
+      description: Bad Request - Invalid data provided.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Invalid request parameters."
+            error_code: "VALIDATION_ERROR" 

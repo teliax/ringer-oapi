@@ -1,0 +1,122 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Sites SIP Trunk Transfer
+  description: API endpoint for transferring a SIP Trunk between sites
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server
+
+tags:
+  - name: Site Features - SIP Trunks
+    description: "Managing SIP Trunks for a site."
+
+paths:
+  /sites/{siteId}/sip-trunks/{sipTrunkId}/transfer:
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId'
+      - $ref: './index.yaml#/components/parameters/SipTrunkIdPath'
+    post:
+      tags:
+        - Site Features - SIP Trunks
+      summary: Transfer SIP Trunk
+      operationId: transfer_sip_trunk
+      description: >-
+        Transfer a SIP Trunk to a different Site
+      security:
+        - oAuth2: [write, admin]
+      requestBody:
+        description: Transfer parameters
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - data
+              properties:
+                data:
+                  type: object
+                  required:
+                    - type
+                    - attributes
+                  properties:
+                    type:
+                      type: string
+                      enum: [transfer]
+                      example: "transfer"
+                    attributes:
+                      type: object
+                      required:
+                        - new_site_id
+                      properties:
+                        new_site_id:
+                          type: integer
+                          format: int64
+                          description: ID of the site to transfer the SIP Trunk to
+                          example: 8
+              example:
+                data:
+                  type: "transfer"
+                  attributes:
+                    new_site_id: 8
+      responses:
+        '200':
+          description: SIP Trunk Detail
+          content:
+            application/json:
+              schema:
+                $ref: './index.yaml#/components/schemas/SipTrunkResponse'
+              example:
+                id: 161
+                site_id: 8
+                name: "Main Office SIP Trunk"
+                login: "main_trunk_user"
+                active: true
+                channel_limit: 10
+                contact_ip: "1.2.3.4:5060"
+                acl: "0.0.0.0/0"
+                caller_id_name: "Teliax HQ"
+                caller_id_number: "+13035551212"
+                disable_comfort_noise: false
+                timeout: 120
+                fail_over_destination_code: "menu:main_ivr"
+                fail_over_destination:
+                  name: "Main IVR Menu"
+                  code: "menu:main_ivr"
+                user_id: null
+                links:
+                  - href: "/sites/8/sip-trunks/161"
+                    rel: "self"
+                    method: "GET"
+        '400':
+          $ref: '../../common_components.yaml#/components/responses/BadRequestError'
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          description: Couldn't find Site or the SIP Trunk Record
+          content:
+            application/json:
+              schema:
+                $ref: '../../common_components.yaml#/components/schemas/Error'
+              example:
+                status: "error"
+                error: "Original SIP Trunk, current site, or target site not found."
+                error_code: "RESOURCE_NOT_FOUND_FOR_TRANSFER"
+
+components:
+  securitySchemes:
+    oAuth2:
+      $ref: '../../common_components.yaml#/components/securitySchemes/oAuth2'
+
+  # No local schemas or parameters needed if all are common or in index.yaml 

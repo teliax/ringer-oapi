@@ -1,0 +1,89 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - List Available Site Extensions
+  description: |
+    Endpoint for listing extensions that are available to be associated with a specific site or user.
+    This could include extensions in an account's inventory not yet assigned or those fitting a user context.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1 # Should be relative or overridden
+    description: Production server
+
+tags:
+  - name: Site Features - Extensions
+    description: Managing internal extensions for call routing within a site.
+
+paths:
+  /sites/{siteId}/extensions/available:
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId'
+    get:
+      tags:
+        - Site Features - Extensions
+      summary: List Available Extensions for a Site/User
+      description: |
+        Retrieves a list of extensions available for assignment to the specified site.
+        The original Teliax API included an optional `user_id` query parameter, which might imply that availability
+        could also be filtered or contextualized by a user. This parameter is included here.
+      operationId: listSiteAvailableExtensions # was available_extensions
+      security:
+        - oAuth2: [read]
+      parameters:
+        - name: user_id
+          in: query
+          description: Optional. Identifier of a user to filter or contextualize available extensions.
+          required: false
+          schema:
+            type: integer
+            format: int64
+            example: 12
+      responses:
+        '200':
+          description: A list of available extensions.
+          content:
+            application/json:
+              schema:
+                $ref: './index.yaml#/components/schemas/ExtensionListResponse' # Reuses ExtensionListResponse from local index.yaml
+              example:
+                extensions:
+                  - id: 75 # Example of an unassigned/available extension
+                    site_id: null 
+                    name: "Available Ext 7001"
+                    number: "7001"
+                    destination_code: "" # Added required field
+                    destination_name: null # Added, can be null
+                    user_id: null
+                    links: [] # Example of empty links array
+                  - id: 101 # Example of an assigned extension
+                    site_id: 6
+                    number: "1001"
+                    name: "Lobby Phone"
+                    destination_code: "device:lobby_phone"
+                    destination_name: "Lobby Phone Device"
+                    user_id: null # Assuming user_id can be null
+                    links:
+                      - href: "/sites/6/extensions/101"
+                        rel: "self"
+                        method: "GET"
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/SiteNotFoundError'
+
+components:
+  securitySchemes:
+    oAuth2:
+      $ref: '../../common_components.yaml#/components/securitySchemes/oAuth2'
+
+  # Removed local schemas (ExtensionList, AvailableExtension, Extension, Link, Error) as they were unused or problematic
+  # and this endpoint primarily relies on ./index.yaml for its main response schema. 

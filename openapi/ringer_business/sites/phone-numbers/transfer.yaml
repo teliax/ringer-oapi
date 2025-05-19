@@ -1,0 +1,104 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Site Phone Number Transfer
+  description: |
+    Endpoint for transferring an assigned phone number from one site to another within the same account.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server
+  # - url: https://api.staging.ringer.tel/v1
+  #   description: Staging server
+
+tags:
+  - name: Site Features - Phone Numbers # Standardized tag
+    description: "Managing phone numbers associated with sites."
+
+paths:
+  /sites/{siteId}/phone-numbers/{phoneNumberId}/transfer: # Standardized params
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId' # MODIFIED PATH
+      - $ref: './index.yaml#/components/parameters/PhoneNumberIdPath' # MODIFIED to ./index.yaml
+    post:
+      tags:
+        - Site Features - Phone Numbers
+      summary: Transfer Phone Number to Another Site
+      description: |
+        Moves an assigned phone number from its current site (specified in the path) 
+        to a new target site (specified in the request body) within the same customer account.
+      operationId: transferSitePhoneNumber # Renamed
+      security:
+        - oAuth2: [write, admin] # Transferring is an admin-level operation
+      requestBody:
+        description: The identifier of the new site to which the phone number should be transferred.
+        required: true
+        content:
+          application/x-www-form-urlencoded: # As per original Teliax Swagger
+            schema:
+              type: object
+              properties:
+                new_site_id:
+                  type: integer
+                  format: int64
+                  description: The unique identifier of the target site for the phone number.
+                  example: 7
+              required:
+                - new_site_id
+              example: # <--- ADDED
+                new_site_id: 7
+      responses:
+        '200':
+          description: Phone Number transferred successfully. The response includes the phone number details in its new site context.
+          content:
+            application/json:
+              schema:
+                $ref: './index.yaml#/components/schemas/PhoneNumberResponse' # Referenced from index
+              example:
+                id: 123
+                site_id: 7 # Note: site_id now reflects the new_site_id
+                name: "Main Office Line"
+                number: "+13035551212"
+                destination_code: "ring_group:10"
+                destination:
+                  name: "Sales Team Ring Group"
+                  code: "ring_group:10"
+                fail_over_destination_code: "voicemailbox:vm_sales"
+                fail_over_destination:
+                  name: "Sales Voicemail"
+                  code: "voicemailbox:vm_sales"
+                e911_id: 45
+                user_id: null
+                links:
+                  - href: "/sites/7/phone-numbers/123" # Link reflects new site context
+                    rel: "self"
+                    method: "GET"
+        '400':
+          $ref: '../../common_components.yaml#/components/responses/BadRequestError' # MODIFIED PATH
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError' # MODIFIED PATH
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError' # MODIFIED PATH
+        '404':
+          description: Not Found - The original phone number, its current site, or the new target site was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '../../common_components.yaml#/components/schemas/Error' # MODIFIED PATH & target
+              example:
+                status: "error"
+                error: "Phone number, current site, or target site not found."
+                error_code: "RESOURCE_NOT_FOUND_FOR_TRANSFER"
+
+components:
+  securitySchemes:
+    oAuth2:
+      $ref: '../../common_components.yaml#/components/securitySchemes/oAuth2' # MODIFIED PATH
+  # No local schemas needed as they are referenced from index.yaml or common components. 

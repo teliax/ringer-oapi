@@ -1,59 +1,68 @@
 openapi: 3.0.3
 info:
-  title: API Name
+  title: Ringer Product API
   description: |
-    Comprehensive description of the API.
+    Comprehensive description of the Ringer API product.
     
     ## Authentication
-    This API supports multiple authentication methods:
-    - Bearer token authentication
-    - API key authentication
-    - IP address validation (for high-volume services)
+    This API uses IP whitelist authentication. Your server's IP address must be registered with
+    Ringer before making API calls. Contact support@ringer.tel to register your IP address.
     
-    For IP validation, please contact support to get your server's IP address whitelisted.
+    ## Overview
+    [Include detailed information about what this API does and how it can be used]
   version: 1.0.0
   license:
     name: MIT License
-    url: https://github.com/yourusername/repo/blob/main/LICENSE
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
   contact:
-    name: API Support Team
-    url: https://docs.example.com/
-    email: support@example.com
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
 
 # Multiple server environments
 servers:
-  - url: https://api.example.com/v1
+  - url: https://api.ringer.tel/v1
     description: Production server
-  - url: https://api.staging.example.com/v1
+  - url: https://api.staging.ringer.tel/v1
     description: Staging server
 
-# Global security definitions - will be applied to all endpoints unless overridden
-# For services like Telique that use IP validation, you'd omit this section or use `security: []`
+# Global security definition for IP whitelist
+components:
+  securitySchemes:
+    ipWhitelist:
+      type: apiKey
+      name: X-Forwarded-For
+      in: header
+      description: |
+        IP Whitelist Authentication
+        
+        This API uses IP whitelist authentication. Your server's IP address must be registered with
+        Ringer before making API calls. Contact support@ringer.tel to register your IP address.
+
+# Apply IP whitelist security globally
 security:
-  - BearerAuth: []
-  - ApiKeyAuth: []
-  # - IPValidation: []  # Uncomment for IP validation-based services
+  - ipWhitelist: 
 
 # Tags for organizing endpoints in the documentation
 tags:
-  - name: Authentication
-    description: Authentication-related endpoints
-  - name: Users
-    description: User management endpoints
-  - name: Services
-    description: Service-specific operations
+  - name: Resource Management
+    description: Endpoints for managing resources
+  - name: Configuration
+    description: Configuration-related endpoints
+  - name: Reporting
+    description: Reporting and analytics endpoints
 
 paths:
-  # Standard endpoint with path parameter
-  /service/{resourceId}:
+  # Example endpoint with path parameter
+  /resource/{resourceId}:
     get:
       tags:
-        - Services
+        - Resource Management
       summary: Retrieve resource by ID
       description: |
         Detailed explanation of the endpoint.
         This endpoint performs a lookup for a specified ID.
-      operationId: getResource  # Important for navigation and code generation
+      operationId: getResource
       parameters:
         - name: resourceId
           in: path
@@ -79,12 +88,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
         '404':
           description: Resource not found
           content:
@@ -99,10 +102,10 @@ paths:
                 $ref: '#/components/schemas/Error'
 
   # Endpoint with query parameters 
-  /service/search:
+  /resource/search:
     get:
       tags:
-        - Services
+        - Resource Management
       summary: Search for resources
       description: Search resources using various query parameters
       operationId: searchResources
@@ -161,16 +164,13 @@ paths:
                 $ref: '#/components/schemas/Error'
 
   # Endpoint with POST request body
-  /service/create:
+  /resource/create:
     post:
       tags:
-        - Services
+        - Resource Management
       summary: Create new resource
       description: Create a new resource with the provided information
       operationId: createResource
-      # Example of endpoint-specific security override
-      security:
-        - BearerAuth: []  # Only Bearer auth for this endpoint
       requestBody:
         required: true
         content:
@@ -195,33 +195,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  # Endpoint with IP validation (like Telique/DNX)
-  /service/high-volume:
+  # Plain text response example
+  /status:
     get:
       tags:
-        - Services
-      summary: High-volume endpoint
-      description: |
-        This endpoint handles high-volume requests with IP address validation.
-        No API keys or tokens are required but your server's IP must be whitelisted.
-      operationId: highVolumeOperation
-      # Explicitly override security to empty for IP validation
-      security: []
-      parameters:
-        - name: param1
-          in: query
-          description: First parameter
-          required: true
-          schema:
-            type: integer
-            example: 123
-        - name: param2
-          in: query
-          description: Second parameter
-          required: true
-          schema:
-            type: integer
-            example: 456
+        - Configuration
+      summary: Service status
+      description: Returns the current service status
+      operationId: getStatus
       responses:
         '200':
           description: Successful response
@@ -232,56 +213,18 @@ paths:
                 properties:
                   status:
                     type: string
-                    example: "success"
-                  data:
-                    type: object
-                    properties:
-                      result:
-                        type: string
-                        example: "valid"
-        '400':
-          description: Bad request - Missing or invalid parameters
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  # Plain text response example
-  /service/plain-text:
-    get:
-      tags:
-        - Services
-      summary: Plain text response
-      description: Returns a plain text response for simple integrations
-      operationId: getPlainText
-      responses:
-        '200':
-          description: Successful response
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "Success: Your data is ready"
+                    description: Current service status
+                    example: "operational"
+                  version:
+                    type: string
+                    description: Service version
+                    example: "1.0.5"
+                  uptime:
+                    type: integer
+                    description: Uptime in seconds
+                    example: 3600
 
 components:
-  # Security scheme definitions
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT  # Or 'API key' for simple token auth
-    
-    ApiKeyAuth:
-      type: apiKey
-      in: header
-      name: X-API-Key
-    
-    IPValidation:
-      type: apiKey
-      in: x-ip-validation # Custom non-standard field
-      description: Authentication via whitelisted IP address (no tokens/keys required)
-      x-auth-type: ip-validation # Custom extension field
-
   # Reusable schemas
   schemas:
     ResourceSummary:
@@ -362,4 +305,4 @@ components:
           example: "INVALID_INPUT"
       required:
         - status
-        - error
+        - error 

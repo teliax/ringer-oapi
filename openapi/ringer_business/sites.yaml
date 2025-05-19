@@ -1,45 +1,38 @@
-# THIS IS A PARTIAL OPENAPI FILE
-# This file contains path objects intended to be referenced by main.yaml
-# The following structure is added for standalone validation purposes only
-
 openapi: 3.0.3
 info:
-  title: Ringer Business API - Sites
+  title: Ringer Business API - Sites Management
   description: |
-    Manage sites in your Ringer Business account.
-    
-    Sites are physical locations where your business operates. Each site can have its own
-    specific configuration, phone numbers, and other resources. Sites allow you to organize
-    your telecom resources by location.
-    
-    ## Authentication
-    This API supports OAuth 2.0 authentication using:
-    - Password grant flow
-    - Client credentials grant flow
-    
-    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
-    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
+    This API provides endpoints for managing Sites within a Ringer Business account.
+    Sites are collections of telephony features and can represent physical locations, departments, or logical groupings of phone system behaviors.
+
+    Developers can use this API to:
+    - List all sites for an account.
+    - Create a new site.
+    - Retrieve details of a specific site.
+    - Update an existing site's configuration.
+    - Delete a site (and its associated features).
+    - Rebuild a site's configuration with the call processing system.
+    - List potential destinations and failovers for site features.
+
+    Site management often involves configuring various telephony features, which will be detailed in separate feature-specific API documents (e.g., devices, phone numbers, menus).
   version: 1.0.0
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
   contact:
     name: Ringer API Support
-    url: https://docs.ringer.io/
-    email: support@ringer.io
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
 
 servers:
-  - url: https://api.ringer.io/v1
+  - url: https://api.ringer.tel/v1
     description: Production server
-  - url: https://api.staging.ringer.io/v1
+  - url: https://api.staging.ringer.tel/v1
     description: Staging server
-
-security:
-  - BearerAuth: []
 
 tags:
   - name: Sites
-    description: "Manage sites associated with your account."
+    description: Endpoints for managing sites and their core configurations.
 
 paths:
   /sites:
@@ -47,202 +40,733 @@ paths:
       tags:
         - Sites
       summary: List Sites
-      description: Retrieve a list of sites for your account.
-      operationId: list_sites
-      parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
-          schema:
-            type: string
+      description: Retrieves a list of all sites associated with the authenticated customer's account.
+      operationId: listSites
+      security:
+        - oAuth2: [read]
       responses:
         '200':
-          description: Array of Sites
+          description: A list of sites.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SiteList'
-        '400':
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/SiteListResponse'
+              example:
+                sites:
+                  - id: 6
+                    name: "Main Office Site"
+                    dns_extension: "hq"
+                    dns_name: "hq.ivy.teliax.com"
+                    active: true
+                    caller_id_name: "Teliax Inc HQ"
+                    caller_id_number: "+13035551212"
+                    thin_client_id: 12
+                    thin_client_name: "Denver Bonsai 7"
+                    acl: "0.0.0.0/0"
+                    channel_limit: 55
+                    music_on_hold_url: "https://cdn.example.com/moh/default.mp3"
+                    permitted_country_codes: ["US", "CA"]
+                    links:
+                      - href: "/sites/6"
+                        rel: "self"
+                        method: "GET"
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+    post:
+      tags:
+        - Sites
+      summary: Create a New Site
+      description: Creates a new site with the specified configurations.
+      operationId: createSite
+      security:
+        - oAuth2: [write]
+      requestBody:
+        description: Configuration details for the new site.
+        required: true
+        content:
+          application/json: # Changed from multipart/form-data
+            schema:
+              $ref: '#/components/schemas/SiteCreateRequest'
+            example:
+              name: "New Branch Office"
+              active: true
+              dns_extension: "branch"
+              caller_id_name: "Ringer Inc Branch"
+              caller_id_number: "+17205550101"
+              thin_client_id: 12
+              acl: "0.0.0.0/0"
+              channel_limit: 25
+              permitted_country_codes: ["US"]
+              music_on_hold_url: "https://cdn.example.com/moh/branch_moh.mp3"
+      responses:
+        '201':
+          description: Site created successfully.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-  
-  /sites/{id}:
+                $ref: '#/components/schemas/SiteResponse'
+              example:
+                id: 7
+                name: "New Branch Office"
+                dns_extension: "branch"
+                dns_name: "branch.ivy.teliax.com"
+                active: true
+                caller_id_name: "Ringer Inc Branch"
+                caller_id_number: "+17205550101"
+                thin_client_id: 12
+                thin_client_name: "Denver Bonsai 7"
+                acl: "0.0.0.0/0"
+                channel_limit: 25
+                music_on_hold_url: "https://cdn.example.com/moh/branch_moh.mp3"
+                permitted_country_codes: ["US"]
+                links:
+                  - href: "/sites/7"
+                    rel: "self"
+                    method: "GET"
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /sites/{siteId}:
+    parameters:
+      - $ref: '#/components/parameters/SiteIdPath'
     get:
       tags:
         - Sites
-      summary: Site Details
-      description: Retrieve detailed information about a specific site.
-      operationId: show_site
+      summary: Get Site Details
+      description: Retrieves detailed information for a specific site by its ID.
+      operationId: getSiteById
+      security:
+        - oAuth2: [read]
+      responses:
+        '200':
+          description: Successfully retrieved site details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteResponse'
+              example:
+                id: 6
+                name: "Main Office Site"
+                dns_extension: "hq"
+                dns_name: "hq.ivy.teliax.com"
+                active: true
+                caller_id_name: "Teliax Inc HQ"
+                caller_id_number: "+13035551212"
+                thin_client_id: 12
+                thin_client_name: "Denver Bonsai 7"
+                acl: "0.0.0.0/0"
+                channel_limit: 55
+                music_on_hold_url: "https://cdn.example.com/moh/default.mp3"
+                permitted_country_codes: ["US", "CA"]
+                links:
+                  - href: "/sites/6"
+                    rel: "self"
+                    method: "GET"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/SiteNotFoundError'
+
+    put:
+      tags:
+        - Sites
+      summary: Update Site Configuration
+      description: Updates the configuration for an existing site by its ID.
+      operationId: updateSiteById
+      security:
+        - oAuth2: [write]
+      requestBody:
+        description: Site attributes to update.
+        required: true
+        content:
+          application/json: # Changed from multipart/form-data
+            schema:
+              $ref: '#/components/schemas/SiteUpdateRequest'
+            example:
+              name: "Main Office Site - Renovated"
+              active: true
+              caller_id_name: "Teliax Inc HQ (New)"
+              music_on_hold_url: "https://cdn.example.com/moh/new_hq_moh.mp3"
+      responses:
+        '200':
+          description: Site updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteResponse'
+              example:
+                id: 6
+                name: "Main Office Site - Renovated"
+                dns_extension: "hq"
+                dns_name: "hq.ivy.teliax.com"
+                active: true
+                caller_id_name: "Teliax Inc HQ (New)"
+                caller_id_number: "+13035551212"
+                thin_client_id: 12
+                thin_client_name: "Denver Bonsai 7"
+                acl: "0.0.0.0/0"
+                channel_limit: 55
+                music_on_hold_url: "https://cdn.example.com/moh/new_hq_moh.mp3"
+                permitted_country_codes: ["US", "CA"]
+                links:
+                  - href: "/sites/6"
+                    rel: "self"
+                    method: "GET"
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/SiteNotFoundError'
+
+    delete:
+      tags:
+        - Sites
+      summary: Delete a Site
+      description: |
+        Permanently deletes a specific site and all its associated telephony features (e.g., devices, numbers, menus).
+        This action cannot be undone.
+      operationId: deleteSiteById
+      security:
+        - oAuth2: [write, admin]
+      responses:
+        '204':
+          description: Site deleted successfully. No content is returned.
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/SiteNotFoundError'
+
+  /sites/{siteId}/rebuild: # Path changed
+    parameters:
+      - $ref: '#/components/parameters/SiteIdPath'
+    post:
+      tags:
+        - Sites
+      summary: Rebuild Site Configuration
+      description: |
+        Triggers a rebuild of a site's configuration with the underlying call processing system.
+        This can be useful if newly added or modified calling features are not registering or behaving as expected.
+      operationId: rebuildSiteById # Changed ID, and site ID now in path
+      security:
+        - oAuth2: [write]
+      # No request body typically needed for a rebuild action on a specific resource
+      responses:
+        '200':
+          description: Site rebuild process initiated successfully. Returns the site details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteResponse'
+              example:
+                id: 6
+                name: "Main Office Site"
+                dns_extension: "hq"
+                dns_name: "hq.ivy.teliax.com"
+                active: true
+                caller_id_name: "Teliax Inc HQ"
+                caller_id_number: "+13035551212"
+                thin_client_id: 12
+                thin_client_name: "Denver Bonsai 7"
+                acl: "0.0.0.0/0"
+                channel_limit: 55
+                music_on_hold_url: "https://cdn.example.com/moh/default.mp3"
+                permitted_country_codes: ["US", "CA"]
+                links:
+                  - href: "/sites/6"
+                    rel: "self"
+                    method: "GET"
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/SiteNotFoundError'
+
+  /sites/{siteId}/potential_destinations:
+    parameters:
+      - $ref: '#/components/parameters/SiteIdPath'
+    get:
+      tags:
+        - Sites
+      summary: List Potential Destinations for Site Features
+      description: |
+        Retrieves a list of all potential call destinations (e.g., devices, voicemail, external numbers)
+        available on a specific site, optionally filtered by the type of feature (`class_name`) they can be linked to.
+      operationId: listSitePotentialDestinations
+      security:
+        - oAuth2: [read]
       parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
+        - name: class_name
+          in: query
+          description: The class name of the feature type for which to find destinations (e.g., Device, Forward, Menu).
           required: true
           schema:
             type: string
-        - name: id
-          in: path
-          description: ID of the site
-          required: true
-          schema:
-            type: integer
+            example: "Device"
       responses:
         '200':
-          description: Site Detail
+          description: A list of potential destinations.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Site'
+                $ref: '#/components/schemas/SiteDestinationListResponse'
+              example:
+                destinations:
+                  - name: "Sales Phone 1 (Device: dev_123)"
+                    code: "device:dev_123"
+                  - name: "Support Voicemail (Voicemail: vm_456)"
+                    code: "voicemailbox:vm_456"
         '400':
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/BadRequestError'
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
         '404':
-          description: Couldn't find site record
+          $ref: '#/components/responses/SiteNotFoundError'
+
+  /sites/{siteId}/potential_fail_overs:
+    parameters:
+      - $ref: '#/components/parameters/SiteIdPath'
+    get:
+      tags:
+        - Sites
+      summary: List Potential Failover Destinations for Site Features
+      description: |
+        Retrieves a list of all potential failover destinations available on a specific site,
+        optionally filtered by the type of feature (`class_name`) they can be a failover for.
+      operationId: listSitePotentialFailovers
+      security:
+        - oAuth2: [read]
+      parameters:
+        - name: class_name
+          in: query
+          description: The class name of the feature type for which to find failover destinations.
+          required: true
+          schema:
+            type: string
+            example: "Menu"
+      responses:
+        '200':
+          description: A list of potential failover destinations.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/SiteFailoverListResponse'
+              example:
+                fail_overs:
+                  - name: "General Voicemail (Voicemail: vm_001)"
+                    code: "voicemailbox:vm_001"
+                  - name: "After Hours Menu (Menu: menu_99)"
+                    code: "menu:menu_99"
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/SiteNotFoundError'
 
 components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-  
+  parameters:
+    SiteIdPath:
+      name: siteId # Changed from site_id for consistency with other {entityId} conventions
+      in: path
+      description: The unique identifier of the site.
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 6
+
   schemas:
-    SiteList:
+    SiteCore:
       type: object
+      properties:
+        name:
+          type: string
+          description: A user-friendly name for the site (e.g., "Main Office", "Sales Department").
+          example: "Main Office Site"
+        dns_extension:
+          type: string
+          description: The DNS extension for the site, used to form part of its unique SIP domain.
+          example: "hq"
+        active:
+          type: boolean
+          description: Indicates if the site is active. Inactive sites cannot place or receive calls.
+          example: true
+        caller_id_name:
+          type: string
+          description: Default Caller ID name for outbound calls originating from this site.
+          example: "Innovatech Solutions"
+        caller_id_number:
+          type: string
+          description: Default Caller ID number for outbound calls from this site (e.g., main business number).
+          example: "+14155550100"
+        thin_client_id:
+          type: integer
+          format: int64
+          description: Identifier of the thin client (call processing node) assigned to this site.
+          example: 12
+        acl:
+          type: string
+          description: Access Control List (e.g., IP addresses or ranges) defining who can connect to this site's SIP services.
+          example: "0.0.0.0/0"
+        channel_limit:
+          type: integer
+          description: Maximum number of concurrent call channels allowed for this site.
+          minimum: 0
+          maximum: 1000
+          example: 55
+        permitted_country_codes:
+          type: array
+          items:
+            type: string
+          description: List of permitted outbound country codes or dialing zones for this site. Reference Country Codes API for available values.
+          example: ["US", "CA", "GB"]
+        music_on_hold_url: # Added for JSON payload
+          type: string
+          format: uri
+          nullable: true
+          description: URL to the music on hold audio file for the site.
+          example: "https://cdn.example.com/moh/site_default.mp3"
+      required:
+        - name
+        - dns_extension
+        - active
+        - caller_id_name
+        - caller_id_number
+        - thin_client_id
+        - acl
+        - channel_limit
+        - permitted_country_codes
+
+    SiteCreateRequest:
+      allOf:
+        - $ref: '#/components/schemas/SiteCore'
+      description: Data required to create a new site.
+      example:
+        name: "New Branch Office"
+        active: true
+        dns_extension: "branch"
+        caller_id_name: "Ringer Inc Branch"
+        caller_id_number: "+17205550101"
+        thin_client_id: 12
+        acl: "0.0.0.0/0"
+        channel_limit: 25
+        permitted_country_codes: ["US"]
+        music_on_hold_url: "https://cdn.example.com/moh/branch_moh.mp3"
+
+    SiteUpdateRequest: # Fields here should be optional if it's a PATCH-like PUT
+      type: object
+      description: Data for updating an existing site. Provide only fields to be changed.
+      properties:
+        name:
+          type: string
+          description: A user-friendly name for the site.
+          example: "Main Office Site - Updated"
+        dns_extension:
+          type: string
+          description: The DNS extension for the site.
+          example: "hq-updated"
+        active:
+          type: boolean
+          description: Indicates if the site is active.
+          example: false
+        caller_id_name:
+          type: string
+          description: Default Caller ID name for outbound calls.
+          example: "Innovatech Solutions (Renovated)"
+        caller_id_number:
+          type: string
+          description: Default Caller ID number for outbound calls.
+          example: "+14155550199"
+        thin_client_id:
+          type: integer
+          format: int64
+          description: Identifier of the thin client.
+          example: 13
+        acl:
+          type: string
+          description: Access Control List.
+          example: "192.168.1.0/24"
+        channel_limit:
+          type: integer
+          minimum: 0
+          maximum: 1000
+          description: Maximum number of concurrent call channels.
+          example: 60
+        permitted_country_codes:
+          type: array
+          items:
+            type: string
+          description: List of permitted outbound country codes.
+          example: ["US", "MX"]
+        music_on_hold_url:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to the music on hold audio file.
+          example: "https://cdn.example.com/moh/new_music.mp3"
+      example:
+        name: "Main Office Site - Renovated"
+        active: true
+        caller_id_name: "Teliax Inc HQ (New)"
+        music_on_hold_url: "https://cdn.example.com/moh/new_hq_moh.mp3"
+
+    SiteResponse:
+      allOf:
+        - $ref: '#/components/schemas/SiteCore'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+              description: Unique identifier for the site.
+              example: 6
+            dns_name:
+              type: string
+              description: The fully qualified DNS name for the site (e.g., hq.ivy.teliax.com).
+              example: "hq.ivy.teliax.com"
+            thin_client_name:
+              type: string
+              nullable: true
+              description: Name of the assigned thin client.
+              example: "Denver Bonsai 7"
+            # music_on_hold_url is already in SiteCore
+            links:
+              type: array
+              description: HATEOAS links related to this site.
+              items:
+                $ref: '#/components/schemas/Link'
+              nullable: true
+          required:
+            - id
+            - dns_name
+            - name
+            - dns_extension
+            - active
+            - caller_id_name
+            - caller_id_number
+            - thin_client_id
+            - acl
+            - channel_limit
+            - permitted_country_codes
+      description: Detailed information about a specific site.
+      example:
+        id: 6
+        name: "Main Office Site"
+        dns_extension: "hq"
+        dns_name: "hq.ivy.teliax.com"
+        active: true
+        caller_id_name: "Teliax Inc HQ"
+        caller_id_number: "+13035551212"
+        thin_client_id: 12
+        thin_client_name: "Denver Bonsai 7"
+        acl: "0.0.0.0/0"
+        channel_limit: 55
+        music_on_hold_url: "https://cdn.example.com/moh/default.mp3"
+        permitted_country_codes: ["US", "CA"]
+        links:
+          - href: "/sites/6"
+            rel: "self"
+            method: "GET"
+          - href: "/sites/6/devices"
+            rel: "devices"
+            title: "Manage Devices for this Site"
+            method: "GET"
+
+    SiteListResponse:
+      type: object
+      description: A list of sites associated with an account.
       properties:
         sites:
           type: array
-          description: Array of Sites
           items:
-            $ref: '#/components/schemas/Site'
-        total_items:
-          type: string
-          example: "350"
-          description: Total number of items
-          readOnly: true
-        total_pages:
-          type: string
-          example: "7"
-          description: Total number of pages
-          readOnly: true
-        links:
-          type: array
-          items:
-            $ref: '#/components/schemas/linkDescription'
-    
-    Site:
+            $ref: '#/components/schemas/SiteResponse'
+        # links: # For pagination if the list can be long
+        #   type: array
+        #   items:
+        #     $ref: '#/components/schemas/Link'
+      required:
+        - sites
+      example:
+        sites:
+          - id: 6
+            name: "Main Office Site"
+            dns_extension: "hq"
+            dns_name: "hq.ivy.teliax.com"
+            active: true
+            caller_id_name: "Teliax Inc HQ"
+            caller_id_number: "+13035551212"
+            thin_client_id: 12
+            thin_client_name: "Denver Bonsai 7"
+            acl: "0.0.0.0/0"
+            channel_limit: 55
+            music_on_hold_url: "https://cdn.example.com/moh/default.mp3"
+            permitted_country_codes: ["US", "CA"]
+            links:
+              - href: "/sites/6"
+                rel: "self"
+                method: "GET"
+
+    SiteDestination:
       type: object
+      description: Represents a potential call destination or failover point within a site.
       properties:
-        id:
-          type: integer
-          example: 12345
         name:
           type: string
-          example: "Headquarters"
-        address:
-          $ref: '#/components/schemas/Address'
-        timezone:
+          description: A human-readable name for the destination.
+          example: "Reception Desk Phone (Device: dev_abc)"
+        code:
           type: string
-          example: "America/New_York"
-        status:
-          type: string
-          enum: [active, inactive]
-          example: "active"
-        thin_client_id:
-          type: integer
-          example: 11
-        links:
+          description: A system-usable code or identifier for the destination.
+          example: "device:dev_abc"
+      required:
+        - name
+        - code
+      example:
+        name: "Main IVR Menu (Menu: menu_main)"
+        code: "menu:menu_main"
+
+    SiteDestinationListResponse:
+      type: object
+      description: A list of potential call destinations for features within a site.
+      properties:
+        destinations:
           type: array
           items:
-            $ref: '#/components/schemas/linkDescription'
+            $ref: '#/components/schemas/SiteDestination'
       required:
-        - id
-        - name
-        - timezone
-        - status
-    
-    Address:
+        - destinations
+      example:
+        destinations:
+          - name: "Sales Phone 1 (Device: dev_123)"
+            code: "device:dev_123"
+
+    SiteFailoverListResponse:
       type: object
+      description: A list of potential failover destinations for features within a site.
       properties:
-        street_address:
-          type: string
-          example: "123 Main St."
-        city:
-          type: string
-          example: "Denver"
-        state_province:
-          type: string
-          example: "CO"
-        postal_code:
-          type: string
-          example: "80202"
-        country:
-          type: string
-          example: "US"
+        fail_overs:
+          type: array
+          items:
+            $ref: '#/components/schemas/SiteDestination' # Reuses SiteDestination schema
       required:
-        - street_address
-        - city
-        - state_province
-        - postal_code
-        - country
-    
-    linkDescription:
+        - fail_overs
+      example:
+        fail_overs:
+          - name: "General Voicemail (Voicemail: vm_001)"
+            code: "voicemailbox:vm_001"
+
+    Link:
       type: object
-      required:
-        - href
-        - rel
+      description: Represents a HATEOAS link.
       properties:
         href:
           type: string
-          description: "URI template, as defined by RFC 6570, with the addition of the $, ( and ) characters for pre-processing"
+          format: uri-reference
         rel:
           type: string
-          description: Relation to the target resource of the link
         title:
           type: string
-          description: A title for the link
+          nullable: true
         method:
           type: string
-          description: HTTP method for requesting the target of the link (e.g. "GET" or "POST")
-    
+          enum: [GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD]
+      required:
+        - href
+        - rel
+
     Error:
       type: object
+      description: Standard error response format.
       properties:
         status:
           type: string
-          description: Error status
           example: "error"
         error:
           type: string
-          description: Error message
-          example: "Invalid input parameters"
+          example: "Site operation failed."
         error_code:
           type: string
-          description: Error code for machine processing
-          example: "INVALID_INPUT"
+          example: "SITE_ERROR"
       required:
         - status
-        - error 
+        - error
+        - error_code
+      example:
+        status: "error"
+        error: "A generic site error occurred."
+        error_code: "SITE_GENERIC_ERROR"
+
+  responses:
+    UnauthorizedError:
+      description: Unauthorized - Authentication token is missing, invalid, or does not have permissions for this resource.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Authentication required."
+            error_code: "UNAUTHORIZED"
+    ForbiddenError:
+      description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "You do not have permission to manage this site."
+            error_code: "FORBIDDEN"
+    SiteNotFoundError: # Specific error for Site not found
+      description: Not Found - The requested site could not be found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "The requested site was not found."
+            error_code: "SITE_NOT_FOUND"
+    BadRequestError:
+      description: Bad Request - The request was malformed or contained invalid data.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Invalid input: dns_extension is required."
+            error_code: "VALIDATION_ERROR"
+
+  securitySchemes:
+    oAuth2:
+      type: oauth2
+      description: OAuth 2.0 Authentication for securing API endpoints.
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ringer.tel/v1/auth/token
+          scopes:
+            read: Read access to API resources
+            write: Write access to API resources
+            admin: Administrative access. 

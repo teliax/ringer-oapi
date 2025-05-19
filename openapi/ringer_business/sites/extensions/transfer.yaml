@@ -1,0 +1,189 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Site Extension Transfer
+  description: Endpoint for transferring an extension from one site to another.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server
+
+tags:
+  - name: Site Features - Extensions
+    description: "Managing internal extensions for call routing within a site."
+
+paths:
+  /sites/{siteId}/extensions/{extensionId}/transfer:
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId' 
+      - $ref: './index.yaml#/components/parameters/ExtensionIdPath'
+    post:
+      tags:
+        - Site Features - Extensions
+      summary: Transfer Extension to Another Site
+      description: Moves an extension from its current site to a new target site.
+      operationId: transferSiteExtension
+      security:
+        - oAuth2: [write, admin]
+      requestBody:
+        description: The identifier of the new site for the extension.
+        required: true
+        content:
+          application/x-www-form-urlencoded: 
+            schema:
+              type: object
+              properties:
+                new_site_id:
+                  type: integer
+                  format: int64
+                  description: The unique identifier of the target site.
+                  example: 8
+              required:
+                - new_site_id
+              example:
+                new_site_id: 8
+      responses:
+        '200':
+          description: Extension transferred successfully. Returns the extension details in its new site context.
+          content:
+            application/json:
+              schema:
+                $ref: './index.yaml#/components/schemas/ExtensionResponse' 
+              example:
+                id: 14 
+                site_id: 8 
+                name: "Sales Hotline Ext Moved"
+                number: "1001"
+                destination_code: "ringgroup:rg_sales"
+                destination_name: "Sales Ring Group"
+                user_id: 5
+                links:
+                  - href: "/sites/8/extensions/14"
+                    rel: "self"
+                    method: "GET"
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError' 
+
+components:
+  parameters:
+    SiteIdPath:
+      name: siteId
+      in: path
+      description: The unique identifier of the current site of the extension.
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 6
+    ExtensionIdPath:
+      name: extensionId
+      in: path
+      description: The unique identifier of the extension to transfer.
+      required: true
+      schema:
+        type: integer # Assuming extension ID is integer based on index.yaml
+        format: int64
+        example: 14
+
+  securitySchemes:
+    oAuth2:
+      type: oauth2
+      description: OAuth 2.0 Authentication.
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ringer.tel/v1/auth/token
+          scopes:
+            read: Read access
+            write: Write access
+            admin: Admin access
+
+  schemas:
+    Error:
+      type: object
+      description: Standard error response format.
+      properties:
+        status:
+          type: string
+          example: "error"
+        error:
+          type: string
+          description: A human-readable description of the error.
+        error_code:
+          type: string
+          description: A machine-parsable error code.
+        details:
+          type: array
+          nullable: true
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              issue:
+                type: string
+      required:
+        - status
+        - error
+        - error_code
+      example:
+        status: "error"
+        error: "An error occurred during extension transfer."
+        error_code: "EXTENSION_TRANSFER_ERROR"
+    
+    # Link schema is expected to be in index.yaml via ExtensionResponse
+    # ExtensionResponse schema is referenced from ./index.yaml
+
+  responses:
+    UnauthorizedError:
+      description: Unauthorized - Authentication token is missing, invalid, or does not have permissions for this resource.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Authentication required."
+            error_code: "UNAUTHORIZED"
+    ForbiddenError:
+      description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Permission denied."
+            error_code: "FORBIDDEN"
+    NotFoundError:
+      description: Not Found - The requested resource (e.g., extension, site) could not be found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Resource not found for transfer operation."
+            error_code: "RESOURCE_NOT_FOUND_FOR_TRANSFER"
+    BadRequestError:
+      description: Bad Request - Invalid data provided (e.g., new_site_id is invalid or same as current).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Invalid new_site_id provided."
+            error_code: "VALIDATION_ERROR" 

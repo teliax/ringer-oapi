@@ -1,0 +1,135 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Site Fax Machine (Individual)
+  description: |
+    Endpoints for managing an individual fax machine (Fax to Email service) associated with a specific site.
+    Allows retrieving, updating, and deleting a specific fax machine configuration.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server
+
+tags:
+  - name: Site Features - Fax Machines
+    description: Managing Fax to Email services (Fax Machines) associated with a site.
+
+paths:
+  /sites/{siteId}/fax-machines/{faxMachineId}:
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId'
+      - $ref: './index.yaml#/components/parameters/FaxMachineIdPath'
+    get:
+      tags:
+        - Site Features - Fax Machines
+      summary: Get Fax Machine Details
+      description: Retrieves detailed information for a specific fax machine configuration by its ID, belonging to the specified site.
+      operationId: getSiteFaxMachineById 
+      security:
+        - oAuth2: [read]
+      responses:
+        '200':
+          description: Successfully retrieved fax machine details.
+          content:
+            application/json:
+              schema:
+                $ref: './index.yaml#/components/schemas/FaxMachineResponse'
+              example:
+                id: 3
+                site_id: 6
+                code: "fax_machine:3"
+                name: "Sales Department Fax"
+                notification_emails: "sales-faxes@example.com,manager@example.com"
+                user_id: 1
+                links: 
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/FaxMachineNotFoundError'
+
+    put:
+      tags:
+        - Site Features - Fax Machines
+      summary: Update Fax Machine Configuration
+      description: Updates the configuration for a specific fax machine on a site, such as its name or notification email addresses.
+      operationId: updateSiteFaxMachineById 
+      security:
+        - oAuth2: [write]
+      requestBody:
+        description: Fax machine attributes to update.
+        required: true
+        content:
+          application/json: 
+            schema:
+              $ref: '#/components/schemas/FaxMachineUpdateRequest' 
+            example:
+              name: "Sales Fax (Primary)"
+              notification_emails: "sales-faxes@example.com,backup-sales@example.com"
+      responses:
+        '200':
+          description: Fax machine configuration updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: './index.yaml#/components/schemas/FaxMachineResponse'
+              example:
+                id: 3
+                site_id: 6
+                code: "fax_machine:3"
+                name: "Sales Fax (Primary)"
+                notification_emails: "sales-faxes@example.com,backup-sales@example.com"
+                user_id: 1
+                links: 
+        '400':
+          $ref: '../../common_components.yaml#/components/responses/BadRequestError'
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/FaxMachineNotFoundError'
+
+    delete:
+      tags:
+        - Site Features - Fax Machines
+      summary: Delete a Fax Machine Configuration
+      description: Permanently deletes a specific fax machine configuration from the site.
+      operationId: deleteSiteFaxMachineById 
+      security:
+        - oAuth2: [write]
+      responses:
+        '204':
+          description: Fax machine configuration deleted successfully. No content is returned.
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/FaxMachineNotFoundError'
+
+components:
+  schemas:
+    FaxMachineUpdateRequest: 
+      allOf:
+        - $ref: './index.yaml#/components/schemas/FaxMachineCore' 
+      description: Data for updating an existing fax machine configuration. For PUT, all core fields are typically resubmitted.
+      # required: [] # Fields from FaxMachineCore are required for PUT
+      example:
+        name: "Support Fax - Updated"
+        notification_emails: "support@example.com,helpdesk@example.com"
+        user_id: 35
+
+  securitySchemes:
+    oAuth2:
+      $ref: '../../common_components.yaml#/components/securitySchemes/oAuth2'
+
+# End of file. All local schemas are defined above. No duplicated blocks. 

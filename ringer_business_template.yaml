@@ -1,0 +1,525 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business Product API
+  description: |
+    Comprehensive description of the Ringer Business API product.
+    
+    ## Authentication
+    This API uses OAuth 2.0 for authentication. To obtain an access token:
+    
+    1. Make a POST request to the `/auth/token` endpoint with your client credentials
+    2. Include the access token in subsequent requests using the Authorization header:
+       `Authorization: Bearer YOUR_ACCESS_TOKEN`
+       
+    Contact your account manager to obtain client credentials.
+    
+    ## Overview
+    [Include detailed information about what this API does and how it can be used]
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+# Multiple server environments
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server
+  - url: https://api.staging.ringer.tel/v1
+    description: Staging server
+
+# Global security definition for OAuth-based authentication
+components:
+  securitySchemes:
+    oAuth2:
+      type: oauth2
+      description: |
+        OAuth 2.0 Authentication
+        
+        This API uses OAuth 2.0 for authentication. To obtain an access token:
+        
+        1. Make a POST request to the `/auth/token` endpoint with your client credentials
+        2. Include the access token in subsequent requests using the Authorization header:
+           `Authorization: Bearer YOUR_ACCESS_TOKEN`
+           
+        Contact your account manager to obtain client credentials.
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ringer.tel/v1/auth/token
+          scopes:
+            read: Read access to API resources
+            write: Write access to API resources
+            admin: Administrative access
+
+# Apply OAuth security globally
+security:
+  - oAuth2: [read, write]
+
+# Tags for organizing endpoints in the documentation
+tags:
+  - name: Authentication
+    description: Authentication-related endpoints
+  - name: Accounts
+    description: Account management endpoints
+  - name: Integration
+    description: Integration with other systems
+  - name: Analytics
+    description: Analytics and reporting endpoints
+
+paths:
+  # Authentication endpoint
+  /auth/token:
+    post:
+      tags:
+        - Authentication
+      summary: Obtain access token
+      description: |
+        Authenticate and obtain an OAuth access token using client credentials.
+      operationId: fetchAccessToken
+      security:  # No authentication for this endpoint
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                grant_type:
+                  type: string
+                  enum: [client_credentials]
+                  description: OAuth grant type
+                  example: client_credentials
+                client_id:
+                  type: string
+                  description: Client ID
+                  example: "your_client_id"
+                client_secret:
+                  type: string
+                  description: Client secret
+                  example: "your_client_secret"
+              required:
+                - grant_type
+                - client_id
+                - client_secret
+      responses:
+        '200':
+          description: Successful authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+              example:
+                access_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                token_type: "Bearer"
+                expires_in: 3600
+                scope: "read write"
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Invalid client credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Example endpoint with path parameter
+  /account/{accountId}:
+    get:
+      tags:
+        - Accounts
+      summary: Retrieve account by ID
+      description: |
+        Retrieves detailed information about a specific account.
+      operationId: getAccount
+      parameters:
+        - name: accountId
+          in: path
+          description: Unique identifier for the account
+          required: true
+          schema:
+            type: string
+            example: "acct_12345"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+              example:
+                id: "acct_12345"
+                name: "Example Business"
+                status: "active"
+                plan: "enterprise"
+                created_at: "2023-01-01T12:00:00Z"
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Endpoint with query parameters 
+  /accounts/search:
+    get:
+      tags:
+        - Accounts
+      summary: Search for accounts
+      description: Search accounts using various query parameters
+      operationId: searchAccounts
+      parameters:
+        - name: query
+          in: query
+          description: Search term
+          required: false
+          schema:
+            type: string
+            example: "example"
+        - name: status
+          in: query
+          description: Account status
+          required: false
+          schema:
+            type: string
+            enum: [active, inactive, suspended]
+            example: "active"
+        - name: plan
+          in: query
+          description: Account plan
+          required: false
+          schema:
+            type: string
+            enum: [basic, standard, premium, enterprise]
+            example: "enterprise"
+        - name: limit
+          in: query
+          description: Maximum number of results
+          required: false
+          schema:
+            type: integer
+            default: 10
+            example: 25
+        - name: offset
+          in: query
+          description: Number of results to skip
+          required: false
+          schema:
+            type: integer
+            default: 0
+            example: 0
+      responses:
+        '200':
+          description: Successful search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AccountSummary'
+                  total:
+                    type: integer
+                    description: Total number of matching accounts
+                    example: 42
+              example:
+                results:
+                  - id: "acct_12345"
+                    name: "Example Business"
+                    plan: "enterprise"
+                  - id: "acct_67890"
+                    name: "Another Business"
+                    plan: "premium"
+                total: 2
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Endpoint with POST request body
+  /account/create:
+    post:
+      tags:
+        - Accounts
+      summary: Create new account
+      description: Create a new business account with the provided information
+      operationId: createAccount
+      security:
+        - oAuth2: [write, admin] # Example of operation-specific scopes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountCreate'
+            example:
+              name: "New Business"
+              email: "contact@newbusiness.com"
+              plan: "standard"
+              phone: "+1234567890"
+      responses:
+        '201':
+          description: Account created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Endpoint for analytics
+  /analytics/usage:
+    get:
+      tags:
+        - Analytics
+      summary: Get usage analytics
+      description: Retrieves usage analytics for the authenticated account
+      operationId: getUsageAnalytics
+      parameters:
+        - name: startDate
+          in: query
+          description: Start date (YYYY-MM-DD)
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2023-01-01"
+        - name: endDate
+          in: query
+          description: End date (YYYY-MM-DD)
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2023-01-31"
+        - name: granularity
+          in: query
+          description: Data granularity
+          required: false
+          schema:
+            type: string
+            enum: [daily, weekly, monthly]
+            default: daily
+            example: "daily"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  period:
+                    type: object
+                    properties:
+                      start:
+                        type: string
+                        format: date
+                        example: "2023-01-01"
+                      end:
+                        type: string
+                        format: date
+                        example: "2023-01-31"
+                  granularity:
+                    type: string
+                    example: "daily"
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                          example: "2023-01-01"
+                        metrics:
+                          type: object
+                          properties:
+                            requests:
+                              type: integer
+                              example: 1250
+                            bandwidth:
+                              type: integer
+                              example: 52428800
+                            activeUsers:
+                              type: integer
+                              example: 42
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  # Reusable schemas
+  schemas:
+    TokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: JWT token for API access
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        token_type:
+          type: string
+          description: Token type
+          example: "Bearer"
+        expires_in:
+          type: integer
+          description: Token expiration time in seconds
+          example: 3600
+        scope:
+          type: string
+          description: Granted scopes
+          example: "read write"
+      required:
+        - access_token
+        - token_type
+        - expires_in
+
+    AccountSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique account identifier
+          example: "acct_12345"
+        name:
+          type: string
+          description: Business name
+          example: "Example Business"
+        plan:
+          type: string
+          description: Subscription plan
+          enum: [basic, standard, premium, enterprise]
+          example: "enterprise"
+      required:
+        - id
+        - name
+        - plan
+
+    AccountResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique account identifier
+          example: "acct_12345"
+        name:
+          type: string
+          description: Business name
+          example: "Example Business"
+        status:
+          type: string
+          description: Account status
+          enum: [active, inactive, suspended]
+          example: "active"
+        plan:
+          type: string
+          description: Subscription plan
+          enum: [basic, standard, premium, enterprise]
+          example: "enterprise"
+        email:
+          type: string
+          description: Primary contact email
+          format: email
+          example: "contact@example.com"
+        phone:
+          type: string
+          description: Primary contact phone number
+          example: "+1234567890"
+        created_at:
+          type: string
+          format: date-time
+          description: Account creation timestamp
+          example: "2023-01-01T12:00:00Z"
+      required:
+        - id
+        - name
+        - status
+        - plan
+        - created_at
+
+    AccountCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Business name
+          example: "New Business"
+        email:
+          type: string
+          description: Primary contact email
+          format: email
+          example: "contact@newbusiness.com"
+        phone:
+          type: string
+          description: Primary contact phone number
+          example: "+1234567890"
+        plan:
+          type: string
+          description: Subscription plan
+          enum: [basic, standard, premium, enterprise]
+          example: "standard"
+      required:
+        - name
+        - email
+        - plan
+
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Error status
+          example: "error"
+        error:
+          type: string
+          description: Error message
+          example: "Invalid input parameters"
+        error_code:
+          type: string
+          description: Error code for machine processing
+          example: "INVALID_INPUT"
+      required:
+        - status
+        - error 

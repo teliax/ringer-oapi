@@ -1,53 +1,30 @@
-# THIS IS A PARTIAL OPENAPI FILE
-# This file contains path objects intended to be referenced by main.yaml
-# The following structure is added for standalone validation purposes only
-
 openapi: 3.0.3
 info:
-  title: Ringer Business API - Users
+  title: Ringer Business API - User Management
   description: |
-    Manage users within your Ringer Business account.
-    
-    Users are the people who interact with the Ringer Business system. Users have predefined roles with different permissions:
-    
-    - Administrators can:
-      - Access billing information
-      - Request payouts
-      - Add or change price decks and plans
-      - Manage users
-    
-    - Regular users can:
-      - View account activity
-      - View existing price decks
-    
-    ## Authentication
-    This API supports OAuth 2.0 authentication using:
-    - Password grant flow
-    - Client credentials grant flow
-    
-    The `client_id` and `client_secret` carry many privileges, so be sure to keep them secure!
-    Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, etc.
+    This API provides endpoints for managing users within a Ringer Business account.
+    It allows for listing users, adding new users, retrieving details of a specific user,
+    updating user information, and deleting users.
+
+    User management operations typically require authentication and administrative privileges.
   version: 1.0.0
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
   contact:
     name: Ringer API Support
-    url: https://docs.ringer.io/
-    email: support@ringer.io
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
 
 servers:
-  - url: https://api.ringer.io/v1
+  - url: https://api.ringer.tel/v1
     description: Production server
-  - url: https://api.staging.ringer.io/v1
+  - url: https://api.staging.ringer.tel/v1
     description: Staging server
-
-security:
-  - BearerAuth: []
 
 tags:
   - name: Users
-    description: "Manage user accounts and their permissions within your Ringer Business organization."
+    description: Endpoints for managing users associated with an account.
 
 paths:
   /users:
@@ -55,307 +32,473 @@ paths:
       tags:
         - Users
       summary: List Users
-      description: Retrieve a list of all users for the account.
-      operationId: list_users
+      description: |
+        Retrieves a list of all users associated with the authenticated account.
+        The list can be paginated and is typically sorted by user name.
+      operationId: listUsers
+      security:
+        - oAuth2: [read, admin]
       parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
+        - name: page
+          in: query
+          description: Page number for pagination.
+          required: false
           schema:
-            type: string
+            type: integer
+            default: 1
+            example: 1
+        - name: page_size
+          in: query
+          description: Number of users per page.
+          required: false
+          schema:
+            type: integer
+            default: 25
+            example: 10
       responses:
         '200':
-          description: OK
+          description: A paginated list of users associated with the account.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserList'
+                $ref: '#/components/schemas/UserListResponse'
+              example:
+                users:
+                  - id: 5
+                    first_name: "Jane"
+                    last_name: "Doe"
+                    email: "jane.doe@example.com"
+                    role: "administrator"
+                    active: true
+                    locale: "en-US"
+                    links:
+                      - href: "/users/5"
+                        rel: "self"
+                        method: "GET"
+                total_items: 1
+                total_pages: 1
+                current_page: 1
+                per_page: 25
+                links:
+                  - href: "/users?page=1&page_size=25"
+                    rel: "self"
+                    method: "GET"
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
     post:
       tags:
         - Users
-      summary: Create User
-      description: Create a new user for the account.
-      operationId: create_user
-      parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
-          schema:
-            type: string
+      summary: Add a New User
+      description: |
+        Creates a new user within the authenticated account.
+        The new user will typically receive a confirmation email to activate their account and set a password.
+        Requires administrative privileges.
+      operationId: addUser
+      security:
+        - oAuth2: [write, admin]
       requestBody:
-        description: User information
+        description: Details of the new user to be created.
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserParams'
+              $ref: '#/components/schemas/UserCreateRequest'
+            example:
+              first_name: "Alice"
+              last_name: "Wonderland"
+              email: "alice.wonder@example.com"
+              role: "user"
+              active: false
+              locale: "en-GB"
       responses:
         '201':
-          description: Created
+          description: User created successfully.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserResponse'
+              example:
+                id: 7
+                first_name: "Alice"
+                last_name: "Wonderland"
+                email: "alice.wonder@example.com"
+                role: "user"
+                active: false
+                locale: "en-GB"
+                links:
+                  - href: "/users/7"
+                    rel: "self"
+                    method: "GET"
         '400':
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/BadRequestError'
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  
-  /users/{id}:
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+
+  /users/{userId}:
+    parameters:
+      - $ref: '#/components/parameters/UserIdPath'
     get:
       tags:
         - Users
-      summary: User Details
-      description: Retrieve details for a specific user.
-      operationId: get_user
-      parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          description: User ID
-          required: true
-          schema:
-            type: integer
+      summary: Get User Details
+      description: Retrieves detailed information for a specific user by their ID.
+      operationId: getUserById
+      security:
+        - oAuth2: [read, admin]
       responses:
         '200':
-          description: OK
+          description: Successfully retrieved user details.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserResponse'
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
         '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/NotFoundError'
+
     put:
       tags:
         - Users
-      summary: Update User
-      description: Update an existing user's information.
-      operationId: update_user
-      parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          description: User ID
-          required: true
-          schema:
-            type: integer
+      summary: Update User Information
+      description: |
+        Updates information for a specific user by their ID.
+        Any parameters not provided in the request body will be left unchanged (PATCH-like behavior for PUT).
+        Requires administrative privileges.
+      operationId: updateUserById
+      security:
+        - oAuth2: [write, admin]
       requestBody:
-        description: User information
+        description: User attributes to update.
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserParams'
+              $ref: '#/components/schemas/UserUpdateRequest'
+            example:
+              first_name: "Alice Anne"
+              locale: "en-US"
+              role: "team_lead"
       responses:
         '200':
-          description: OK
+          description: User updated successfully.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserResponse'
         '400':
-          description: Bad Request Parameters or Validation Errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/BadRequestError'
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
         '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/NotFoundError'
+
     delete:
       tags:
         - Users
       summary: Delete User
-      description: Delete a user from the account.
-      operationId: delete_user
-      parameters:
-        - name: Authorization
-          in: header
-          description: Authentication token used to access the API
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          description: User ID
-          required: true
-          schema:
-            type: integer
+      description: |
+        Permanently deletes a specific user by their ID.
+        This action cannot be undone. Requires administrative privileges.
+      operationId: deleteUserById
+      security:
+        - oAuth2: [write, admin]
       responses:
         '204':
-          description: No Content
+          description: User deleted successfully. No content is returned.
         '401':
-          description: Unauthorized request. This error will occur if the Authorization header is not provided or is invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
         '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/NotFoundError'
 
 components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-  
+  parameters:
+    UserIdPath:
+      name: userId
+      in: path
+      description: The unique identifier of the user.
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 5
   schemas:
-    UserList:
+    UserCore:
       type: object
+      description: Core attributes defining a user.
       properties:
-        users:
-          type: array
-          description: Array of Users
-          items:
-            $ref: '#/components/schemas/User'
-        total_items:
+        first_name:
           type: string
-          example: "350"
-          description: Total number of items
-          readOnly: true
-        total_pages:
+          description: The user's first name.
+          example: "Jane"
+        last_name:
           type: string
-          example: "7"
-          description: Total number of pages
-          readOnly: true
-        links:
-          type: array
-          items:
-            $ref: '#/components/schemas/linkDescription'
-    
-    User:
-      allOf:
-        - $ref: '#/components/schemas/UserParams'
-        - required:
-          - id
-          properties:
-            id:
-              type: integer
-              example: 1
-            links:
-              type: array
-              items:
-                $ref: '#/components/schemas/linkDescription'
-              example:
-                - href: /users/1
-                  rel: self
-                  title: User Details
-                  method: GET
-                - href: /users/1
-                  rel: edit
-                  title: Edit User
-                  method: PUT
-                - href: /users/1
-                  rel: delete
-                  title: Delete User
-                  method: DELETE
-    
-    UserParams:
-      required:
-        - email
-        - first_name
-        - last_name
-        - role
-      properties:
+          description: The user's last name.
+          example: "Doe"
         email:
           type: string
           format: email
-          example: "user@example.com"
+          description: The user's unique email address, used for login and notifications.
+          example: "jane.doe@example.com"
+        role:
+          type: string
+          description: The role assigned to the user within the account (e.g., administrator, user).
+          example: "user"
+        active:
+          type: boolean
+          description: Indicates whether the user's account is active and can be used to log in.
+          example: true
+        locale:
+          type: string
+          description: The user's preferred language and regional settings (e.g., "en-US").
+          example: "en-US"
+      required:
+        - first_name
+        - last_name
+        - email
+        - role
+        - active
+        - locale
+
+    UserCreateRequest:
+      allOf:
+        - $ref: '#/components/schemas/UserCore'
+      description: Information needed to create a new user.
+      example:
+        first_name: "Sam"
+        last_name: "Test"
+        email: "sam.test@example.com"
+        role: "user"
+        active: false
+        locale: "en-CA"
+
+    UserUpdateRequest:
+      type: object
+      description: Information that can be updated for an existing user. Only include fields to be changed.
+      properties:
         first_name:
           type: string
-          example: "John"
+          description: The user's first name.
+          example: "Jane"
         last_name:
           type: string
+          description: The user's last name.
           example: "Doe"
         role:
           type: string
-          enum: [administrator, user]
-          example: "user"
-    
-    linkDescription:
+          description: The role assigned to the user.
+          example: "administrator"
+        active:
+          type: boolean
+          description: Whether the user account is active.
+          example: true
+        locale:
+          type: string
+          description: The user's preferred language and regional settings.
+          example: "en-GB"
+      example:
+        first_name: "Janet"
+        locale: "fr-FR"
+        active: false
+
+    UserResponse:
+      allOf:
+        - $ref: '#/components/schemas/UserCore'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+              description: Unique identifier for the user.
+              example: 5
+            links:
+              type: array
+              description: HATEOAS links related to the user.
+              items:
+                $ref: '#/components/schemas/Link'
+          required:
+            - id
+      description: Detailed information about a user.
+      example:
+        id: 5
+        first_name: "Jane"
+        last_name: "Doe"
+        email: "jane.doe@example.com"
+        role: "administrator"
+        active: true
+        locale: "en-US"
+        links:
+          - href: "/users/5"
+            rel: "self"
+            method: "GET"
+
+    UserListResponse:
       type: object
+      description: A paginated list of users.
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserResponse'
+        total_items:
+          type: integer
+          description: Total number of users matching the query.
+          example: 120
+        total_pages:
+          type: integer
+          description: Total number of pages based on `per_page`.
+          example: 5
+        current_page:
+          type: integer
+          description: The current page number being displayed.
+          example: 1
+        per_page:
+          type: integer
+          description: The number of items per page.
+          example: 25
+        links:
+          type: array
+          description: HATEOAS links for pagination and related resources.
+          items:
+            $ref: '#/components/schemas/Link'
+          nullable: true
       required:
-        - href
-        - rel
+        - users
+        - total_items
+        - total_pages
+        - current_page
+        - per_page
+      example:
+        users:
+          - id: 5
+            first_name: "Jane"
+            last_name: "Doe"
+            email: "jane.doe@example.com"
+            role: "administrator"
+            active: true
+            locale: "en-US"
+            links:
+              - href: "/users/5"
+                rel: "self"
+                method: "GET"
+        total_items: 1
+        total_pages: 1
+        current_page: 1
+        per_page: 25
+        links:
+          - href: "/users?page=1&page_size=25"
+            rel: "self"
+
+    Link:
+      type: object
+      description: Represents a HATEOAS link.
       properties:
         href:
           type: string
-          description: "URI template, as defined by RFC 6570, with the addition of the $, ( and ) characters for pre-processing"
+          format: uri-reference
         rel:
           type: string
-          description: Relation to the target resource of the link
         title:
           type: string
-          description: A title for the link
+          nullable: true
         method:
           type: string
-          description: HTTP method for requesting the target of the link (e.g. "GET" or "POST")
-    
+          enum: [GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD]
+      required:
+        - href
+        - rel
+
     Error:
       type: object
+      description: Standard error response format.
       properties:
         status:
           type: string
-          description: Error status
           example: "error"
         error:
           type: string
-          description: Error message
-          example: "Invalid input parameters"
+          example: "User operation failed."
         error_code:
           type: string
-          description: Error code for machine processing
-          example: "INVALID_INPUT"
+          example: "USER_ERROR"
       required:
         - status
         - error
+        - error_code
+
+  responses:
+    BadRequestError:
+      description: Bad Request - Invalid data provided for the user operation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Invalid email format or missing required fields."
+            error_code: "VALIDATION_ERROR"
+    UnauthorizedError:
+      description: Unauthorized - Authentication token is missing or invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Authentication required."
+            error_code: "UNAUTHORIZED"
+    ForbiddenError:
+      description: Forbidden - The authenticated user does not have permission for this user operation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Permission denied to manage users."
+            error_code: "FORBIDDEN"
+    NotFoundError:
+      description: Not Found - The requested user could not be found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "User not found."
+            error_code: "RESOURCE_NOT_FOUND"
+    ConflictError:
+      description: Conflict - e.g., a user with the provided email already exists.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "A user with this email address already exists."
+            error_code: "USER_EMAIL_CONFLICT"
+
+  securitySchemes:
+    oAuth2:
+      type: oauth2
+      description: OAuth 2.0 Authentication for securing API endpoints.
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ringer.tel/v1/auth/token
+          scopes:
+            read: Read access to API resources.
+            write: Write access to API resources.
+            admin: Administrative access for user management.

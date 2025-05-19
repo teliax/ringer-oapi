@@ -1,0 +1,339 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Site Phone Numbers (Collection)
+  description: |
+    Endpoints for listing phone numbers associated with a specific site and assigning new phone numbers to it.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server
+
+tags:
+  - name: Site Features - Phone Numbers # Standardized tag
+    description: "Managing phone numbers associated with sites."
+
+paths:
+  /sites/{siteId}/phone-numbers: # Standardized siteId
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId' # MODIFIED PATH
+    get:
+      tags:
+        - Site Features - Phone Numbers
+      summary: List Phone Numbers for a Site
+      description: Retrieve a paginated list of all phone numbers assigned to the specified site.
+      operationId: listSitePhoneNumbers # Renamed
+      security:
+        - oAuth2: [read]
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination.
+          required: false
+          schema:
+            type: integer
+            default: 1
+            example: 1
+        - name: page_size
+          in: query
+          description: Number of phone numbers per page.
+          required: false
+          schema:
+            type: integer
+            default: 25
+            example: 25
+      responses:
+        '200':
+          description: A paginated list of phone numbers for the site.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPhoneNumberListResponse'
+              example:
+                phone_numbers:
+                  - id: 123
+                    site_id: 6
+                    name: "Main Office Line"
+                    number: "+13035551212"
+                    destination_code: "ring_group:10"
+                    destination:
+                      name: "Sales Team Ring Group"
+                      code: "ring_group:10"
+                    fail_over_destination_code: "voicemailbox:vm_sales"
+                    fail_over_destination:
+                      name: "Sales Voicemail"
+                      code: "voicemailbox:vm_sales"
+                    e911_id: 45
+                    user_id: null
+                    links:
+                      - href: "/sites/6/phone-numbers/123"
+                        rel: "self"
+                        method: "GET"
+                total_items: 1
+                total_pages: 1
+                current_page: 1
+                per_page: 25
+                links:
+                  - href: "/sites/6/phone-numbers?page=1&page_size=25"
+                    rel: "self"
+                    method: "GET"
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError' # MODIFIED PATH
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError' # MODIFIED PATH
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/SiteNotFoundError' # MODIFIED PATH
+    
+    post:
+      tags:
+        - Site Features - Phone Numbers
+      summary: Assign Phone Number to Site
+      description: Assigns an available phone number to the specified site and configures its initial routing.
+      operationId: assignSitePhoneNumber # Renamed from create_phone_number
+      security:
+        - oAuth2: [write]
+      requestBody:
+        description: Details of the phone number to assign and its configuration.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PhoneNumberCreateRequest' 
+            example:
+              name: "Customer Service Line"
+              number: "+18005550100" # The E.164 number being assigned
+              destination_code: "menu:support_ivr"
+              fail_over_destination_code: "voicemailbox:support_general_vm"
+              e911_id: 46 # Optional, if linking to an existing E911 record by ID
+              # user_id: 12 # Optional user association
+      responses:
+        '201':
+          description: Phone number assigned and configured successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhoneNumberResponse' 
+              example:
+                id: 124
+                site_id: 6
+                name: "Customer Service Line"
+                number: "+18005550100"
+                destination_code: "menu:support_ivr"
+                destination:
+                  name: "Support IVR Menu"
+                  code: "menu:support_ivr"
+                fail_over_destination_code: "voicemailbox:support_general_vm"
+                fail_over_destination:
+                  name: "General Support Voicemail"
+                  code: "voicemailbox:support_general_vm"
+                e911_id: 46
+                user_id: null
+                links:
+                  - href: "/sites/6/phone-numbers/124"
+                    rel: "self"
+                    method: "GET"
+        '400':
+          $ref: '../../common_components.yaml#/components/responses/BadRequestError' # Corrected path
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError' # Corrected path
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError' # Corrected path
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/SiteNotFoundError' # Corrected path
+        '409':
+          $ref: '../../common_components.yaml#/components/responses/ConflictError' # Corrected path, e.g. number already assigned
+
+components:
+  securitySchemes:
+    oAuth2:
+      $ref: '../../common_components.yaml#/components/securitySchemes/oAuth2' # Corrected path
+
+  schemas:
+    PhoneNumberCore: # For common properties
+      type: object
+      properties:
+        name:
+          type: string
+          description: A user-friendly name for the phone number (e.g., "Main Line", "Sales Dept").
+          example: "Main Business Line"
+        number:
+          type: string
+          description: The actual phone number in E.164 format (e.g., +13035551212).
+          example: "+14155550123"
+        destination_code:
+          type: string
+          description: System code for the primary destination where calls to this number are routed.
+          example: "device:dev_main_reception"
+        fail_over_destination_code:
+          type: string
+          nullable: true
+          description: System code for the failover destination if the primary is unavailable.
+          example: "voicemailbox:general_company_vm"
+        e911_id:
+          type: integer
+          format: int64
+          nullable: true
+          description: Identifier of the E911 record associated with this phone number for emergency calling.
+          example: 45
+        user_id:
+          type: integer
+          format: int64
+          nullable: true
+          description: Optional. Identifier of a user primarily associated with this phone number.
+          example: 101
+      required:
+        - name
+        - number
+        - destination_code
+      example:
+        name: "Support Line"
+        number: "+18885551234"
+        destination_code: "ring_group:support_rg"
+        fail_over_destination_code: "menu:after_hours_support"
+        e911_id: 46
+        user_id: 102
+
+    PhoneNumberCreateRequest:
+      allOf:
+        - $ref: '#/components/schemas/PhoneNumberCore'
+      description: Data required to assign/create a phone number for a site.
+      required: [name, number, destination_code]
+      example:
+        name: "Marketing Campaign DID"
+        number: "+1800555PROMO"
+        destination_code: "menu:marketing_ivr"
+        e911_id: null
+
+    PhoneNumberResponse: 
+      allOf:
+        - $ref: '#/components/schemas/PhoneNumberCore'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+            site_id:
+              type: integer
+              format: int64
+              nullable: true
+            destination: 
+              nullable: true
+              oneOf:
+                - $ref: '../../common_components.yaml#/components/schemas/SiteDestination'
+            fail_over_destination: 
+              nullable: true
+              oneOf:
+                - $ref: '../../common_components.yaml#/components/schemas/SiteDestination'
+            links:
+              type: array
+              items:
+                $ref: '../../common_components.yaml#/components/schemas/Link'
+              nullable: true
+          required:
+            - id
+            - name
+            - number
+            - destination_code
+      description: Detailed information about a phone number assigned to a site.
+      example:
+        id: 123
+        site_id: 6
+        name: "Main Office Line"
+        number: "+13035551212"
+        destination_code: "ring_group:10"
+        destination:
+          name: "Sales Team Ring Group"
+          code: "ring_group:10"
+        fail_over_destination_code: "voicemailbox:vm_sales"
+        fail_over_destination:
+          name: "Sales Voicemail"
+          code: "voicemailbox:vm_sales"
+        e911_id: 45
+        user_id: null
+        links:
+          - href: "/sites/6/phone-numbers/123"
+            rel: "self"
+            method: "GET"
+
+    PaginatedPhoneNumberListResponse:
+      type: object
+      description: A paginated list of phone numbers.
+      properties:
+        phone_numbers:
+          type: array
+          items:
+            $ref: '#/components/schemas/PhoneNumberResponse' 
+        total_items:
+          type: integer
+          example: 50
+        total_pages:
+          type: integer
+          example: 5
+        current_page:
+          type: integer
+          example: 1
+        per_page:
+          type: integer
+          example: 10
+        links:
+          type: array
+          items:
+            $ref: '../../common_components.yaml#/components/schemas/Link'
+          nullable: true
+      required:
+        - phone_numbers
+        - total_items
+        - total_pages
+        - current_page
+        - per_page
+      example:
+        phone_numbers:
+          - id: 123
+            site_id: 6
+            name: "Main Office Line"
+            number: "+13035551212"
+            destination_code: "ring_group:10"
+            destination:
+              name: "Sales Team Ring Group"
+              code: "ring_group:10"
+            fail_over_destination_code: "voicemailbox:vm_sales"
+            fail_over_destination:
+              name: "Sales Voicemail"
+              code: "voicemailbox:vm_sales"
+            e911_id: 45
+            user_id: null
+            links:
+              - href: "/sites/6/phone-numbers/123"
+                rel: "self"
+                method: "GET"
+        total_items: 1
+        total_pages: 1
+        current_page: 1
+        per_page: 25
+        links:
+          - href: "/sites/6/phone-numbers?page=1&page_size=25"
+            rel: "self"
+            method: "GET"
+
+    # Error schema will be common
+    # Link schema will be common
+
+  parameters:
+    SiteIdPath:
+      $ref: '../../common_components.yaml#/components/parameters/SiteId' # Ensuring consistency
+    PhoneNumberIdPath: # ADDING PhoneNumberId
+      name: phoneNumberId
+      in: path
+      description: The unique identifier of the phone number record.
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 127 

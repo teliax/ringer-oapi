@@ -1,0 +1,305 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Site Forwards (Collection)
+  description: |
+    Endpoints for listing call forwards associated with a specific site and creating new forwards.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server
+  # - url: https://api.staging.ringer.tel/v1
+  #   description: Staging server
+
+tags:
+  - name: Site Features - Forwards
+    description: "Managing call forwards associated with sites."
+
+paths:
+  /sites/{siteId}/forwards:
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId'
+    get:
+      tags:
+        - Site Features - Forwards
+      summary: List Forwards for a Site
+      description: Retrieve a paginated list of all call forwards that belong to a site.
+      operationId: listSiteForwards
+      security:
+        - oAuth2: [read]
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination.
+          required: false
+          schema:
+            type: integer
+            default: 1
+            example: 1
+        - name: page_size
+          in: query
+          description: Number of forwards per page.
+          required: false
+          schema:
+            type: integer
+            default: 25
+            example: 10
+      responses:
+        '200':
+          description: A paginated list of forwards.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedForwardListResponse'
+              example:
+                forwards:
+                  - id: 77
+                    name: "After Hours"
+                    destination_dial_string: "+13125559876"
+                    timeout: 30
+                    active: true
+                    site_id: 6
+                    fail_over_destination_code: "voicemailbox:general_vm"
+                    links:
+                      - href: "/sites/6/forwards/77"
+                        rel: "self"
+                        method: "GET"
+                total_items: 1
+                total_pages: 1
+                current_page: 1
+                per_page: 25
+                links:
+                  - href: "/sites/6/forwards?page=1&page_size=25"
+                    rel: "self"
+                    method: "GET"
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/SiteNotFoundError'
+    
+    post:
+      tags:
+        - Site Features - Forwards
+      summary: Create Forward for a Site
+      description: Add a new call forward to your site.
+      operationId: createSiteForward
+      security:
+        - oAuth2: [write]
+      requestBody:
+        description: Details for the new forward.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForwardCreateRequest'
+            example:
+              name: "Lunch Break Forward"
+              destination_dial_string: "+13125559877"
+              timeout: 60
+              active: true
+              fail_over_destination_code: "menu:main_menu"
+      responses:
+        '201':
+          description: Forward Created Successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForwardResponse'
+              example:
+                id: 78
+                site_id: 6
+                name: "Lunch Break Forward"
+                destination_dial_string: "+13125559877"
+                active: true
+                timeout: 60
+                fail_over_destination_code: "menu:main_menu"
+                links:
+                  - href: "/sites/6/forwards/78"
+                    rel: "self"
+                    method: "GET"
+        '400':
+          $ref: '../../common_components.yaml#/components/responses/BadRequestError'
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/SiteNotFoundError'
+
+components:
+  securitySchemes:
+    oAuth2:
+      $ref: '../../common_components.yaml#/components/securitySchemes/oAuth2'
+
+  parameters:
+    SiteIdPath:
+      $ref: '../../common_components.yaml#/components/parameters/SiteId'
+    ForwardIdPath:
+      name: forwardId
+      in: path
+      description: Identifier of the forward configuration.
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 77
+
+  schemas:
+    ForwardCore:
+      type: object
+      properties:
+        name:
+          type: string
+          description: A user-friendly name for the forward configuration.
+          example: "Main Office After Hours"
+        destination_dial_string:
+          type: string
+          description: The external phone number (E.164 format recommended) to which calls will be forwarded.
+          example: "+14155550100"
+        timeout:
+          type: integer
+          description: How long (in seconds) the forward will be attempted before failing over or disconnecting.
+          default: 20
+          example: 30
+        active:
+          type: boolean
+          description: Whether this call forward rule is currently active.
+          default: true
+          example: true
+        fail_over_destination_code:
+          type: string
+          nullable: true
+          description: System code for the destination if the forward attempt fails or times out.
+          example: "voicemailbox:general_voicemail"
+        user_id:
+          type: integer
+          format: int64
+          nullable: true
+          description: Optional. Identifier of the user primarily associated with this forward.
+          example: 10
+      required:
+        - name
+        - destination_dial_string
+      example:
+        name: "Support Line Forward"
+        destination_dial_string: "+18005551212"
+        timeout: 25
+        active: true
+        fail_over_destination_code: "menu:support_options"
+        user_id: 15
+
+    ForwardCreateRequest:
+      allOf:
+        - $ref: '#/components/schemas/ForwardCore'
+      description: Data required to create a new call forward.
+      example:
+        name: "Holiday Backup Forward"
+        destination_dial_string: "+12125557890"
+        timeout: 15
+        active: false
+
+    ForwardResponse:
+      allOf:
+        - $ref: '#/components/schemas/ForwardCore'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+              description: Unique identifier for the forward.
+              example: 77
+            site_id:
+              type: integer
+              format: int64
+              description: Identifier of the site this forward belongs to.
+              example: 6
+            links:
+              type: array
+              items:
+                $ref: '../../common_components.yaml#/components/schemas/Link'
+              nullable: true
+          required:
+            - id
+            - site_id
+            - name
+            - destination_dial_string
+      description: Detailed information about a call forward.
+      example:
+        id: 77
+        site_id: 6
+        name: "After Hours"
+        destination_dial_string: "+13125559876"
+        active: true
+        timeout: 30
+        fail_over_destination_code: "voicemailbox:vm_general"
+        user_id: 10
+        links:
+          - href: "/sites/6/forwards/77"
+            rel: "self"
+            method: "GET"
+
+    PaginatedForwardListResponse:
+      type: object
+      description: A paginated list of call forwards.
+      properties:
+        forwards:
+          type: array
+          items:
+            $ref: '#/components/schemas/ForwardResponse'
+        total_items:
+          type: integer
+          example: 50
+        total_pages:
+          type: integer
+          example: 5
+        current_page:
+          type: integer
+          example: 1
+        per_page:
+          type: integer
+          example: 10
+        links:
+          type: array
+          items:
+            $ref: '../../common_components.yaml#/components/schemas/Link'
+          nullable: true
+      required:
+        - forwards
+        - total_items
+        - total_pages
+        - current_page
+        - per_page
+      example:
+        forwards:
+          - id: 77
+            site_id: 6
+            name: "After Hours"
+            destination_dial_string: "+13125559876"
+            active: true
+            timeout: 30
+            fail_over_destination_code: "voicemailbox:vm_general"
+            user_id: 10
+            links:
+              - href: "/sites/6/forwards/77"
+                rel: "self"
+                method: "GET"
+        total_items: 1
+        total_pages: 1
+        current_page: 1
+        per_page: 25
+        links:
+          - href: "/sites/6/forwards?page=1&page_size=25"
+            rel: "self"
+            method: "GET"
+
+    # Error schema is common, defined in ../../../components/schemas/error.yaml ideally
+    # Link schema is common, defined in ../../../components/schemas/link.yaml ideally 

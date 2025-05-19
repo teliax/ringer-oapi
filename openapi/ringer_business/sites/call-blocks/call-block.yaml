@@ -1,0 +1,287 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Site Call Block (Individual Operations)
+  description: API endpoints for viewing, updating, and deleting an individual Call Block rule for a site.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server
+  - url: https://api.staging.ringer.tel/v1
+    description: Staging server
+
+tags:
+  - name: Site Features - Call Blocking
+    description: Managing Call Block rules for a site.
+
+paths:
+  /sites/{siteId}/call-blocks/{callBlockId}:
+    parameters:
+      - $ref: '#/components/parameters/SiteIdPath'
+      - $ref: '#/components/parameters/CallBlockIdPath'
+    get:
+      tags:
+        - Site Features - Call Blocking
+      summary: Get Call Block Rule Details
+      operationId: getSiteCallBlockById
+      description: Retrieves the details of a specific Call Block rule.
+      security:
+        - oAuth2: [read]
+      responses:
+        '200':
+          description: Call Block rule details.
+          content:
+            application/json:
+              schema:
+                $ref: './index.yaml#/components/schemas/CallBlockResponse'
+              example:
+                data:
+                  type: "call-block"
+                  id: "101"
+                  attributes:
+                    name: "Marketing Block Rule"
+                    phone_number: "+18005551234"
+                    direction: "inbound"
+                    status: "active"
+                  links:
+                    self: "/sites/6/call-blocks/101"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    put:
+      tags:
+        - Site Features - Call Blocking
+      summary: Update Call Block Rule
+      operationId: updateSiteCallBlockById
+      description: Updates an existing Call Block rule. Only attributes provided in the request body will be updated.
+      security:
+        - oAuth2: [write]
+      requestBody:
+        description: Call Block rule attributes to update.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CallBlockUpdateRequest'
+            example:
+              data:
+                type: "call-block"
+                attributes:
+                  name: "Updated Marketing Block"
+                  status: "inactive"
+      responses:
+        '200':
+          description: Call Block rule updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: './index.yaml#/components/schemas/CallBlockResponse'
+              example:
+                data:
+                  type: "call-block"
+                  id: "101"
+                  attributes:
+                    name: "Updated Marketing Block"
+                    phone_number: "+18005551234"
+                    direction: "inbound"
+                    status: "inactive"
+                  links:
+                    self: "/sites/6/call-blocks/101"
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+    delete:
+      tags:
+        - Site Features - Call Blocking
+      summary: Delete a Call Block Rule
+      operationId: deleteSiteCallBlockById
+      description: Permanently deletes a Call Block rule.
+      security:
+        - oAuth2: [write, admin]
+      responses:
+        '204':
+          description: Call Block rule deleted successfully. No content returned.
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+components:
+  parameters:
+    SiteIdPath:
+      name: siteId
+      in: path
+      description: The unique identifier of the site.
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 6
+    CallBlockIdPath:
+      name: callBlockId
+      in: path
+      description: The unique identifier of the Call Block rule.
+      required: true
+      schema:
+        type: string
+        example: "101"
+
+  securitySchemes:
+    oAuth2:
+      type: oauth2
+      description: OAuth 2.0 Authentication for securing API endpoints.
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ringer.tel/v1/auth/token
+          scopes:
+            read: Read access to API resources
+            write: Write access to API resources
+            admin: Administrative access
+
+  schemas:
+    CallBlockUpdateRequest:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - type
+            - attributes
+          properties:
+            type:
+              type: string
+              enum: [call-block]
+            attributes:
+              type: object
+              properties:
+                name:
+                  type: string
+                  nullable: true
+                phone_number:
+                  type: string
+                  nullable: true
+                direction:
+                  type: string
+                  enum: [inbound, outbound, both]
+                  nullable: true
+                status:
+                  type: string
+                  enum: [active, inactive]
+                  nullable: true
+      description: Data for updating an existing Call Block rule. Only provided fields are updated.
+      example:
+        data:
+          type: "call-block"
+          attributes:
+            name: "Priority Block - Updated"
+            status: "inactive"
+
+    Error:
+      type: object
+      description: Standard error response format.
+      properties:
+        status:
+          type: string
+          example: "error"
+        error:
+          type: string
+          description: A human-readable description of the error.
+        error_code:
+          type: string
+          description: A machine-parsable error code.
+        details:
+          type: array
+          nullable: true
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                description: JSON pointer to the field that caused the error.
+              issue:
+                type: string
+                description: Specific issue with the field.
+      required:
+        - status
+        - error
+        - error_code
+      example:
+        status: "error"
+        error: "A generic error occurred for individual call block operation."
+        error_code: "CALL_BLOCK_DETAIL_ERROR"
+
+    # Schemas CallBlockResponse is referenced from ./index.yaml
+    # Link schema would be in index.yaml if CallBlockResponse uses it.
+
+  responses:
+    UnauthorizedError:
+      description: Unauthorized - Authentication token is missing or invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Authentication required."
+            error_code: "UNAUTHORIZED"
+    ForbiddenError:
+      description: Forbidden - The authenticated user does not have permission.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Permission denied."
+            error_code: "FORBIDDEN"
+    NotFoundError:
+      description: Not Found - The requested resource could not be found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Resource not found."
+            error_code: "RESOURCE_NOT_FOUND"
+    BadRequestError:
+      description: Bad Request - Invalid data provided.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Invalid request parameters."
+            error_code: "VALIDATION_ERROR"
+    ConflictError:
+      description: Conflict - The resource already exists or the request conflicts with the current state.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: "error"
+            error: "Resource conflict."
+            error_code: "CONFLICT_ERROR" 

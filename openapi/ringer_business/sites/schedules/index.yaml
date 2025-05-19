@@ -1,0 +1,468 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Site Schedules (Collection)
+  description: |
+    Endpoints for listing schedules associated with a specific site and creating new schedules.
+    Schedules provide time-of-day based call routing.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server
+  # - url: https://api.staging.ringer.tel/v1
+  #   description: Staging server
+
+tags:
+  - name: Site Features - Schedules
+    description: "Managing time-based routing schedules for a site."
+
+paths:
+  /sites/{siteId}/schedules:
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId'
+    get:
+      tags:
+        - Site Features - Schedules
+      summary: List Schedules for a Site
+      description: Retrieve a paginated list of all schedules that belong to a site.
+      operationId: listSiteSchedules
+      security:
+        - oAuth2: [read]
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination.
+          required: false
+          schema:
+            type: integer
+            default: 1
+            example: 1
+        - name: page_size
+          in: query
+          description: Number of schedules per page.
+          required: false
+          schema:
+            type: integer
+            default: 25
+            example: 10
+      responses:
+        '200':
+          description: A paginated list of schedules.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedScheduleListResponse'
+              example:
+                schedules:
+                  - id: "7"
+                    type: "schedule"
+                    attributes:
+                      name: "Business Hours Rule"
+                      time_zone: "America/Denver"
+                      start_hour: "09"
+                      start_minute: "00"
+                      end_hour: "17"
+                      end_minute: "00"
+                      start_weekday: "Mon"
+                      end_weekday: "Fri"
+                      exceptions: "12/25,01/01"
+                      positive_destination_code: "menu:day_menu"
+                      negative_destination_code: "voicemailbox:after_hours_vm"
+                      site_id: 6
+                      positive_destination:
+                        name: "Day Menu"
+                        code: "menu:day_menu"
+                      negative_destination:
+                        name: "After Hours Voicemail"
+                        code: "voicemailbox:after_hours_vm"
+                    links:
+                      self:
+                        href: "/sites/6/schedules/7"
+                        rel: "self"
+                        method: "GET"
+                total_items: 1
+                total_pages: 1
+                current_page: 1
+                per_page: 25
+                links:
+                  self:
+                    href: "/sites/6/schedules?page=1&page_size=25"
+                    rel: "self"
+                    method: "GET"
+                  first:
+                    href: "/sites/6/schedules?page=1&page_size=25"
+                    rel: "first"
+                    method: "GET"
+                  last:
+                    href: "/sites/6/schedules?page=1&page_size=25"
+                    rel: "last"
+                    method: "GET"
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/SiteNotFoundError'
+    post:
+      tags:
+        - Site Features - Schedules
+      summary: Create Schedule for a Site
+      description: Add a new schedule to the specified site.
+      operationId: createSiteSchedule
+      security:
+        - oAuth2: [write]
+      requestBody:
+        description: Configuration details for the new schedule.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleCreateRequest'
+            example:
+              data:
+                type: "schedule"
+                attributes:
+                  name: "Weekend Support Hours"
+                  time_zone: "America/New_York"
+                  start_hour: "10"
+                  start_minute: "00"
+                  end_hour: "14"
+                  end_minute: "00"
+                  start_weekday: "Sat"
+                  end_weekday: "Sun"
+                  exceptions: ""
+                  positive_destination_code: "ring_group:weekend_support_rg"
+                  negative_destination_code: "forward:on_call_pager"
+      responses:
+        '201':
+          description: Schedule Created Successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleResponse'
+              example:
+                data:
+                  id: "8"
+                  type: "schedule"
+                  attributes:
+                    name: "Weekend Support Hours"
+                    time_zone: "America/New_York"
+                    site_id: 6
+                    start_hour: "10"
+                    start_minute: "00"
+                    end_hour: "14"
+                    end_minute: "00"
+                    start_weekday: "Sat"
+                    end_weekday: "Sun"
+                    exceptions: ""
+                    positive_destination_code: "ring_group:weekend_support_rg"
+                    negative_destination_code: "forward:on_call_pager"
+                    positive_destination:
+                      name: "Weekend Support RG"
+                      code: "ring_group:weekend_support_rg"
+                    negative_destination:
+                      name: "On Call Pager Forward"
+                      code: "forward:on_call_pager"
+                  links:
+                    self:
+                      href: "/sites/6/schedules/8"
+                      rel: "self"
+                      method: "GET"
+        '400':
+          $ref: '../../common_components.yaml#/components/responses/BadRequestError'
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/SiteNotFoundError'
+
+components:
+  securitySchemes:
+    oAuth2:
+      $ref: '../../common_components.yaml#/components/securitySchemes/oAuth2'
+
+  parameters:
+    SiteIdPath:
+      $ref: '../../common_components.yaml#/components/parameters/SiteId'
+    ScheduleIdPath:
+      name: scheduleId
+      in: path
+      description: The unique identifier of the Schedule.
+      required: true
+      schema:
+        type: string
+        example: "sched_7abx891p"
+
+  schemas:
+    ScheduleAttributes:
+      type: object
+      properties:
+        name:
+          type: string
+          description: A user-friendly name for the schedule.
+          example: "Weekday Business Hours"
+        time_zone:
+          type: string
+          description: IANA Timezone Database name (e.g., America/New_York).
+          example: "America/Denver"
+        start_hour:
+          type: string
+          description: Start hour (00-23) for the schedule active period.
+          example: "08"
+        start_minute:
+          type: string
+          description: Start minute (00-59).
+          example: "30"
+        end_hour:
+          type: string
+          description: End hour (00-23).
+          example: "17"
+        end_minute:
+          type: string
+          description: End minute (00-59).
+          example: "00"
+        start_weekday:
+          type: string
+          description: Weekday when the schedule active period starts.
+          example: "Mon"
+        end_weekday:
+          type: string
+          description: Weekday when the schedule active period ends.
+          example: "Fri"
+        exceptions:
+          type: string
+          nullable: true
+          description: Space-separated list of dates (MM/DD format) when this schedule is inactive.
+          example: "01/01 12/25"
+        positive_destination_code:
+          type: string
+          description: System code for the destination if the current time falls within the schedule.
+          example: "menu:main_day_menu"
+        negative_destination_code:
+          type: string
+          description: System code for the destination if the current time falls outside the schedule.
+          example: "voicemailbox:after_hours_vm"
+      required:
+        - name
+        - time_zone
+        - start_hour
+        - start_minute
+        - end_hour
+        - end_minute
+        - start_weekday
+        - end_weekday
+        - positive_destination_code
+        - negative_destination_code
+      example:
+        name: "Holiday Hours"
+        time_zone: "America/Los_Angeles"
+        start_hour: "10"
+        start_minute: "00"
+        end_hour: "16"
+        end_minute: "00"
+        start_weekday: "Mon"
+        end_weekday: "Mon"
+        exceptions: ""
+        positive_destination_code: "menu:holiday_greeting"
+        negative_destination_code: "voicemailbox:closed_vm"
+
+    ScheduleCreateRequest:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - type
+            - attributes
+          properties:
+            type:
+              type: string
+              enum: [schedule]
+            attributes:
+              $ref: '#/components/schemas/ScheduleAttributes'
+      example:
+        data:
+          type: "schedule"
+          attributes:
+            name: "Lunch Break Schedule"
+            time_zone: "America/Chicago"
+            start_hour: "12"
+            start_minute: "00"
+            end_hour: "13"
+            end_minute: "00"
+            start_weekday: "Mon"
+            end_weekday: "Fri"
+            positive_destination_code: "forward:lunch_coverage_phone"
+            negative_destination_code: "ring_group:main_office_rg"
+
+    ScheduleResponseData:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [schedule]
+        attributes:
+          allOf:
+            - $ref: '#/components/schemas/ScheduleAttributes'
+            - type: object
+              properties:
+                site_id:
+                  type: integer
+                  format: int64
+                  nullable: true
+                positive_destination:
+                  $ref: '../../common_components.yaml#/components/schemas/SiteDestination'
+                negative_destination:
+                  $ref: '../../common_components.yaml#/components/schemas/SiteDestination'
+        links:
+          $ref: '../../common_components.yaml#/components/schemas/LinkObject'
+      required:
+        - id
+        - type
+        - attributes
+
+    ScheduleResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ScheduleResponseData'
+      required:
+        - data
+      example:
+        data:
+          id: "7"
+          type: "schedule"
+          attributes:
+            name: "Business Hours Rule"
+            time_zone: "America/Denver"
+            start_hour: "09"
+            start_minute: "00"
+            end_hour: "17"
+            end_minute: "00"
+            start_weekday: "Mon"
+            end_weekday: "Fri"
+            exceptions: "12/25,01/01"
+            positive_destination_code: "menu:day_menu"
+            negative_destination_code: "voicemailbox:after_hours_vm"
+            site_id: 6
+            positive_destination:
+              name: "Day Menu"
+              code: "menu:day_menu"
+            negative_destination:
+              name: "After Hours Voicemail"
+              code: "voicemailbox:after_hours_vm"
+          links:
+            self:
+              href: "/sites/6/schedules/7"
+              rel: "self"
+              method: "GET"
+
+    PaginatedScheduleListResponse:
+      type: object
+      description: A paginated list of schedules.
+      properties:
+        schedules:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScheduleResponseData'
+        total_items:
+          type: integer
+          example: 20
+        total_pages:
+          type: integer
+          example: 2
+        current_page:
+          type: integer
+          example: 1
+        per_page:
+          type: integer
+          example: 10
+        links:
+          $ref: '../../common_components.yaml#/components/schemas/PaginationLinks'
+      required:
+        - schedules
+        - total_items
+        - total_pages
+        - current_page
+        - per_page
+      example:
+        schedules:
+          - id: "7"
+            type: "schedule"
+            attributes:
+              name: "Business Hours Rule"
+              time_zone: "America/Denver"
+              start_hour: "09"
+              start_minute: "00"
+              end_hour: "17"
+              end_minute: "00"
+              start_weekday: "Mon"
+              end_weekday: "Fri"
+              exceptions: "12/25,01/01"
+              positive_destination_code: "menu:day_menu"
+              negative_destination_code: "voicemailbox:after_hours_vm"
+              site_id: 6
+            links:
+              self:
+                href: "/sites/6/schedules/7"
+                rel: "self"
+                method: "GET"
+        total_items: 1
+        total_pages: 1
+        current_page: 1
+        per_page: 25
+        links:
+          self:
+            href: "/sites/6/schedules?page=1&page_size=25"
+            rel: "self"
+            method: "GET"
+          first:
+            href: "/sites/6/schedules?page=1&page_size=25"
+            rel: "first"
+            method: "GET"
+          last:
+            href: "/sites/6/schedules?page=1&page_size=25"
+            rel: "last"
+            method: "GET"
+
+    ScheduleParams:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - type
+            - attributes
+          properties:
+            type:
+              type: string
+              enum: [schedule]
+            attributes:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  description: Name of the Schedule
+                description:
+                  type: string
+                  description: Description of the Schedule
+                status:
+                  type: string
+                  enum: [active, inactive]
+                  description: Status of the Schedule 

@@ -1,0 +1,191 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Site Forward (Individual Operations)
+  description: |
+    Endpoints for retrieving, updating, and deleting individual call forwards associated with a specific site.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server
+
+tags:
+  - name: Site Features - Forwards
+    description: "Managing call forwards associated with sites."
+
+paths:
+  /sites/{siteId}/forwards/{forwardId}:
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId'
+      - $ref: './index.yaml#/components/parameters/ForwardIdPath'
+    get:
+      tags:
+        - Site Features - Forwards
+      summary: Get Site Forward Details
+      description: Retrieve the details of a specific call forward for a site.
+      operationId: getSiteForwardById # Standardized name
+      security:
+        - oAuth2: [read]
+      responses:
+        '200':
+          description: Forward Details
+          content:
+            application/json:
+              schema:
+                $ref: './index.yaml#/components/schemas/ForwardResponse' # Referenced from index
+              example:
+                id: 77
+                site_id: 6 # Added for context
+                name: "After Hours"
+                destination_dial_string: "+13125559876"
+                active: true
+                timeout: 30
+                fail_over_destination_code: "voicemailbox:vm_general"
+                user_id: 10
+                links:
+                  - href: "/sites/6/forwards/77"
+                    rel: "self"
+                    method: "GET"
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/NotFoundError'
+    
+    put:
+      tags:
+        - Site Features - Forwards
+      summary: Update Site Forward
+      description: Update an existing call forward for a site. Provide only fields to be changed.
+      operationId: updateSiteForwardById # Standardized name
+      security:
+        - oAuth2: [write]
+      requestBody:
+        description: Attributes of the forward to update.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForwardUpdateRequest'
+            example:
+              name: "After Hours Main Line"
+              destination_dial_string: "+13125559877"
+              active: false
+              timeout: 20
+              fail_over_destination_code: "voicemailbox:general_voicemail"
+              user_id: 10
+      responses:
+        '200':
+          description: Forward Updated Successfully
+          content:
+            application/json:
+              schema:
+                $ref: './index.yaml#/components/schemas/ForwardResponse' # Referenced from index
+              example:
+                id: 77
+                site_id: 6
+                name: "After Hours Main Line"
+                destination_dial_string: "+13125559877"
+                active: false
+                timeout: 20
+                fail_over_destination_code: "voicemailbox:general_voicemail"
+                user_id: 10
+                links:
+                  - href: "/sites/6/forwards/77"
+                    rel: "self"
+                    method: "GET"
+        '400':
+          $ref: '../../common_components.yaml#/components/responses/BadRequestError'
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/NotFoundError'
+    
+    delete:
+      tags:
+        - Site Features - Forwards
+      summary: Delete Site Forward
+      description: Permanently delete a specific call forward for a site.
+      operationId: deleteSiteForwardById # Standardized name
+      security:
+        - oAuth2: [write]
+      responses:
+        '204':
+          description: Forward Deleted Successfully. No Content.
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/NotFoundError'
+
+components:
+  parameters:
+    forwardId:
+      name: forwardId
+      in: path
+      description: Identifier of the forward configuration.
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 77
+
+  securitySchemes:
+    oAuth2:
+      $ref: '../../common_components.yaml#/components/securitySchemes/oAuth2'
+
+  schemas:
+    ForwardUpdateRequest: # For PUT, fields are typically optional if behaving like PATCH
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+          description: A user-friendly name for the forward configuration.
+          example: "Main Office After Hours"
+        destination_dial_string:
+          type: string
+          nullable: true
+          description: The external phone number (E.164 format recommended) to which calls will be forwarded.
+          example: "+14155550100"
+        timeout:
+          type: integer
+          nullable: true
+          description: How long (in seconds) the forward will be attempted before failing over or disconnecting.
+          example: 30
+        active:
+          type: boolean
+          nullable: true
+          description: Whether this call forward rule is currently active.
+          example: true
+        fail_over_destination_code:
+          type: string
+          nullable: true
+          description: System code for the destination if the forward attempt fails or times out.
+          example: "voicemailbox:general_voicemail"
+        user_id:
+          type: integer
+          format: int64
+          nullable: true
+          description: Optional. Identifier of the user primarily associated with this forward.
+          example: 10
+      description: Data for updating an existing call forward. Only provide fields to change.
+      example:
+        name: "Weekend On-Call Forward"
+        destination_dial_string: "+18885550102"
+        active: true
+        timeout: 25
+    
+    # ForwardResponse schema is now referenced from ./index.yaml#/components/schemas/ForwardResponse
+    # Link and Error schemas are referenced from common components dir, not defined here. 

@@ -1,0 +1,183 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Site Voicemail Box (Individual Operations)
+  description: API endpoints for viewing, updating, and deleting an individual Voicemail Box for a site.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server
+  # - url: https://api.staging.ringer.tel/v1
+  #   description: Staging server
+
+tags:
+  - name: Site Features - Voicemail Boxes
+    description: "Managing voicemail boxes for a site."
+
+paths:
+  /sites/{siteId}/voice-mail-boxes/{voicemailBoxId}:
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId'
+      - $ref: './index.yaml#/components/parameters/VoicemailBoxIdPath'
+    get:
+      tags:
+        - Site Features - Voicemail Boxes
+      summary: Get Voicemail Box Details
+      operationId: getSiteVoicemailBoxById
+      description: Retrieves the details of a specific Voicemail Box.
+      security:
+        - oAuth2: [read]
+      responses:
+        '200':
+          description: Voicemail Box details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: './index.yaml#/components/schemas/VoicemailBoxResponseData'
+              example:
+                id: "553"
+                type: "voicemail-box"
+                attributes:
+                  name: "Sales Team Voicemail"
+                  pin: "****"
+                  notification_emails: "sales@example.com,manager@example.com"
+                  status: "active"
+                  site_id: 6
+                  announcement_url: "https://cdn.example.com/greetings/vm553.mp3"
+                links:
+                  self:
+                    href: "/sites/6/voice-mail-boxes/553"
+                    rel: "self"
+                    method: "GET"
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/VoicemailBoxNotFoundError'
+    put:
+      tags:
+        - Site Features - Voicemail Boxes
+      summary: Update Voicemail Box
+      operationId: updateSiteVoicemailBoxById
+      description: |
+        Updates an existing Voicemail Box. Provide only the attributes to be changed.
+        To update the announcement greeting, use the dedicated upload endpoint.
+      security:
+        - oAuth2: [write]
+      requestBody:
+        description: Voicemail Box attributes to update.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoicemailBoxUpdateRequest'
+            example:
+              data:
+                type: "voicemail-box"
+                attributes:
+                  name: "Support Voicemail - Updated"
+                  pin: "4321"
+                  notification_emails: "new.support@example.com"
+                  status: "inactive"
+      responses:
+        '200':
+          description: Voicemail Box updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: './index.yaml#/components/schemas/VoicemailBoxResponseData'
+              example:
+                id: "553"
+                type: "voicemail-box"
+                attributes:
+                  name: "Support Voicemail - Updated"
+                  pin: "****"
+                  notification_emails: "new.support@example.com"
+                  status: "inactive"
+                  site_id: 6
+                  announcement_url: "https://cdn.example.com/greetings/vm553.mp3"
+                links:
+                  self:
+                    href: "/sites/6/voice-mail-boxes/553"
+                    rel: "self"
+                    method: "GET"
+        '400':
+          $ref: '../../common_components.yaml#/components/responses/BadRequestError'
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/VoicemailBoxNotFoundError'
+    delete:
+      tags:
+        - Site Features - Voicemail Boxes
+      summary: Delete a Voicemail Box
+      operationId: deleteSiteVoicemailBoxById
+      description: Permanently deletes a Voicemail Box.
+      security:
+        - oAuth2: [write]
+      responses:
+        '204':
+          description: Voicemail Box deleted successfully.
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/VoicemailBoxNotFoundError'
+
+components:
+  securitySchemes:
+    oAuth2:
+      $ref: '../../common_components.yaml#/components/securitySchemes/oAuth2'
+
+  schemas:
+    VoicemailBoxUpdateRequest:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - type
+            - attributes
+          properties:
+            type:
+              type: string
+              enum: ['voicemail-box']
+            attributes:
+              type: object
+              properties:
+                name:
+                  type: string
+                  nullable: true
+                pin:
+                  type: string
+                  nullable: true
+                notification_emails:
+                  type: string
+                  nullable: true
+                status:
+                  type: string
+                  enum: [active, inactive]
+                  nullable: true
+      description: Data for updating an existing Voicemail Box (excluding announcement file).
+      example:
+        data:
+          type: "voicemail-box"
+          attributes:
+            name: "Customer Service Voicemail"
+            status: "active"
+
+    # VoicemailBoxResponseData is referenced from ./index.yaml#/components/schemas/VoicemailBoxResponseData
+    # Common Link and Error schemas are referenced from ../../../components/ 

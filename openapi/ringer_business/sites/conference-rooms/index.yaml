@@ -1,0 +1,270 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Site Conference Rooms (Collection)
+  description: |
+    Endpoints for listing conference rooms associated with a specific site and creating new conference rooms for that site.
+    Conference rooms allow multiple users to participate in group audio calls.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1 # Should be relative or overridden
+    description: Production server
+
+tags:
+  - name: Site Features - Conference Rooms
+    description: Managing conference rooms (audio bridges) associated with a site.
+
+paths:
+  /sites/{siteId}/conference-rooms:
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId'
+    get:
+      tags:
+        - Site Features - Conference Rooms
+      summary: List Conference Rooms for a Site
+      description: Retrieves a list of all conference rooms configured for the specified site.
+      operationId: listSiteConferenceRooms # was list_conference-rooms
+      security:
+        - oAuth2: [read]
+      responses:
+        '200':
+          description: A list of conference rooms for the site.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConferenceRoomListResponse'
+              example:
+                conference_rooms:
+                  - id: 3
+                    site_id: 6
+                    name: "Weekly Sales Meeting"
+                    pin: "****" # Masked for listing
+                    moderator_pin: "****" # Masked for listing
+                    profile: "default"
+                    # greeting_url and music_on_hold_url would be present if set
+                    user_id: 1 # If applicable
+                    links:
+                      - href: "/sites/6/conference-rooms/3"
+                        rel: "self"
+                        method: "GET"
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/SiteNotFoundError'
+
+    post:
+      tags:
+        - Site Features - Conference Rooms
+      summary: Create a Conference Room for a Site
+      description: |
+        Adds a new conference room to the specified site.
+        Requires providing a name, participant PIN, and moderator PIN.
+        Greeting and music-on-hold audio files can also be uploaded during creation.
+      operationId: createSiteConferenceRoom # was create_conference-room
+      security:
+        - oAuth2: [write]
+      requestBody:
+        description: Configuration details for the new conference room.
+        required: true
+        content:
+          multipart/form-data: # As per original Teliax Swagger (due to file uploads)
+            schema:
+              $ref: '#/components/schemas/ConferenceRoomCreateRequest'
+            # Example for multipart/form-data is complex in YAML.
+            # Keys would be: name, pin, moderator_pin, profile (optional), greeting (file), music_on_hold (file)
+      responses:
+        '201':
+          description: Conference room created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConferenceRoomResponse'
+              example:
+                id: 4
+                site_id: 6
+                name: "Project Alpha Debrief"
+                pin: "9876" # Typically not returned or masked after creation
+                moderator_pin: "5432"
+                profile: "secure_chat"
+                greeting_url: "https://cdn.example.com/greetings/conf_4_greeting.mp3"
+                music_on_hold_url: "https://cdn.example.com/moh/conf_4_moh.mp3"
+                user_id: 1
+                links: 
+        '400':
+          $ref: '../../common_components.yaml#/components/responses/BadRequestError'
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/SiteNotFoundError'
+
+components:
+  schemas:
+    ConferenceRoomCore: # Common attributes for a conference room
+      type: object
+      properties:
+        name:
+          type: string
+          description: A user-friendly name for the conference room.
+          example: "Engineering Standup"
+        pin:
+          type: string
+          description: Numeric PIN required for participants to join the conference.
+          example: "12345"
+          nullable: true
+        moderator_pin:
+          type: string
+          description: Numeric PIN required for the moderator to join and control the conference.
+          example: "54321"
+          nullable: true
+        profile:
+          type: string
+          nullable: true
+          description: Conference profile or type (e.g., default, enhanced audio). Specific values depend on system configuration.
+          example: "default"
+        user_id: # From original Teliax schema
+          type: integer
+          format: int64
+          nullable: true
+          description: Identifier of the user primarily associated with this conference room, if any.
+          example: 10
+      required:
+        - name
+        - pin
+        - moderator_pin
+
+    ConferenceRoomCreateRequest:
+      allOf:
+        - $ref: '#/components/schemas/ConferenceRoomCore'
+        - type: object
+          properties:
+            greeting: # File upload
+              type: string
+              format: binary
+              nullable: true
+              description: Audio file for the greeting message played when participants join.
+            music_on_hold: # File upload
+              type: string
+              format: binary
+              nullable: true
+              description: Audio file for music played while participants are on hold waiting for the moderator.
+      description: Data required to create a new conference room, including optional audio file uploads.
+      required:
+        - name
+        - pin
+        - moderator_pin
+      example:
+        name: "Daily Huddle Room"
+        pin: "55555"
+        moderator_pin: "11111"
+        profile: "default"
+        # greeting and music_on_hold are binary, not easily shown in YAML object example for schema
+
+    ConferenceRoomResponse:
+      allOf:
+        - $ref: '#/components/schemas/ConferenceRoomCore'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+              description: Unique identifier for the conference room.
+              example: 3
+            site_id:
+              type: integer
+              format: int64
+              description: Identifier of the site this conference room belongs to.
+              example: 6
+              nullable: true
+            greeting_url:
+              type: string
+              format: uri
+              nullable: true
+              description: URL to the current greeting audio file.
+              example: "https://cdn.example.com/greetings/conf_3.mp3"
+            music_on_hold_url:
+              type: string
+              format: uri
+              nullable: true
+              description: URL to the current music on hold audio file.
+              example: "https://cdn.example.com/moh/conf_3.mp3"
+            links:
+              type: array
+              description: HATEOAS links related to this conference room.
+              items:
+                $ref: '../../common_components.yaml#/components/schemas/Link'
+              nullable: true
+          required:
+            - id
+            - site_id
+            # From ConferenceRoomCore
+            - name
+            - pin
+            - moderator_pin
+      description: Detailed information about a conference room.
+      example:
+        id: 3
+        site_id: 6
+        name: "Weekly Sales Meeting"
+        pin: "****" # PINs are sensitive, usually not returned or masked
+        moderator_pin: "****"
+        profile: "default"
+        greeting_url: "https://cdn.example.com/greetings/sales_meeting.mp3"
+        music_on_hold_url: null
+        user_id: 1
+        links:
+          - href: "/sites/6/conference-rooms/3"
+            rel: "self"
+            method: "GET"
+
+    ConferenceRoomListResponse:
+      type: object
+      description: A list of conference rooms for a site.
+      properties:
+        conference_rooms:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConferenceRoomResponse'
+      required:
+        - conference_rooms
+      example:
+        conference_rooms:
+          - id: 3
+            site_id: 6
+            name: "Weekly Sales Meeting"
+            profile: "default"
+            pin: "****" # ADDED to satisfy Core requirement
+            moderator_pin: "****" # ADDED to satisfy Core requirement
+            user_id: 1
+            links:
+              - href: "/sites/6/conference-rooms/3"
+                rel: "self"
+                method: "GET"
+
+  parameters:
+    SiteIdPath:
+      $ref: '../../common_components.yaml#/components/parameters/SiteId' # Standardized
+    ConferenceRoomIdPath: # ADDING ConferenceRoomId
+      name: conferenceRoomId
+      in: path
+      description: The unique identifier of the conference room.
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 3
+
+  # Security Schemes and common responses would be referenced from a higher level
+  securitySchemes:
+    oAuth2:
+      $ref: '../../common_components.yaml#/components/securitySchemes/oAuth2' 

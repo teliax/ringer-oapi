@@ -1,0 +1,170 @@
+openapi: 3.0.3
+info:
+  title: Ringer Business API - Site SIP Trunk Status
+  description: API endpoint for checking the registration status of SIP Trunks for a site.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server
+  # - url: https://api.staging.ringer.tel/v1
+  #   description: Staging server
+
+tags:
+  - name: Site Features - SIP Trunks
+    description: "Managing SIP Trunks for a site."
+
+paths:
+  /sites/{siteId}/sip-trunks/status:
+    parameters:
+      - $ref: '../../common_components.yaml#/components/parameters/SiteId'
+    get:
+      tags:
+        - Site Features - SIP Trunks
+      summary: List SIP Trunk Registration Statuses
+      operationId: getSiteSipTrunkStatuses
+      description: Retrieve the registration status for all SIP Trunks configured on the specified site.
+      security:
+        - oAuth2: [read]
+      responses:
+        '200':
+          description: Registration statuses for the SIP Trunks.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SipTrunkStatusListResponse'
+              example:
+                data:
+                  - id: "161"
+                    type: "sip-trunk-status"
+                    attributes:
+                      name: "Main Office SIP Trunk"
+                      login: "main_trunk_user"
+                      status: "registered"
+                      last_registered_at: "2023-10-27T10:20:30Z"
+                      registered_ip_address: "203.0.113.45"
+                  - id: "162"
+                    type: "sip-trunk-status"
+                    attributes:
+                      name: "Backup Trunk"
+                      login: "backup_user"
+                      status: "unregistered"
+                      last_registered_at: null
+                      registered_ip_address: null
+        '401':
+          $ref: '../../common_components.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '../../common_components.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: '../../common_components.yaml#/components/responses/SiteNotFoundError'
+
+components:
+  securitySchemes:
+    oAuth2:
+      $ref: '../../common_components.yaml#/components/securitySchemes/oAuth2'
+
+  schemas:
+    SipTrunkStatusAttributes:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the SIP Trunk.
+          example: "Primary Office Trunk"
+        login:
+          type: string
+          description: Login username of the SIP Trunk.
+          example: "office_trunk_user"
+        status:
+          type: string
+          enum: [registered, unregistered, trying, failed]
+          description: Current registration status of the SIP Trunk.
+          example: "registered"
+        last_registered_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Timestamp of the last successful registration.
+          example: "2023-10-27T10:20:30Z"
+        registered_ip_address:
+          type: string
+          format: ipv4
+          nullable: true
+          description: IP address from which the SIP Trunk is currently registered.
+          example: "203.0.113.45"
+      required:
+        - name
+        - login
+        - status
+      example:
+        name: "Main Branch Trunk"
+        login: "main_branch_user"
+        status: "registered"
+        last_registered_at: "2023-11-01T09:00:00Z"
+        registered_ip_address: "198.51.100.10"
+
+    SipTrunkStatusItem:
+      type: object
+      required:
+        - id
+        - type
+        - attributes
+      properties:
+        id:
+          type: string
+          format: int64
+          description: Unique identifier for the SIP Trunk.
+          example: "161"
+        type:
+          type: string
+          enum: [sip-trunk-status]
+          example: "sip-trunk-status"
+        attributes:
+          $ref: '#/components/schemas/SipTrunkStatusAttributes'
+      example:
+        id: "161"
+        type: "sip-trunk-status"
+        attributes:
+          name: "Main Office SIP Trunk"
+          login: "main_trunk_user"
+          status: "registered"
+          last_registered_at: "2023-10-27T10:20:30Z"
+          registered_ip_address: "203.0.113.45"
+
+    SipTrunkStatusListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/SipTrunkStatusItem'
+        # links: # Example from operation response does not include this
+      required:
+        - data
+      example:
+        data:
+          - id: "161"
+            type: "sip-trunk-status"
+            attributes:
+              name: "Main Office SIP Trunk"
+              login: "main_trunk_user"
+              status: "registered"
+              last_registered_at: "2023-10-27T10:20:30Z"
+              registered_ip_address: "203.0.113.45"
+          - id: "162"
+            type: "sip-trunk-status"
+            attributes:
+              name: "Backup Trunk"
+              login: "backup_user"
+              status: "unregistered"
+              last_registered_at: null
+              registered_ip_address: null
+
+    # Error schema is common 
