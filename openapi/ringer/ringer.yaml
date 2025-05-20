@@ -284,7 +284,7 @@ components:
 
 # Apply IP whitelist security globally
 security:
-  - ipWhitelist: 
+  - ipWhitelist: []
 
 tags:
   - name: CIC
@@ -635,14 +635,14 @@ paths:
               schema:
                 type: string
                 description: CIC code (4 digits, zero-padded)
-              example: "0123"
+                example: "0123"
         '400':
           description: Bad request
           content:
             text/plain:
               schema:
                 type: string
-              example: "Bad request"
+                example: "Bad request"
         '404':
           description: Unknown CRN
           content:
@@ -650,14 +650,13 @@ paths:
               schema:
                 type: string
                 example: Unknown
-              example: Unknown
         '500':
           description: Server error
           content:
             text/plain:
               schema:
                 type: string
-              example: "Server error"
+                example: "Server error"
   /telique/cicror/{crn}/{ani}/{lata}:
     get:
       summary: Get CIC information with ROR
@@ -786,14 +785,14 @@ paths:
               schema:
                 type: string
                 description: CIC code and ROR separated by semicolon
-              example: "0123;ROUTE1234"
+                example: "0123;ROUTE1234"
         '400':
           description: Bad request
           content:
             text/plain:
               schema:
                 type: string
-              example: "Bad request"
+                example: "Bad request"
         '404':
           description: Unknown CRN
           content:
@@ -801,14 +800,13 @@ paths:
               schema:
                 type: string
                 example: Unknown
-              example: Unknown
         '500':
           description: Server error
           content:
             text/plain:
               schema:
                 type: string
-              example: "Server error"
+                example: "Server error"
   /telique/ror/{crn}:
     get:
       summary: Get ROR information
@@ -896,14 +894,14 @@ paths:
               schema:
                 type: string
                 description: Responsible Organization
-              example: "ROUTE1234"
+                example: "ROUTE1234"
         '400':
           description: Bad request
           content:
             text/plain:
               schema:
                 type: string
-              example: "Bad request"
+                example: "Bad request"
         '404':
           description: Unknown CRN
           content:
@@ -911,14 +909,13 @@ paths:
               schema:
                 type: string
                 example: Unknown
-              example: Unknown
         '500':
           description: Server error
           content:
             text/plain:
               schema:
                 type: string
-              example: "Server error"
+                example: "Server error"
   /telique/dno/{num}:
     get:
       tags:
@@ -1010,18 +1007,19 @@ paths:
             application/xml:
               schema:
                 type: string
+                example: "<error><status>error</status><message>Invalid phone number format</message><error_code>INVALID_FORMAT</error_code></error>"
         '500':
           description: Internal server error
           content:
             application/xml:
               schema:
                 type: string
-              example: |
-                <error>
-                  <status>error</status>
-                  <message>Internal server error</message>
-                  <error_code>SERVER_ERROR</error_code>
-                </error>
+                example: |
+                  <error>
+                    <status>error</status>
+                    <message>Internal server error</message>
+                    <error_code>SERVER_ERROR</error_code>
+                  </error>
   /telique/dnc/{num}:
     get:
       tags:
@@ -1113,18 +1111,19 @@ paths:
             application/xml:
               schema:
                 type: string
+                example: "<error><status>error</status><message>Invalid phone number format</message><error_code>INVALID_FORMAT</error_code></error>"
         '500':
           description: Internal server error
           content:
             application/xml:
               schema:
                 type: string
-              example: |
-                <error>
-                  <status>error</status>
-                  <message>Internal server error</message>
-                  <error_code>SERVER_ERROR</error_code>
-                </error>
+                example: |
+                  <error>
+                    <status>error</status>
+                    <message>Internal server error</message>
+                    <error_code>SERVER_ERROR</error_code>
+                  </error>
   /telique/dncreport:
     get:
       tags:

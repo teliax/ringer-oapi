@@ -1,0 +1,48 @@
+openapi: 3.0.3
+info:
+  title: Ringer Mobile API
+  description: |
+    The Ringer Mobile API will provide access to mobile-specific functionalities and services.
+    This API is currently under development and does not yet have defined endpoints.
+  version: "0.1.0"
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+  contact:
+    name: Ringer API Support
+    url: https://docs.ringer.tel/support
+    email: support@ringer.tel
+servers:
+  - url: https://api.ringer.tel/v1
+    description: Production server (placeholder)
+  - url: https://api.staging.ringer.tel/v1
+    description: Staging server (placeholder)
+
+# Global security definition (placeholder - adjust as needed when APIs are defined)
+components:
+  securitySchemes:
+    oAuth2:
+      type: oauth2
+      description: |
+        OAuth 2.0 Authentication for securing Ringer Mobile API endpoints.
+        Specific flows (e.g., Authorization Code, Client Credentials) will be detailed as the API evolves.
+      flows:
+        authorizationCode: # Example flow, adjust as needed
+          authorizationUrl: https://auth.ringer.tel/oauth/authorize
+          tokenUrl: https://auth.ringer.tel/oauth/token
+          scopes:
+            profile: Access to user profile information
+            mobile_services: Access to mobile-specific services
+  schemas: {}
+  responses: {}
+  parameters: {}
+
+# Apply security globally (placeholder - adjust as needed)
+# security:
+#   - oAuth2: [profile, mobile_services]
+
+tags: 
+  - name: General
+    description: General mobile API operations (to be defined).
+
+paths: {} 
