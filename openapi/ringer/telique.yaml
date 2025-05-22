@@ -996,11 +996,9 @@ paths:
               examples:
                 default:
                   summary: Default DNO XML Response
-                  value: |
-                    <response>
-                      <phoneNumber>5551234567</phoneNumber>
-                      <recordExists>false</recordExists>
-                    </response>
+                  value:
+                    phoneNumber: "5551234567"
+                    recordExists: false
         '400':
           description: Bad request - Invalid phone number format
           content:
@@ -1100,11 +1098,9 @@ paths:
               examples:
                 default:
                   summary: Default DNC XML Response
-                  value: |
-                    <response>
-                      <phoneNumber>5551234567</phoneNumber>
-                      <recordExists>true</recordExists>
-                    </response>
+                  value:
+                    phoneNumber: "5551234567"
+                    recordExists: true
         '400':
           description: Bad request - Invalid phone number format
           content:
