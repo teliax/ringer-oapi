@@ -127,14 +127,14 @@ components:
     CICResponse:
       type: object
       example:
-        carrier: "0123"
+        carrier: "0518"
         data: {}
         ir: {}
       properties:
         carrier:
           type: string
           description: Carrier Identification Code
-          example: "0123"
+          example: "0518"
         data:
           type: object
           description: Additional data from the interpretation
@@ -146,30 +146,30 @@ components:
     RORResponse:
       type: object
       example:
-        ror: "ROUTE1234"
+        ror: "NEX99"
       properties:
         ror:
           type: string
           description: Responsible Organization
-          example: "ROUTE1234"
+          example: "NEX99"
       required:
         - ror
     CICRORResponse:
       type: object
       example:
-        carrier: "0123"
-        ror: "ROUTE1234"
+        carrier: "0518"
+        ror: "NEX99"
         data: {}
         ir: {}
       properties:
         carrier:
           type: string
           description: Carrier Identification Code
-          example: "0123"
+          example: "0518"
         ror:
           type: string
           description: Responsible Organization
-          example: "ROUTE1234"
+          example: "NEX99"
         data:
           type: object
           description: Additional data from the interpretation
@@ -295,19 +295,19 @@ tags:
     description: Operations for Do Not Originate database lookups
   - name: DNX
     description: Combined DNO and DNC lookup operations
-  - name: Lookup
-    description: Operations for looking up phone number information
-  - name: Portability
-    description: Operations for phone number portability information
+  - name: CNAM
+    description: Operations for looking up caller name information
+  - name: Local Routing Number (LRN)
+    description: Operations for local routing number information
   - name: ROR
-    description: Operations for Responsible Organization
+    description: Operations for identifying the toll-free Responsible Organization
   - name: STIR/SHAKEN
     description: Operations for call authentication validation
 paths:
   /telique/cnam/{phoneNumber}:
     get:
       tags:
-        - Lookup
+        - CNAM
       summary: CNAM Lookup
       description: |
         Retrieve Caller Name (CNAM) information for a phone number.
@@ -371,7 +371,7 @@ paths:
   /telique/cnam:
     post:
       tags:
-        - Lookup
+        - CNAM
       summary: CNAM Lookup (POST)
       description: |
         Alternative method to perform a CNAM lookup using a POST request with form data.
@@ -439,7 +439,7 @@ paths:
   /telique/lrn/{phoneNumber}:
     get:
       tags:
-        - Portability
+        - Local Routing Number (LRN)
       summary: Retrieve LRN for a phone number
       description: |
         Returns the Local Routing Number (LRN) and Service Provider ID (SPID) 
@@ -520,24 +520,24 @@ paths:
       parameters:
         - name: crn
           in: path
-          description: Customer Record Number (10-digit)
+          description: Complex Routing Number (10-digit toll-free number)
           required: true
           schema:
             type: integer
             format: int64
             minimum: 2000000000
             maximum: 9999999999
-            example: 2000000000
+            example: 8884835429
         - name: ani
           in: path
-          description: Automatic Number Identification (10-digit)
+          description: Valid Calling Party Number (10-digit)
           required: true
           schema:
             type: integer
             format: int64
             minimum: 2000000000
             maximum: 9999999999
-            example: 2000000001
+            example: 3037312000
         - name: lata
           in: path
           description: Local Access and Transport Area (3-digit)
@@ -546,7 +546,7 @@ paths:
             type: integer
             minimum: 0
             maximum: 999
-            example: 123
+            example: 656
       responses:
         '200':
           description: Successful response
@@ -555,7 +555,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/CICResponse'
               example:
-                carrier: "0123"
+                carrier: "0518"
                 data: {}
                 ir: {}
         '400':
@@ -600,14 +600,14 @@ paths:
       parameters:
         - name: crn
           in: path
-          description: Customer Record Number (10-digit)
+          description: Complex Routing Number (10-digit toll-free number)
           required: true
           schema:
             type: integer
             format: int64
             minimum: 2000000000
             maximum: 9999999999
-            example: 2000000000
+            example: 8884835429
         - name: ani
           in: path
           description: Automatic Number Identification (10-digit)
@@ -617,7 +617,7 @@ paths:
             format: int64
             minimum: 2000000000
             maximum: 9999999999
-            example: 2000000001
+            example: 3037312000
         - name: lata
           in: path
           description: Local Access and Transport Area (3-digit)
@@ -626,7 +626,7 @@ paths:
             type: integer
             minimum: 0
             maximum: 999
-            example: 123
+            example: 656
       responses:
         '200':
           description: Successful response
@@ -635,7 +635,7 @@ paths:
               schema:
                 type: string
                 description: CIC code (4 digits, zero-padded)
-                example: "0123"
+                example: "0518"
         '400':
           description: Bad request
           content:
@@ -669,24 +669,24 @@ paths:
       parameters:
         - name: crn
           in: path
-          description: Customer Record Number (10-digit)
+          description: Complex Routing Number (10-digit toll-free number)
           required: true
           schema:
             type: integer
             format: int64
             minimum: 2000000000
             maximum: 9999999999
-            example: 2000000000
+            example: 8884835429
         - name: ani
           in: path
-          description: Automatic Number Identification (10-digit)
+          description: Valid Calling Party Number (10-digit)
           required: true
           schema:
             type: integer
             format: int64
             minimum: 2000000000
             maximum: 9999999999
-            example: 2000000001
+            example: 3037312000
         - name: lata
           in: path
           description: Local Access and Transport Area (3-digit)
@@ -695,7 +695,7 @@ paths:
             type: integer
             minimum: 0
             maximum: 999
-            example: 123
+            example: 656
       responses:
         '200':
           description: Successful response
@@ -704,8 +704,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/CICRORResponse'
               example:
-                carrier: "0123"
-                ror: "ROUTE1234"
+                carrier: "0518"
+                ror: "NEX99"
                 data: {}
                 ir: {}
         '400':
@@ -750,24 +750,24 @@ paths:
       parameters:
         - name: crn
           in: path
-          description: Customer Record Number (10-digit)
+          description: Complex Routing Number (10-digit toll-free number)
           required: true
           schema:
             type: integer
             format: int64
             minimum: 2000000000
             maximum: 9999999999
-            example: 2000000000
+            example: 8884835429
         - name: ani
           in: path
-          description: Automatic Number Identification (10-digit)
+          description: Valid Calling Party Number (10-digit)
           required: true
           schema:
             type: integer
             format: int64
             minimum: 2000000000
             maximum: 9999999999
-            example: 2000000001
+            example: 3037312000
         - name: lata
           in: path
           description: Local Access and Transport Area (3-digit)
@@ -776,7 +776,7 @@ paths:
             type: integer
             minimum: 0
             maximum: 999
-            example: 123
+            example: 656
       responses:
         '200':
           description: Successful response
@@ -785,7 +785,7 @@ paths:
               schema:
                 type: string
                 description: CIC code and ROR separated by semicolon
-                example: "0123;ROUTE1234"
+                example: "0518;NEX99"
         '400':
           description: Bad request
           content:
@@ -819,14 +819,14 @@ paths:
       parameters:
         - name: crn
           in: path
-          description: Customer Record Number (10-digit)
+          description: Complex Routing Number (10-digit toll-free number)
           required: true
           schema:
             type: integer
             format: int64
             minimum: 2000000000
             maximum: 9999999999
-            example: 2000000000
+            example: 8884835429
       responses:
         '200':
           description: Successful response
@@ -835,7 +835,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/RORResponse'
               example:
-                ror: "ROUTE1234"
+                ror: "NEX99"
         '400':
           description: Bad request
           content:
@@ -878,14 +878,14 @@ paths:
       parameters:
         - name: crn
           in: path
-          description: Customer Record Number (10-digit)
+          description: Complex Routing Number (10-digit toll-free number)
           required: true
           schema:
             type: integer
             format: int64
             minimum: 2000000000
             maximum: 9999999999
-            example: 2000000000
+            example: 8884835429
       responses:
         '200':
           description: Successful response
@@ -894,7 +894,7 @@ paths:
               schema:
                 type: string
                 description: Responsible Organization
-                example: "ROUTE1234"
+                example: "NEX99"
         '400':
           description: Bad request
           content:
