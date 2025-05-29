@@ -196,23 +196,6 @@ components:
       required:
         - phoneNumber
         - recordExists
-    DnxResponse:
-      type: object
-      example:
-        dnc: true
-        dno: false
-      properties:
-        dnc:
-          type: boolean
-          description: Indicates whether the number exists in the DNC database
-          example: true
-        dno:
-          type: boolean
-          description: Indicates whether the number exists in the DNO database
-          example: false
-      required:
-        - dnc
-        - dno
     DncUpdateReport:
       type: array
       example:
@@ -293,8 +276,6 @@ tags:
     description: Operations for Do Not Call database lookups
   - name: DNO
     description: Operations for Do Not Originate database lookups
-  - name: DNX
-    description: Combined DNO and DNC lookup operations
   - name: CNAM
     description: Operations for looking up caller name information
   - name: Local Routing Number (LRN)
@@ -1144,63 +1125,6 @@ paths:
                 - npa: 800
                   oldCount: 2500
                   newCount: 2520
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-              example:
-                status: error
-                error: Internal server error
-                error_code: SERVER_ERROR
-  /telique/dnx:
-    get:
-      tags:
-        - DNX
-      summary: Combined DNO/DNC Lookup
-      description: |
-        Check if phone numbers are in both DNO and DNC databases with a single request.
-      operationId: getDnx
-      security:
-        - ipWhitelist: []
-      parameters:
-        - name: dno
-          in: query
-          description: 10-digit phone number to check against DNO database
-          required: true
-          schema:
-            type: string
-            pattern: '^[0-9]{10}$'
-            example: "5551234567"
-        - name: dnc
-          in: query
-          description: 10-digit phone number to check against DNC database
-          required: true
-          schema:
-            type: string
-            pattern: '^[0-9]{10}$'
-            example: "5551234567"
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DnxResponse'
-              example:
-                dnc: true
-                dno: false
-        '400':
-          description: Bad request - Invalid phone number format
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-              example:
-                status: error
-                error: Invalid phone number format
-                error_code: INVALID_FORMAT
         '500':
           description: Internal server error
           content:
