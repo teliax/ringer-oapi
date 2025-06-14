@@ -1,0 +1,129 @@
+name: Notify SDK Repository on Version Changes
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'openapi/**/*.yaml'
+      - 'openapi/**/*.yml'
+      - 'openapi/**/*.json'
+  
+  workflow_dispatch:
+
+jobs:
+  detect-version-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      version_changed: ${{ steps.version-check.outputs.changed }}
+      changed_specs: ${{ steps.version-check.outputs.specs }}
+    steps:
+      - name: Checkout current commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install js-yaml
+        run: npm install js-yaml
+
+      - name: Check for version changes
+        id: version-check
+        run: |
+          # Initialize variables
+          VERSION_CHANGED=false
+          CHANGED_SPECS=""
+          
+          # Function to extract version from YAML/JSON file
+          extract_version() {
+            local file=$1
+            if [[ $file == *.json ]]; then
+              jq -r '.info.version // "0.0.0"' "$file" 2>/dev/null || echo "0.0.0"
+            else
+              node -e "
+                const yaml = require('js-yaml');
+                const fs = require('fs');
+                try {
+                  const spec = yaml.load(fs.readFileSync('$file', 'utf8'));
+                  console.log(spec.info?.version || '0.0.0');
+                } catch (e) {
+                  console.log('0.0.0');
+                }
+              "
+            fi
+          }
+          
+          # Check each spec file
+          SPEC_FILES=(
+            "openapi/ringer/telique.yaml"
+            "openapi/ringer-business/ivy.yaml"
+            "openapi/ringer-mobile/ems.yaml"
+          )
+          
+          for spec_file in "${SPEC_FILES[@]}"; do
+            if [ -f "$spec_file" ]; then
+              echo "Checking $spec_file for version changes..."
+              
+              # Get current version
+              CURRENT_VERSION=$(extract_version "$spec_file")
+              echo "Current version: $CURRENT_VERSION"
+              
+              # Get previous version
+              git checkout HEAD^ -- "$spec_file" 2>/dev/null || true
+              if [ -f "$spec_file" ]; then
+                PREVIOUS_VERSION=$(extract_version "$spec_file")
+                echo "Previous version: $PREVIOUS_VERSION"
+                
+                # Restore current version
+                git checkout HEAD -- "$spec_file"
+                
+                # Compare versions
+                if [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ]; then
+                  echo "Version changed in $spec_file: $PREVIOUS_VERSION -> $CURRENT_VERSION"
+                  VERSION_CHANGED=true
+                  CHANGED_SPECS="$CHANGED_SPECS,$spec_file"
+                fi
+              else
+                echo "New file detected: $spec_file"
+                VERSION_CHANGED=true
+                CHANGED_SPECS="$CHANGED_SPECS,$spec_file"
+              fi
+            fi
+          done
+          
+          # Remove leading comma
+          CHANGED_SPECS=${CHANGED_SPECS#,}
+          
+          echo "changed=$VERSION_CHANGED" >> $GITHUB_OUTPUT
+          echo "specs=$CHANGED_SPECS" >> $GITHUB_OUTPUT
+          
+          if [ "$VERSION_CHANGED" = "true" ]; then
+            echo "✅ Version changes detected in: $CHANGED_SPECS"
+          else
+            echo "ℹ️ No version changes detected"
+          fi
+
+  notify-sdk-repo:
+    needs: detect-version-changes
+    if: needs.detect-version-changes.outputs.version_changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify ringer-redoc repository
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.RINGER_REDOC_TOKEN }}
+          repository: teliax/ringer-redoc
+          event-type: openapi-specs-updated
+          client-payload: |
+            {
+              "repository": "${{ github.repository }}",
+              "ref": "${{ github.ref }}",
+              "sha": "${{ github.sha }}",
+              "actor": "${{ github.actor }}",
+              "changed_files": "${{ needs.detect-version-changes.outputs.specs }}",
+              "version_change": true
+            } 
