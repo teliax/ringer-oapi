@@ -12,7 +12,7 @@ info:
     ## Authentication
     This API uses IP whitelist authentication. Your server's IP address must be registered with
     Ringer before making API calls. Contact support@ringer.tel to register your IP address.
-  version: 1.0.15
+  version: 1.0.16
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
