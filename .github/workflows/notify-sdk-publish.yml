@@ -112,6 +112,11 @@ jobs:
     if: needs.detect-version-changes.outputs.version_changed == 'true'
     runs-on: ubuntu-latest
     steps:
+      - name: Debug outputs
+        run: |
+          echo "Version changed: ${{ needs.detect-version-changes.outputs.version_changed }}"
+          echo "Changed specs: ${{ needs.detect-version-changes.outputs.changed_specs }}"
+          
       - name: Notify ringer-redoc repository
         uses: peter-evans/repository-dispatch@v3
         with:
@@ -124,6 +129,6 @@ jobs:
               "ref": "${{ github.ref }}",
               "sha": "${{ github.sha }}",
               "actor": "${{ github.actor }}",
-              "changed_files": "${{ needs.detect-version-changes.outputs.specs }}",
+              "changed_files": "${{ needs.detect-version-changes.outputs.changed_specs }}",
               "version_change": true
             } 
