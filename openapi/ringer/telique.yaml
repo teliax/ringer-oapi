@@ -12,7 +12,7 @@ info:
     ## Authentication
     This API uses IP whitelist authentication. Your server's IP address must be registered with
     Ringer before making API calls. Contact support@ringer.tel to register your IP address.
-  version: 1.0.17
+  version: 1.0.18
   license:
     name: MIT License
     url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
@@ -424,9 +424,14 @@ paths:
       summary: Retrieve LRN for a phone number
       description: |
         Returns the Local Routing Number (LRN) and Service Provider ID (SPID) 
-        for a specified 10-digit North American phone number. This information 
-        is used to correctly route calls to numbers that have been ported 
+        for a specified 10-digit North American phone number in plain text format.
+        This information is used to correctly route calls to numbers that have been ported 
         from one carrier to another.
+        
+        Response format: LRN;SPID (semicolon-separated)
+        If SPID is not available, only the LRN will be returned.
+        
+        Note: Content-Type is always text/plain - no JSON or XML support for LRN queries.
       operationId: getLrnInfo
       security:
         - ipWhitelist: []
@@ -443,52 +448,39 @@ paths:
         '200':
           description: Successful LRN lookup
           content:
-            application/json:
+            text/plain:
               schema:
-                $ref: '#/components/schemas/LrnResponse'
+                type: string
+                description: LRN and SPID separated by semicolon (LRN;SPID), or just LRN if SPID not available
+                example: "5552345678;AB12"
               examples:
                 ported:
-                  value:
-                    phoneNumber: '5551234567'
-                    lrn: '5552345678'
-                    spid: 'AB12'
-                    ported: true
+                  summary: Ported number with SPID
+                  value: "5552345678;AB12"
                 nonPorted:
-                  value:
-                    phoneNumber: '5551234567'
-                    lrn: '5551234567'
-                    spid: null
-                    ported: false
+                  summary: Non-ported number without SPID
+                  value: "5551234567"
         '400':
           description: Bad request
           content:
-            application/json:
+            text/plain:
               schema:
-                $ref: '#/components/schemas/Error'
-              example:
-                status: error
-                error: 'Invalid phone number format. Must be a 10-digit NANP number.'
-                error_code: 'INVALID_FORMAT'
+                type: string
+                example: "Invalid phone number format. Must be a 10-digit NANP number."
         '403':
           description: Forbidden
           content:
-            application/json:
+            text/plain:
               schema:
-                $ref: '#/components/schemas/Error'
-              example:
-                status: error
-                error: 'Forbidden. Your IP address is not authorized to access this resource.'
-                error_code: 'FORBIDDEN'
+                type: string
+                example: "Forbidden. Your IP address is not authorized to access this resource."
         '500':
           description: Internal server error
           content:
-            application/json:
+            text/plain:
               schema:
-                $ref: '#/components/schemas/Error'
-              example:
-                status: error
-                error: 'Internal server error'
-                error_code: 'SERVER_ERROR'
+                type: string
+                example: "Internal server error"
   /telique/cic/{crn}/{ani}/{lata}:
     get:
       summary: Get CIC information
