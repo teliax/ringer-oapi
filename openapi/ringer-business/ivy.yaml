@@ -54,6 +54,8 @@ tags:
     description: Access timezone information and settings.
   - name: Users
     description: Manage users and their permissions.
+  - name: Phone Number Search
+    description: Search for available domestic and international phone numbers.
 paths:
   /account:
     get:
@@ -7130,6 +7132,78 @@ paths:
           $ref: '#/components/responses/users_components-responses-ForbiddenError'
         '404':
           $ref: '#/components/responses/users_components-responses-NotFoundError'
+  /phone-numbers/search:
+    get:
+      tags:
+        - Phone Number Search
+      summary: Search Phone Numbers
+      description: |
+        Searches for available phone numbers based on the provided criteria.
+        This endpoint allows filtering by area code, country, and number type.
+      operationId: searchPhoneNumbers
+      security:
+        - oAuth2:
+            - read
+      parameters:
+        - in: query
+          name: search_category
+          type: string
+          required: true
+          description: >-
+            Type of number international or US domestic number. Values - international | domestic
+        - in: query
+          name: country
+          required: true
+          type: string
+          description: >-
+            The 3 digit country code. The alphanumeric country code for Australia is AUS. Required when you need a international number
+        - in: query
+          name: state_prov
+          type: string
+          description: >-
+            If you are looking for a US domestic number you can pass the 2 charcter state code for example city => IL.
+            Please note this paramter is required only when searching US domestic numbers. Required if search category `domestic`.
+        - in: query
+          name: city
+          type: string
+          description: >-
+            If you are looking for a US domestic number you can pass the city name for example city => Chicago
+        - in: query
+          name: area_code
+          type: string
+          description: >-
+            If you are looking for a US domestic number you can pass the area code of the number you are looking for example 312
+        - in: query
+          name: npanxx
+          type: string
+          description: >-
+            If you are looking for a US domestic number you can pass the npanxx of the number you are looking for example 312523. Also please keeo in mind the state_prov parameter is required for this search.
+        - in: query
+          name: zip
+          type: string
+          description: >-
+            If you are looking for a US domestic number you can pass the zip code you are looking for example 60601. Also please keep in mind the state_prov parameter is required for this search.
+        - in: query
+          name: q
+          type: string
+          description: >-
+            The country_code and city or area code
+          example: GBR%2CLondon
+      responses:
+        '200':
+          description: A list of available phone numbers matching the search criteria.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/DomesticNumbersAndLocations'
+                  - $ref: '#/components/schemas/InternationalNumberGroup'
+        '400':
+          $ref: '#/components/responses/phone-numbers_components-responses-BadRequestError'
+        '401':
+          $ref: '#/components/responses/phone-numbers_components-responses-UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/phone-numbers_components-responses-ForbiddenError'
 components:
   securitySchemes:
     oAuth2:
@@ -14034,6 +14108,50 @@ components:
       required:
         - name
         - number
+    phone-numbers_components-Error:
+      type: object
+      description: Standard error response format.
+      properties:
+        status:
+          type: string
+          example: error
+        error:
+          type: string
+          example: Phone Number search failed.
+        error_code:
+          type: string
+          example: PHONE_NUMBER_ERROR
+      required:
+        - status
+        - error
+        - error_code
+    DomesticNumbersAndLocations:
+      properties:
+        available_numbers:
+          type: array
+          items:
+            $ref: '#/components/schemas/DomesticNumberAndLocation'
+    #Number and Location
+    DomesticNumberAndLocation:
+      type: object
+      description: >-
+        A list of domestic phone numbers and their locations.
+      properties:
+        number:
+          type: string
+          example: 3125233844
+        location:
+          type: string
+          example: 'Chicago'
+    InternationalNumberGroup:
+      type: object
+      description: >-
+        International number group. The international numbers cannot be listed to the customers
+      properties:
+        did_group_id:
+          type: integer
+          format: int64
+          example: 8792
   parameters:
     Page:
       name: page
@@ -15263,3 +15381,33 @@ components:
             status: error
             error: User not found.
             error_code: RESOURCE_NOT_FOUND
+    phone-numbers_components-responses-BadRequestError:
+      description: Bad Request - The request was malformed or contained invalid data.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/phone-numbers_components-Error'
+          example:
+            status: error
+            error: Invalid parameters for phone number search.
+            error_code: PHONE_NUMBER_VALDATION_ERROR
+    phone-numbers_components-responses-UnauthorizedError:
+      description: Bad Request - The request was malformed or contained invalid data.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/phone-numbers_components-Error'
+          example:
+            status: error
+            error: Authentication Required
+            error_code: UNAUTHORIZED
+    phone-numbers_components-responses-ForbiddenError:
+      description: Bad Request - The request was malformed or contained invalid data.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/phone-numbers_components-Error'
+          example:
+            status: error
+            error: Phone Number search forbidden
+            error_code: FORBIDDEN
