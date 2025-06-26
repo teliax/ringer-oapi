@@ -338,7 +338,7 @@ paths:
           $ref: '#/components/responses/components-responses-ForbiddenError'
         '404':
           $ref: '#/components/responses/components-responses-NotFoundError'
-  /auth/token:
+  /oauth/token:
     post:
       tags:
         - Authentication
@@ -423,7 +423,7 @@ paths:
                 status: error
                 error: 'Client authentication failed: Invalid client_id or client_secret.'
                 error_code: INVALID_CLIENT_CREDENTIALS
-  /auth/revoke:
+  /oauth/revoke:
     post:
       tags:
         - Authentication
@@ -503,7 +503,7 @@ paths:
               example:
                 message: Account confirmed successfully. You can now log in.
                 links:
-                  - href: /auth/token
+                  - href: /oauth/token
                     rel: login
                     title: Login to Account
                     method: POST
@@ -7141,13 +7141,13 @@ components:
       description: |
         OAuth 2.0 Authentication
         This API uses OAuth 2.0 for authentication. To obtain an access token:
-        1. Make a POST request to the `/auth/token` endpoint with your client credentials
+        1. Make a POST request to the `/oauth/token` endpoint with your client credentials
         2. Include the access token in subsequent requests using the Authorization header:
            `Authorization: Bearer YOUR_ACCESS_TOKEN`
         Contact your account manager to obtain client credentials.
       flows:
         clientCredentials:
-          tokenUrl: https://api.ringer.tel/v1/auth/token
+          tokenUrl: https://api.ringer.tel/v1/oauth/token
           scopes:
             read: Read access to API resources
             write: Write access to API resources
@@ -8360,7 +8360,7 @@ components:
         - href
         - rel
       example:
-        href: /auth/token
+        href: /oauth/token
         rel: login
         title: Login
         method: POST
@@ -8383,7 +8383,7 @@ components:
       example:
         message: Account confirmed successfully. You may now log in.
         links:
-          - href: /auth/token
+          - href: /oauth/token
             rel: login
             title: Proceed to Login
             method: POST
