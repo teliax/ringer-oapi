@@ -3,7 +3,7 @@ info:
   title: Ringer Business API
   description: |
     This API provides comprehensive endpoints for the Ringer Business system.
-    It includes functionality for managing customer accounts, addresses, sites, 
+    It includes functionality for managing customer accounts, addresses, sites,
     phone numbers, payments, users, and other business resources.
 
     Operations typically require authentication and appropriate permissions.
@@ -16,9 +16,9 @@ info:
     url: https://docs.ringer.tel/support
     email: support@ringer.tel
 servers:
-  - url: https://api.ringer.tel/v1
+  - url: https://api.ringer.tel/v2
     description: Production server
-  - url: https://api.staging.ringer.tel/v1
+  - url: https://api.staging.ringer.tel/v2
     description: Staging server
 tags:
   - name: Accounts
@@ -521,7 +521,7 @@ paths:
         '404':
           description: |
             Not Found.
-            The account associated with the confirmation token could not be found. 
+            The account associated with the confirmation token could not be found.
             This might happen if the token is severely outdated or the account was deleted.
           content:
             application/json:
@@ -600,7 +600,7 @@ paths:
         '400':
           description: |
             Bad Request.
-            The registration data provided was invalid or incomplete. 
+            The registration data provided was invalid or incomplete.
             Check the response body for specific field errors.
           content:
             application/json:
@@ -2120,7 +2120,7 @@ paths:
         - Site Features - Conference Rooms
       summary: Transfer Conference Room to Another Site
       description: |
-        Moves a conference room from its current site (specified in the path) 
+        Moves a conference room from its current site (specified in the path)
         to a new target site (specified in the request body) within the same customer account.
       operationId: transferConferenceRoomToNewSite
       security:
@@ -4309,7 +4309,7 @@ paths:
         - Site Features - Menus
       summary: Transfer Menu to Another Site
       description: |
-        Moves a menu from its current site (specified in the path) 
+        Moves a menu from its current site (specified in the path)
         to a new target site (specified in the request body) within the same customer account.
       operationId: transferSiteMenu
       security:
@@ -4749,7 +4749,7 @@ paths:
         - Site Features - Phone Numbers
       summary: Transfer Phone Number to Another Site
       description: |
-        Moves an assigned phone number from its current site (specified in the path) 
+        Moves an assigned phone number from its current site (specified in the path)
         to a new target site (specified in the request body) within the same customer account.
       operationId: transferSitePhoneNumber
       security:
@@ -5085,7 +5085,7 @@ paths:
         - Site Features - Ring Groups
       summary: Transfer Ring Group to Another Site
       description: |
-        Moves a ring group from its current site (specified in the path) 
+        Moves a ring group from its current site (specified in the path)
         to a new target site (specified in the request body) within the same customer account.
       operationId: transferSiteRingGroup
       security:
@@ -5855,7 +5855,7 @@ paths:
         - Site Features - Seats
       summary: Transfer Seat to Another Site
       description: |
-        Moves a seat (and its provisioned features) from its current site 
+        Moves a seat (and its provisioned features) from its current site
         to a new target site within the same customer account.
       operationId: transferSiteSeat
       security:
