@@ -7,7 +7,7 @@ info:
     phone numbers, payments, users, and other business resources.
 
     Operations typically require authentication and appropriate permissions.
-  version: 1.0.5
+  version: 1.0.6
   contact:
     name: Ringer API Support
     url: https://docs.ringer.tel/support
