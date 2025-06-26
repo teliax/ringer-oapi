@@ -348,7 +348,6 @@ paths:
         The specific parameters required in the request body depend on the `grant_type` used.
 
         - For `password` grant: include `username`, `password`, `client_id`, and `client_secret`.
-        - For `client_credentials` grant: include `client_id` and `client_secret`.
         - For `refresh_token` grant: include `refresh_token`, `client_id`, and `client_secret`.
 
         Successful authentication returns an access token, its type, expiration time, and a refresh token (if applicable for the grant type).
