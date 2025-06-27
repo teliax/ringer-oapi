@@ -530,10 +530,101 @@ paths:
                 status: error
                 error: Account not found for the provided token.
                 error_code: ACCOUNT_NOT_FOUND
-  /password/reset:
-    $ref: ./password.yaml#/paths/~1password~1reset
-  /password/forgot:
-    $ref: ./password.yaml#/paths/~1password~1forgot
+  /password:
+    post:
+      tags:
+        - Password Management
+      summary: Request Password Reset
+      description: |
+        Allows a user to request a password reset by providing their registered email address.
+        If the email address is associated with an existing account, the system will typically send an email
+        to that address containing a password reset token and instructions.
+        This endpoint itself usually just confirms that the process has been initiated if the email is found.
+      operationId: requestPasswordReset
+      requestBody:
+        description: The user's email address to initiate the password reset process.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordRequest'
+      responses:
+        '201': # Or 202 Accepted if the email sending is asynchronous
+          description: |
+            Token required for resetting the passowrd.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForgotPasswordResponse'
+        '400':
+          description: Bad Request - The email address provided is invalid or missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                status: "error"
+                error: "Invalid email address format."
+                error_code: "INVALID_EMAIL_FORMAT"
+        '404': # From original Teliax Swagger
+          description: Not Found - The email address provided is not associated with any account.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                status: "error"
+                error: "No account found with that email address."
+                error_code: "EMAIL_NOT_FOUND"
+    put:
+      tags:
+        - Password Management
+      summary: Reset Password
+      description: |
+        Allows a user to set a new password for their account using a valid password reset token.
+        The token is typically obtained from a link sent to their email after initiating a password reset request.
+      operationId: resetPassword
+      requestBody:
+        description: The password reset token, new password, and password confirmation.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Password has been reset successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetPasswordResponse'
+        '400':
+          description: |
+            Bad Request.
+            This can be due to:
+            - Missing or invalid `reset_password_token`.
+            - New password and confirmation do not match.
+            - New password does not meet complexity requirements.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                status: "error"
+                error: "Password reset token is invalid or has expired. Or, passwords do not match / meet complexity requirements."
+                error_code: "INVALID_RESET_TOKEN_OR_PASSWORD"
+        '404': # From original Teliax Swagger
+          description: |
+            Not Found.
+            The account associated with the reset token could not be found (e.g., token is for a deleted account).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                status: "error"
+                error: "Account not found for the provided reset token."
+                error_code: "ACCOUNT_NOT_FOUND_FOR_TOKEN"
   /sign-up:
     post:
       tags:
@@ -14160,6 +14251,76 @@ components:
           type: integer
           format: int64
           example: 8792
+    ForgotPasswordRequest:
+      type: object
+      description: Request payload to initiate a password reset.
+      properties:
+        email:
+          type: string
+          format: email
+          description: The email address of the account for which the password reset is requested.
+          example: "user@example.com"
+      required:
+        - email
+      example:
+        email: "forgotful.user@example.com"
+    ForgotPasswordResponse:
+      type: object
+      description: Response after a password reset has been initiated.
+      properties:
+        reset_password_token:
+          type: string
+          nullable: true
+          description: The password reset token. This is often NOT returned directly for security reasons; instead, it is emailed to the user.
+          example: "U6z9TxNd7xQBJcDF"
+        links: # Optional HATEOAS links
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+          example:
+            - href: /oauth/token
+              rel: self
+              method: GET
+    ResetPasswordRequest: # Based on ResetPasswordParams
+      type: object
+      description: Request payload to set a new password using a reset token.
+      properties:
+        reset_password_token:
+          type: string
+          description: The password reset token received by the user (typically via email).
+          example: "U6z9TxNd7xQBJcDF"
+        password:
+          type: string
+          format: password
+          description: The new password for the account. Should meet complexity requirements.
+          example: "newS3curEP@ssw0rd!"
+        password_confirmation:
+          type: string
+          format: password
+          description: Confirmation of the new password. Must match the `password` field.
+          example: "newS3curEP@ssw0rd!"
+      required:
+        - reset_password_token
+        - password
+        - password_confirmation
+    ResetPasswordResponse:
+      type: object
+      description: Response after successfully resetting a password.
+      properties:
+        message:
+          type: string
+          description: A success message indicating the password has been updated.
+          example: "Password updated successfully."
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+          example:
+            - href: /oauth/token
+              rel: self
+              method: GET    
+      required:
+        - message
   parameters:
     Page:
       name: page
