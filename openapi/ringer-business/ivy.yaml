@@ -112,7 +112,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
     put:
       tags:
         - Accounts
@@ -182,7 +182,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/responses-NotFoundError'
     patch:
@@ -242,7 +242,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/responses-NotFoundError'
     delete:
@@ -266,7 +266,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/responses-NotFoundError'
   /addresses/{addressId}:
@@ -334,7 +334,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/components-responses-NotFoundError'
   /oauth/token:
@@ -790,7 +790,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/call-records_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
   /call-records/{callRecordId}:
     $ref: ./call-records.yaml#/paths/~1call-records~1{callRecordId}
   /country-codes:
@@ -829,7 +829,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/country-codes_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
   /credit-cards:
     get:
       tags:
@@ -891,7 +891,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/credit-cards_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
     post:
       tags:
         - Credit Cards
@@ -964,7 +964,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/credit-cards_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
   /credit-cards/{creditCardId}:
     $ref: ./credit-cards.yaml#/paths/~1credit-cards~1{creditCardId}
   /items:
@@ -1038,7 +1038,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/items_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/items_components-responses-NotFoundError'
   /packages:
@@ -1107,7 +1107,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/packages_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
   /packages/{packageId}:
     parameters:
       - $ref: '#/components/parameters/PackageIdPath'
@@ -1152,7 +1152,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/packages_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/packages_components-responses-NotFoundError'
   /payments:
@@ -1227,7 +1227,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/payments_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
     post:
       tags:
         - Payments
@@ -1302,7 +1302,7 @@ paths:
                 error: Payment declined by the bank. Please try a different payment method.
                 error_code: PAYMENT_DECLINED
         '403':
-          $ref: '#/components/responses/payments_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
   /payments/{paymentId}:
     $ref: ./payments.yaml#/paths/~1payments~1{paymentId}
   /phone-numbers:
@@ -1377,7 +1377,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/plans_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
   /plans/{planId}:
     parameters:
       - $ref: '#/components/parameters/PlanIdPath'
@@ -1416,7 +1416,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/plans_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/plans_components-responses-NotFoundError'
   /sites:
@@ -1460,7 +1460,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/sites_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
     post:
       tags:
         - Sites
@@ -1520,7 +1520,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/sites_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
   /sites/{siteId}:
     parameters:
       - $ref: '#/components/parameters/SiteIdPath'
@@ -1563,7 +1563,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/sites_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/responses-SiteNotFoundError'
     put:
@@ -1619,7 +1619,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/sites_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/responses-SiteNotFoundError'
     delete:
@@ -1640,7 +1640,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/sites_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/responses-SiteNotFoundError'
   /sites/{siteId}/call-blocks:
@@ -1809,7 +1809,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/call-block_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/call-block_components-responses-NotFoundError'
     put:
@@ -1857,7 +1857,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/call-block_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/call-block_components-responses-NotFoundError'
         '409':
@@ -1878,7 +1878,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/call-block_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/call-block_components-responses-NotFoundError'
   /sites/{siteId}/conference-rooms:
@@ -2287,7 +2287,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/index_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/components-responses-SiteNotFoundError'
     post:
@@ -2348,7 +2348,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/index_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/components-responses-SiteNotFoundError'
         '409':
@@ -2404,7 +2404,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/device_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/responses-DeviceNotFoundError'
     put:
@@ -2466,7 +2466,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/device_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/responses-DeviceNotFoundError'
         '409':
@@ -2495,7 +2495,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/device_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/responses-DeviceNotFoundError'
   /sites/{siteId}/devices/available:
@@ -2927,7 +2927,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/index_components-responses-ForbiddenError-2'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/index_components-responses-SiteNotFoundError'
     post:
@@ -2973,7 +2973,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/index_components-responses-ForbiddenError-2'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/index_components-responses-SiteNotFoundError'
         '409':
@@ -3010,7 +3010,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/extension_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/extension_components-responses-NotFoundError'
     put:
@@ -3055,7 +3055,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/extension_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/extension_components-responses-NotFoundError'
         '409':
@@ -3084,7 +3084,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/extension_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/extension_components-responses-NotFoundError'
   /sites/{siteId}/extensions/available:
@@ -3200,7 +3200,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/transfer_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/transfer_components-responses-NotFoundError'
   /sites/{siteId}/fax-machines:
@@ -5366,7 +5366,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/schedule_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/schedule_components-responses-NotFoundError'
     put:
@@ -5447,7 +5447,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/schedule_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/schedule_components-responses-NotFoundError'
     delete:
@@ -5466,7 +5466,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/schedule_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/schedule_components-responses-NotFoundError'
   /sites/{siteId}/schedules/available:
@@ -5539,7 +5539,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/available_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/available_components-responses-SiteNotFoundError'
   /sites/{siteId}/schedules/{scheduleId}/transfer:
@@ -5613,7 +5613,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/transfer_components-responses-ForbiddenError-2'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/transfer_components-responses-NotFoundError-2'
   /sites/{siteId}/seats:
@@ -6594,7 +6594,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/statements_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
   /statements/{statementId}:
     parameters:
       - name: statementId
@@ -6647,7 +6647,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/statements_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/statements_components-responses-NotFoundError'
   /templates:
@@ -6716,7 +6716,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/templates_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
     post:
       tags:
         - Templates
@@ -6764,7 +6764,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/templates_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
   /templates/{templateId}:
     parameters:
       - name: templateId
@@ -6794,7 +6794,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/templates_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/templates_components-responses-NotFoundError'
     put:
@@ -6834,7 +6834,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/templates_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/templates_components-responses-NotFoundError'
     delete:
@@ -6855,7 +6855,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/templates_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/templates_components-responses-NotFoundError'
   /thin-clients:
@@ -6896,7 +6896,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/thin-clients_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
   /thin-clients/{thinClientId}:
     $ref: ./thin-clients.yaml#/paths/~1thin-clients~1{thinClientId}
   /timezones:
@@ -6929,7 +6929,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/timezones_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
   /users:
     get:
       tags:
@@ -6991,7 +6991,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/users_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
     post:
       tags:
         - Users
@@ -7043,7 +7043,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/users_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '409':
           $ref: '#/components/responses/users_components-responses-ConflictError'
   /users/{userId}:
@@ -7069,7 +7069,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/users_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/users_components-responses-NotFoundError'
     put:
@@ -7108,7 +7108,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/users_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/users_components-responses-NotFoundError'
     delete:
@@ -7129,7 +7129,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/users_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/users_components-responses-NotFoundError'
   /phone-numbers/search:
@@ -7203,7 +7203,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/phone-numbers_components-responses-ForbiddenError'
+          $ref: '#/components/responses/ForbiddenError'
 components:
   securitySchemes:
     oAuth2:
@@ -14509,16 +14509,6 @@ components:
             status: error
             error: The requested voicemail box was not found.
             error_code: VOICEMAIL_BOX_NOT_FOUND
-    responses-ForbiddenError:
-      description: Forbidden - The authenticated user does not have permission.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/schemas-Error'
-          example:
-            status: error
-            error: Permission denied for this account operation.
-            error_code: FORBIDDEN
     responses-BadRequestError:
       description: Bad Request - Invalid data provided.
       content:
@@ -14549,16 +14539,6 @@ components:
             status: error
             error: Invalid input for address.
             error_code: VALIDATION_ERROR
-    components-responses-ForbiddenError:
-      description: Forbidden - The authenticated user does not have permission.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/components-schemas-Error'
-          example:
-            status: error
-            error: Permission denied.
-            error_code: FORBIDDEN
     components-responses-NotFoundError:
       description: Not Found - The requested address could not be found.
       content:
@@ -14569,46 +14549,6 @@ components:
             status: error
             error: Address not found.
             error_code: RESOURCE_NOT_FOUND
-    call-records_components-responses-ForbiddenError:
-      description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/call-records_components-schemas-Error'
-          example:
-            status: error
-            error: User does not have permission to access these call records.
-            error_code: FORBIDDEN_CDR_ACCESS
-    country-codes_components-responses-ForbiddenError:
-      description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/country-codes_components-schemas-Error'
-          example:
-            status: error
-            error: Permission denied for country codes.
-            error_code: FORBIDDEN_COUNTRY_CODES
-    credit-cards_components-responses-ForbiddenError:
-      description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/credit-cards_components-schemas-Error'
-          example:
-            status: error
-            error: You do not have permission to access this resource.
-            error_code: FORBIDDEN
-    items_components-responses-ForbiddenError:
-      description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/items_components-schemas-Error'
-          example:
-            status: error
-            error: You do not have permission to manage items.
-            error_code: FORBIDDEN
     items_components-responses-NotFoundError:
       description: Not Found - The requested item could not be found.
       content:
@@ -14629,16 +14569,6 @@ components:
             status: error
             error: Invalid pagination parameters for packages.
             error_code: PACKAGE_VALIDATION_ERROR
-    packages_components-responses-ForbiddenError:
-      description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/packages_components-schemas-Error'
-          example:
-            status: error
-            error: You do not have permission to access packages.
-            error_code: FORBIDDEN
     packages_components-responses-NotFoundError:
       description: Not Found - The requested package could not be found.
       content:
@@ -14649,26 +14579,6 @@ components:
             status: error
             error: The requested package was not found.
             error_code: RESOURCE_NOT_FOUND
-    payments_components-responses-ForbiddenError:
-      description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/payments_components-schemas-Error'
-          example:
-            status: error
-            error: You do not have permission to access this resource.
-            error_code: FORBIDDEN
-    plans_components-responses-ForbiddenError:
-      description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/plans_components-schemas-Error'
-          example:
-            status: error
-            error: You do not have permission to perform this action on plans.
-            error_code: FORBIDDEN
     plans_components-responses-NotFoundError:
       description: Not Found - The requested resource (e.g., specific plan) could not be found.
       content:
@@ -14679,16 +14589,6 @@ components:
             status: error
             error: The requested plan was not found.
             error_code: PLAN_NOT_FOUND
-    sites_components-responses-ForbiddenError:
-      description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/sites_components-schemas-Error'
-          example:
-            status: error
-            error: You do not have permission to manage this site.
-            error_code: FORBIDDEN
     sites_components-responses-BadRequestError:
       description: Bad Request - The request was malformed or contained invalid data.
       content:
@@ -14719,16 +14619,6 @@ components:
             status: error
             error: A conflict occurred with the current resource state.
             error_code: RESOURCE_CONFLICT
-    call-block_components-responses-ForbiddenError:
-      description: Forbidden - The authenticated user does not have permission.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/call-block_components-schemas-Error'
-          example:
-            status: error
-            error: Permission denied.
-            error_code: FORBIDDEN
     call-block_components-responses-NotFoundError:
       description: Not Found - The requested resource could not be found.
       content:
@@ -14759,16 +14649,6 @@ components:
             status: error
             error: Resource conflict.
             error_code: CONFLICT_ERROR
-    index_components-responses-ForbiddenError:
-      description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/index_components-schemas-Error'
-          example:
-            status: error
-            error: You do not have permission to perform this action.
-            error_code: FORBIDDEN
     components-responses-SiteNotFoundError:
       description: Not Found - The specified site could not be found.
       content:
@@ -14789,16 +14669,6 @@ components:
             status: error
             error: Invalid request parameters.
             error_code: INVALID_REQUEST
-    device_components-responses-ForbiddenError:
-      description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/device_components-schemas-Error'
-          example:
-            status: error
-            error: You do not have permission for this action.
-            error_code: FORBIDDEN
     responses-DeviceNotFoundError:
       description: Not Found - The requested device could not be found.
       content:
@@ -14819,16 +14689,6 @@ components:
             status: error
             error: Invalid request parameters for device.
             error_code: INVALID_REQUEST
-    index_components-responses-ForbiddenError-2:
-      description: Forbidden - The authenticated user does not have permission.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/index_components-schemas-Error-2'
-          example:
-            status: error
-            error: Permission denied for this extension operation.
-            error_code: FORBIDDEN_EXTENSION
     index_components-responses-SiteNotFoundError:
       description: Not Found - The specified site could not be found.
       content:
@@ -14859,16 +14719,6 @@ components:
             status: error
             error: Extension number already exists on this site.
             error_code: EXTENSION_NUMBER_CONFLICT
-    extension_components-responses-ForbiddenError:
-      description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/extension_components-schemas-Error'
-          example:
-            status: error
-            error: You do not have permission for this action.
-            error_code: FORBIDDEN
     extension_components-responses-NotFoundError:
       description: Not Found - The requested resource could not be found.
       content:
@@ -14899,16 +14749,6 @@ components:
             status: error
             error: Invalid new_site_id provided.
             error_code: VALIDATION_ERROR
-    transfer_components-responses-ForbiddenError:
-      description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/transfer_components-schemas-Error'
-          example:
-            status: error
-            error: Permission denied.
-            error_code: FORBIDDEN
     transfer_components-responses-NotFoundError:
       description: Not Found - The requested resource (e.g., extension, site) could not be found.
       content:
@@ -14949,16 +14789,6 @@ components:
             status: error
             error: The requested phone number was not found.
             error_code: PHONE_NUMBER_NOT_FOUND
-    schedule_components-responses-ForbiddenError:
-      description: Forbidden - The authenticated user does not have permission.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/schedule_components-schemas-Error'
-          example:
-            status: error
-            error: Permission denied.
-            error_code: FORBIDDEN
     schedule_components-responses-NotFoundError:
       description: Not Found - The requested resource could not be found.
       content:
@@ -14979,16 +14809,6 @@ components:
             status: error
             error: Invalid request parameters.
             error_code: VALIDATION_ERROR
-    available_components-responses-ForbiddenError:
-      description: Forbidden - The authenticated user does not have permission.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/available_components-schemas-Error'
-          example:
-            status: error
-            error: Permission denied.
-            error_code: FORBIDDEN
     available_components-responses-SiteNotFoundError:
       description: Not Found - The specified site could not be found.
       content:
@@ -15009,16 +14829,6 @@ components:
             status: error
             error: Invalid request parameters.
             error_code: VALIDATION_ERROR
-    transfer_components-responses-ForbiddenError-2:
-      description: Forbidden - The authenticated user does not have permission.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/transfer_components-schemas-Error-2'
-          example:
-            status: error
-            error: Permission denied.
-            error_code: FORBIDDEN
     transfer_components-responses-NotFoundError-2:
       description: Not Found - The requested resource (e.g., schedule, site) could not be found.
       content:
@@ -15039,16 +14849,6 @@ components:
             status: error
             error: The requested SIP trunk was not found.
             error_code: SIP_TRUNK_NOT_FOUND
-    statements_components-responses-ForbiddenError:
-      description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/statements_components-schemas-Error'
-          example:
-            status: error
-            error: You do not have permission to access this resource.
-            error_code: FORBIDDEN
     statements_components-responses-NotFoundError:
       description: Not Found - The requested resource (e.g., specific statement) could not be found.
       content:
@@ -15069,16 +14869,6 @@ components:
             status: error
             error: Invalid template data provided.
             error_code: VALIDATION_ERROR
-    templates_components-responses-ForbiddenError:
-      description: Forbidden - The authenticated user does not have permission.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/templates_components-schemas-Error'
-          example:
-            status: error
-            error: Permission denied.
-            error_code: FORBIDDEN
     templates_components-responses-NotFoundError:
       description: Not Found - The requested resource could not be found.
       content:
@@ -15089,32 +14879,6 @@ components:
             status: error
             error: Template not found.
             error_code: TEMPLATE_NOT_FOUND
-    thin-clients_components-responses-ForbiddenError:
-      description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/thin-clients_components-schemas-Error'
-          example:
-            status: error
-            error: Permission denied for thin clients.
-            error_code: FORBIDDEN_THIN_CLIENTS
-    timezones_components-responses-ForbiddenError:
-      description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/timezones_components-schemas-Error'
-    users_components-responses-ForbiddenError:
-      description: Forbidden - The authenticated user does not have permission for this user operation.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/users_components-schemas-Error'
-          example:
-            status: error
-            error: Permission denied to manage users.
-            error_code: FORBIDDEN
     users_components-responses-BadRequestError:
       description: Bad Request - Invalid data provided for the user operation.
       content:
@@ -15155,13 +14919,3 @@ components:
             status: error
             error: Invalid parameters for phone number search.
             error_code: PHONE_NUMBER_VALDATION_ERROR
-    phone-numbers_components-responses-ForbiddenError:
-      description: Bad Request - The request was malformed or contained invalid data.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/phone-numbers_components-Error'
-          example:
-            status: error
-            error: Phone Number search forbidden
-            error_code: FORBIDDEN
