@@ -110,7 +110,7 @@ paths:
                     rel: self
                     method: GET
         '401':
-          $ref: '#/components/responses/responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/responses-ForbiddenError'
     put:
@@ -180,7 +180,7 @@ paths:
         '400':
           $ref: '#/components/responses/responses-BadRequestError'
         '401':
-          $ref: '#/components/responses/responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/responses-ForbiddenError'
         '404':
@@ -240,7 +240,7 @@ paths:
         '400':
           $ref: '#/components/responses/responses-BadRequestError'
         '401':
-          $ref: '#/components/responses/responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/responses-ForbiddenError'
         '404':
@@ -264,7 +264,7 @@ paths:
         '400':
           $ref: '#/components/responses/responses-BadRequestError'
         '401':
-          $ref: '#/components/responses/responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/responses-ForbiddenError'
         '404':
@@ -332,7 +332,7 @@ paths:
         '400':
           $ref: '#/components/responses/components-responses-BadRequestError'
         '401':
-          $ref: '#/components/responses/components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/components-responses-ForbiddenError'
         '404':
@@ -788,7 +788,7 @@ paths:
               example:
                 error: Query date range cannot exceed 30 days.
         '401':
-          $ref: '#/components/responses/call-records_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/call-records_components-responses-ForbiddenError'
   /call-records/{callRecordId}:
@@ -827,7 +827,7 @@ paths:
                     code: '1'
                     region: 'Zone 1: North America'
         '401':
-          $ref: '#/components/responses/country-codes_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/country-codes_components-responses-ForbiddenError'
   /credit-cards:
@@ -889,7 +889,7 @@ paths:
                     rel: self
                     method: GET
         '401':
-          $ref: '#/components/responses/credit-cards_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/credit-cards_components-responses-ForbiddenError'
     post:
@@ -962,7 +962,7 @@ paths:
                 error: Invalid card number or expiry date provided.
                 error_code: INVALID_CARD_DETAILS
         '401':
-          $ref: '#/components/responses/credit-cards_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/credit-cards_components-responses-ForbiddenError'
   /credit-cards/{creditCardId}:
@@ -1036,7 +1036,7 @@ paths:
                 error: Invalid item_price format.
                 error_code: ITEM_VALIDATION_ERROR
         '401':
-          $ref: '#/components/responses/items_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/items_components-responses-ForbiddenError'
         '404':
@@ -1105,7 +1105,7 @@ paths:
         '400':
           $ref: '#/components/responses/packages_components-responses-BadRequestError'
         '401':
-          $ref: '#/components/responses/packages_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/packages_components-responses-ForbiddenError'
   /packages/{packageId}:
@@ -1150,7 +1150,7 @@ paths:
                     rel: relatedPlan
                     method: GET
         '401':
-          $ref: '#/components/responses/packages_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/packages_components-responses-ForbiddenError'
         '404':
@@ -1225,7 +1225,7 @@ paths:
                 error: Invalid page_size parameter. Must be between 1 and 100.
                 error_code: INVALID_PAGINATION_PARAMS
         '401':
-          $ref: '#/components/responses/payments_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/payments_components-responses-ForbiddenError'
     post:
@@ -1290,7 +1290,7 @@ paths:
                 error: 'Payment failed: No verified payment method found on account.'
                 error_code: PAYMENT_METHOD_REQUIRED
         '401':
-          $ref: '#/components/responses/payments_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '402':
           description: Payment Failed - The payment attempt was declined by the payment processor or failed for other reasons.
           content:
@@ -1375,7 +1375,7 @@ paths:
                     rel: self
                     method: GET
         '401':
-          $ref: '#/components/responses/plans_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/plans_components-responses-ForbiddenError'
   /plans/{planId}:
@@ -1414,7 +1414,7 @@ paths:
                     rel: self
                     method: GET
         '401':
-          $ref: '#/components/responses/plans_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/plans_components-responses-ForbiddenError'
         '404':
@@ -1458,7 +1458,7 @@ paths:
                         rel: self
                         method: GET
         '401':
-          $ref: '#/components/responses/sites_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/sites_components-responses-ForbiddenError'
     post:
@@ -1518,7 +1518,7 @@ paths:
         '400':
           $ref: '#/components/responses/sites_components-responses-BadRequestError'
         '401':
-          $ref: '#/components/responses/sites_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/sites_components-responses-ForbiddenError'
   /sites/{siteId}:
@@ -1561,7 +1561,7 @@ paths:
                     rel: self
                     method: GET
         '401':
-          $ref: '#/components/responses/sites_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/sites_components-responses-ForbiddenError'
         '404':
@@ -1617,7 +1617,7 @@ paths:
         '400':
           $ref: '#/components/responses/sites_components-responses-BadRequestError'
         '401':
-          $ref: '#/components/responses/sites_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/sites_components-responses-ForbiddenError'
         '404':
@@ -1638,7 +1638,7 @@ paths:
         '204':
           description: Site deleted successfully. No content is returned.
         '401':
-          $ref: '#/components/responses/sites_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/sites_components-responses-ForbiddenError'
         '404':
@@ -1807,7 +1807,7 @@ paths:
                   links:
                     self: /sites/6/call-blocks/101
         '401':
-          $ref: '#/components/responses/call-block_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/call-block_components-responses-ForbiddenError'
         '404':
@@ -1855,7 +1855,7 @@ paths:
         '400':
           $ref: '#/components/responses/call-block_components-responses-BadRequestError'
         '401':
-          $ref: '#/components/responses/call-block_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/call-block_components-responses-ForbiddenError'
         '404':
@@ -1876,7 +1876,7 @@ paths:
         '204':
           description: Call Block rule deleted successfully. No content returned.
         '401':
-          $ref: '#/components/responses/call-block_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/call-block_components-responses-ForbiddenError'
         '404':
@@ -2285,7 +2285,7 @@ paths:
                         rel: self
                         method: GET
         '401':
-          $ref: '#/components/responses/index_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/index_components-responses-ForbiddenError'
         '404':
@@ -2346,7 +2346,7 @@ paths:
         '400':
           $ref: '#/components/responses/index_components-responses-BadRequestError'
         '401':
-          $ref: '#/components/responses/index_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/index_components-responses-ForbiddenError'
         '404':
@@ -2402,7 +2402,7 @@ paths:
                     rel: self
                     method: GET
         '401':
-          $ref: '#/components/responses/device_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/device_components-responses-ForbiddenError'
         '404':
@@ -2464,7 +2464,7 @@ paths:
         '400':
           $ref: '#/components/responses/device_components-responses-BadRequestError'
         '401':
-          $ref: '#/components/responses/device_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/device_components-responses-ForbiddenError'
         '404':
@@ -2493,7 +2493,7 @@ paths:
         '204':
           description: Device deleted successfully. No content is returned.
         '401':
-          $ref: '#/components/responses/device_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/device_components-responses-ForbiddenError'
         '404':
@@ -2925,7 +2925,7 @@ paths:
                     rel: self
                     method: GET
         '401':
-          $ref: '#/components/responses/index_components-responses-UnauthorizedError-2'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/index_components-responses-ForbiddenError-2'
         '404':
@@ -2971,7 +2971,7 @@ paths:
         '400':
           $ref: '#/components/responses/index_components-responses-BadRequestError-2'
         '401':
-          $ref: '#/components/responses/index_components-responses-UnauthorizedError-2'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/index_components-responses-ForbiddenError-2'
         '404':
@@ -3008,7 +3008,7 @@ paths:
                 user_id: 5
                 links: null
         '401':
-          $ref: '#/components/responses/extension_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/extension_components-responses-ForbiddenError'
         '404':
@@ -3053,7 +3053,7 @@ paths:
         '400':
           $ref: '#/components/responses/extension_components-responses-BadRequestError'
         '401':
-          $ref: '#/components/responses/extension_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/extension_components-responses-ForbiddenError'
         '404':
@@ -3082,7 +3082,7 @@ paths:
         '204':
           description: Extension deleted successfully. No content is returned.
         '401':
-          $ref: '#/components/responses/extension_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/extension_components-responses-ForbiddenError'
         '404':
@@ -3198,7 +3198,7 @@ paths:
         '400':
           $ref: '#/components/responses/transfer_components-responses-BadRequestError'
         '401':
-          $ref: '#/components/responses/transfer_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/transfer_components-responses-ForbiddenError'
         '404':
@@ -5364,7 +5364,7 @@ paths:
                       rel: self
                       method: GET
         '401':
-          $ref: '#/components/responses/schedule_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/schedule_components-responses-ForbiddenError'
         '404':
@@ -5445,7 +5445,7 @@ paths:
         '400':
           $ref: '#/components/responses/schedule_components-responses-BadRequestError'
         '401':
-          $ref: '#/components/responses/schedule_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/schedule_components-responses-ForbiddenError'
         '404':
@@ -5464,7 +5464,7 @@ paths:
         '204':
           description: Schedule deleted successfully.
         '401':
-          $ref: '#/components/responses/schedule_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/schedule_components-responses-ForbiddenError'
         '404':
@@ -5537,7 +5537,7 @@ paths:
                     rel: last
                     method: GET
         '401':
-          $ref: '#/components/responses/available_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/available_components-responses-ForbiddenError'
         '404':
@@ -5611,7 +5611,7 @@ paths:
         '400':
           $ref: '#/components/responses/transfer_components-responses-BadRequestError-2'
         '401':
-          $ref: '#/components/responses/transfer_components-responses-UnauthorizedError-2'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/transfer_components-responses-ForbiddenError-2'
         '404':
@@ -6592,7 +6592,7 @@ paths:
                   - href: /statements?page=1&page_size=25
                     rel: self
         '401':
-          $ref: '#/components/responses/statements_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/statements_components-responses-ForbiddenError'
   /statements/{statementId}:
@@ -6645,7 +6645,7 @@ paths:
                     title: Download PDF
                     method: GET
         '401':
-          $ref: '#/components/responses/statements_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/statements_components-responses-ForbiddenError'
         '404':
@@ -6714,7 +6714,7 @@ paths:
         '400':
           $ref: '#/components/responses/templates_components-responses-BadRequestError'
         '401':
-          $ref: '#/components/responses/templates_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/templates_components-responses-ForbiddenError'
     post:
@@ -6762,7 +6762,7 @@ paths:
         '400':
           $ref: '#/components/responses/templates_components-responses-BadRequestError'
         '401':
-          $ref: '#/components/responses/templates_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/templates_components-responses-ForbiddenError'
   /templates/{templateId}:
@@ -6792,7 +6792,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TemplateResponse'
         '401':
-          $ref: '#/components/responses/templates_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/templates_components-responses-ForbiddenError'
         '404':
@@ -6832,7 +6832,7 @@ paths:
         '400':
           $ref: '#/components/responses/templates_components-responses-BadRequestError'
         '401':
-          $ref: '#/components/responses/templates_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/templates_components-responses-ForbiddenError'
         '404':
@@ -6853,7 +6853,7 @@ paths:
         '204':
           description: Template deleted successfully. No content is returned.
         '401':
-          $ref: '#/components/responses/templates_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/templates_components-responses-ForbiddenError'
         '404':
@@ -6894,7 +6894,7 @@ paths:
                     provider: Teliax Inc.
                     identification: 00-21-5e-96-fe-6c
         '401':
-          $ref: '#/components/responses/thin-clients_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/thin-clients_components-responses-ForbiddenError'
   /thin-clients/{thinClientId}:
@@ -6927,7 +6927,7 @@ paths:
                   - Europe/London
                   - Etc/UTC
         '401':
-          $ref: '#/components/responses/timezones_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/timezones_components-responses-ForbiddenError'
   /users:
@@ -6989,7 +6989,7 @@ paths:
                     rel: self
                     method: GET
         '401':
-          $ref: '#/components/responses/users_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/users_components-responses-ForbiddenError'
     post:
@@ -7041,7 +7041,7 @@ paths:
         '400':
           $ref: '#/components/responses/users_components-responses-BadRequestError'
         '401':
-          $ref: '#/components/responses/users_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/users_components-responses-ForbiddenError'
         '409':
@@ -7067,7 +7067,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserResponse'
         '401':
-          $ref: '#/components/responses/users_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/users_components-responses-ForbiddenError'
         '404':
@@ -7106,7 +7106,7 @@ paths:
         '400':
           $ref: '#/components/responses/users_components-responses-BadRequestError'
         '401':
-          $ref: '#/components/responses/users_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/users_components-responses-ForbiddenError'
         '404':
@@ -7127,7 +7127,7 @@ paths:
         '204':
           description: User deleted successfully. No content is returned.
         '401':
-          $ref: '#/components/responses/users_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/users_components-responses-ForbiddenError'
         '404':
@@ -7201,7 +7201,7 @@ paths:
         '400':
           $ref: '#/components/responses/phone-numbers_components-responses-BadRequestError'
         '401':
-          $ref: '#/components/responses/phone-numbers_components-responses-UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/phone-numbers_components-responses-ForbiddenError'
 components:
@@ -14509,16 +14509,6 @@ components:
             status: error
             error: The requested voicemail box was not found.
             error_code: VOICEMAIL_BOX_NOT_FOUND
-    responses-UnauthorizedError:
-      description: Unauthorized - Authentication token is missing or invalid.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/schemas-Error'
-          example:
-            status: error
-            error: Authentication required.
-            error_code: UNAUTHORIZED
     responses-ForbiddenError:
       description: Forbidden - The authenticated user does not have permission.
       content:
@@ -14559,16 +14549,6 @@ components:
             status: error
             error: Invalid input for address.
             error_code: VALIDATION_ERROR
-    components-responses-UnauthorizedError:
-      description: Unauthorized - Authentication token is missing or invalid.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/components-schemas-Error'
-          example:
-            status: error
-            error: Authentication required.
-            error_code: UNAUTHORIZED
     components-responses-ForbiddenError:
       description: Forbidden - The authenticated user does not have permission.
       content:
@@ -14589,16 +14569,6 @@ components:
             status: error
             error: Address not found.
             error_code: RESOURCE_NOT_FOUND
-    call-records_components-responses-UnauthorizedError:
-      description: Unauthorized - Authentication token is missing, invalid, or does not have permissions for this resource.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/call-records_components-schemas-Error'
-          example:
-            status: error
-            error: Authentication token is required for call records.
-            error_code: AUTH_TOKEN_MISSING_CDR
     call-records_components-responses-ForbiddenError:
       description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
       content:
@@ -14609,16 +14579,6 @@ components:
             status: error
             error: User does not have permission to access these call records.
             error_code: FORBIDDEN_CDR_ACCESS
-    country-codes_components-responses-UnauthorizedError:
-      description: Unauthorized - Authentication token is missing, invalid, or does not have permissions for this resource.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/country-codes_components-schemas-Error'
-          example:
-            status: error
-            error: Authentication required for country codes.
-            error_code: UNAUTHORIZED_COUNTRY_CODES
     country-codes_components-responses-ForbiddenError:
       description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
       content:
@@ -14629,16 +14589,6 @@ components:
             status: error
             error: Permission denied for country codes.
             error_code: FORBIDDEN_COUNTRY_CODES
-    credit-cards_components-responses-UnauthorizedError:
-      description: Unauthorized - Authentication token is missing, invalid, or does not have permissions for this resource.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/credit-cards_components-schemas-Error'
-          example:
-            status: error
-            error: Authentication required.
-            error_code: UNAUTHORIZED
     credit-cards_components-responses-ForbiddenError:
       description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
       content:
@@ -14649,16 +14599,6 @@ components:
             status: error
             error: You do not have permission to access this resource.
             error_code: FORBIDDEN
-    items_components-responses-UnauthorizedError:
-      description: Unauthorized - Authentication token is missing, invalid, or does not have permissions for this resource.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/items_components-schemas-Error'
-          example:
-            status: error
-            error: Authentication required.
-            error_code: UNAUTHORIZED
     items_components-responses-ForbiddenError:
       description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
       content:
@@ -14689,16 +14629,6 @@ components:
             status: error
             error: Invalid pagination parameters for packages.
             error_code: PACKAGE_VALIDATION_ERROR
-    packages_components-responses-UnauthorizedError:
-      description: Unauthorized - Authentication token is missing, invalid, or does not have permissions for this resource.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/packages_components-schemas-Error'
-          example:
-            status: error
-            error: Authentication required.
-            error_code: UNAUTHORIZED
     packages_components-responses-ForbiddenError:
       description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
       content:
@@ -14719,16 +14649,6 @@ components:
             status: error
             error: The requested package was not found.
             error_code: RESOURCE_NOT_FOUND
-    payments_components-responses-UnauthorizedError:
-      description: Unauthorized - Authentication token is missing, invalid, or does not have permissions for this resource.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/payments_components-schemas-Error'
-          example:
-            status: error
-            error: Authentication required.
-            error_code: UNAUTHORIZED
     payments_components-responses-ForbiddenError:
       description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
       content:
@@ -14739,16 +14659,6 @@ components:
             status: error
             error: You do not have permission to access this resource.
             error_code: FORBIDDEN
-    plans_components-responses-UnauthorizedError:
-      description: Unauthorized - Authentication token is missing, invalid, or does not have permissions for this resource.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/plans_components-schemas-Error'
-          example:
-            status: error
-            error: Authentication required.
-            error_code: UNAUTHORIZED
     plans_components-responses-ForbiddenError:
       description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
       content:
@@ -14769,16 +14679,6 @@ components:
             status: error
             error: The requested plan was not found.
             error_code: PLAN_NOT_FOUND
-    sites_components-responses-UnauthorizedError:
-      description: Unauthorized - Authentication token is missing, invalid, or does not have permissions for this resource.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/sites_components-schemas-Error'
-          example:
-            status: error
-            error: Authentication required.
-            error_code: UNAUTHORIZED
     sites_components-responses-ForbiddenError:
       description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
       content:
@@ -14819,16 +14719,6 @@ components:
             status: error
             error: A conflict occurred with the current resource state.
             error_code: RESOURCE_CONFLICT
-    call-block_components-responses-UnauthorizedError:
-      description: Unauthorized - Authentication token is missing or invalid.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/call-block_components-schemas-Error'
-          example:
-            status: error
-            error: Authentication required.
-            error_code: UNAUTHORIZED
     call-block_components-responses-ForbiddenError:
       description: Forbidden - The authenticated user does not have permission.
       content:
@@ -14869,16 +14759,6 @@ components:
             status: error
             error: Resource conflict.
             error_code: CONFLICT_ERROR
-    index_components-responses-UnauthorizedError:
-      description: Unauthorized - Authentication token is missing, invalid, or does not have permissions for this resource.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/index_components-schemas-Error'
-          example:
-            status: error
-            error: Authentication token is missing or invalid.
-            error_code: UNAUTHORIZED
     index_components-responses-ForbiddenError:
       description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
       content:
@@ -14909,16 +14789,6 @@ components:
             status: error
             error: Invalid request parameters.
             error_code: INVALID_REQUEST
-    device_components-responses-UnauthorizedError:
-      description: Unauthorized - Authentication token is missing, invalid, or does not have permissions for this resource.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/device_components-schemas-Error'
-          example:
-            status: error
-            error: Authentication token is missing or invalid.
-            error_code: UNAUTHORIZED
     device_components-responses-ForbiddenError:
       description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
       content:
@@ -14949,16 +14819,6 @@ components:
             status: error
             error: Invalid request parameters for device.
             error_code: INVALID_REQUEST
-    index_components-responses-UnauthorizedError-2:
-      description: Unauthorized - Authentication token is missing or invalid.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/index_components-schemas-Error-2'
-          example:
-            status: error
-            error: Authentication required for extension operations.
-            error_code: UNAUTHORIZED_EXTENSION
     index_components-responses-ForbiddenError-2:
       description: Forbidden - The authenticated user does not have permission.
       content:
@@ -14999,16 +14859,6 @@ components:
             status: error
             error: Extension number already exists on this site.
             error_code: EXTENSION_NUMBER_CONFLICT
-    extension_components-responses-UnauthorizedError:
-      description: Unauthorized - Authentication token is missing, invalid, or does not have permissions for this resource.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/extension_components-schemas-Error'
-          example:
-            status: error
-            error: Authentication token is missing or invalid.
-            error_code: UNAUTHORIZED
     extension_components-responses-ForbiddenError:
       description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
       content:
@@ -15049,16 +14899,6 @@ components:
             status: error
             error: Invalid new_site_id provided.
             error_code: VALIDATION_ERROR
-    transfer_components-responses-UnauthorizedError:
-      description: Unauthorized - Authentication token is missing, invalid, or does not have permissions for this resource.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/transfer_components-schemas-Error'
-          example:
-            status: error
-            error: Authentication required.
-            error_code: UNAUTHORIZED
     transfer_components-responses-ForbiddenError:
       description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
       content:
@@ -15109,16 +14949,6 @@ components:
             status: error
             error: The requested phone number was not found.
             error_code: PHONE_NUMBER_NOT_FOUND
-    schedule_components-responses-UnauthorizedError:
-      description: Unauthorized - Authentication token is missing or invalid.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/schedule_components-schemas-Error'
-          example:
-            status: error
-            error: Authentication required.
-            error_code: UNAUTHORIZED
     schedule_components-responses-ForbiddenError:
       description: Forbidden - The authenticated user does not have permission.
       content:
@@ -15149,16 +14979,6 @@ components:
             status: error
             error: Invalid request parameters.
             error_code: VALIDATION_ERROR
-    available_components-responses-UnauthorizedError:
-      description: Unauthorized - Authentication token is missing or invalid.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/available_components-schemas-Error'
-          example:
-            status: error
-            error: Authentication required.
-            error_code: UNAUTHORIZED
     available_components-responses-ForbiddenError:
       description: Forbidden - The authenticated user does not have permission.
       content:
@@ -15189,16 +15009,6 @@ components:
             status: error
             error: Invalid request parameters.
             error_code: VALIDATION_ERROR
-    transfer_components-responses-UnauthorizedError-2:
-      description: Unauthorized - Authentication token is missing or invalid.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/transfer_components-schemas-Error-2'
-          example:
-            status: error
-            error: Authentication required.
-            error_code: UNAUTHORIZED
     transfer_components-responses-ForbiddenError-2:
       description: Forbidden - The authenticated user does not have permission.
       content:
@@ -15229,16 +15039,6 @@ components:
             status: error
             error: The requested SIP trunk was not found.
             error_code: SIP_TRUNK_NOT_FOUND
-    statements_components-responses-UnauthorizedError:
-      description: Unauthorized - Authentication token is missing, invalid, or does not have permissions for this resource.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/statements_components-schemas-Error'
-          example:
-            status: error
-            error: Authentication required.
-            error_code: UNAUTHORIZED
     statements_components-responses-ForbiddenError:
       description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
       content:
@@ -15269,16 +15069,6 @@ components:
             status: error
             error: Invalid template data provided.
             error_code: VALIDATION_ERROR
-    templates_components-responses-UnauthorizedError:
-      description: Unauthorized - Authentication token is missing or invalid.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/templates_components-schemas-Error'
-          example:
-            status: error
-            error: Authentication required.
-            error_code: UNAUTHORIZED
     templates_components-responses-ForbiddenError:
       description: Forbidden - The authenticated user does not have permission.
       content:
@@ -15299,16 +15089,6 @@ components:
             status: error
             error: Template not found.
             error_code: TEMPLATE_NOT_FOUND
-    thin-clients_components-responses-UnauthorizedError:
-      description: Unauthorized - Authentication token is missing, invalid, or does not have permissions for this resource.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/thin-clients_components-schemas-Error'
-          example:
-            status: error
-            error: Authentication required for thin clients.
-            error_code: UNAUTHORIZED_THIN_CLIENTS
     thin-clients_components-responses-ForbiddenError:
       description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
       content:
@@ -15319,28 +15099,12 @@ components:
             status: error
             error: Permission denied for thin clients.
             error_code: FORBIDDEN_THIN_CLIENTS
-    timezones_components-responses-UnauthorizedError:
-      description: Unauthorized - Authentication token is missing, invalid, or does not have permissions for this resource.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/timezones_components-schemas-Error'
     timezones_components-responses-ForbiddenError:
       description: Forbidden - The authenticated user does not have the necessary permissions to perform this action.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/timezones_components-schemas-Error'
-    users_components-responses-UnauthorizedError:
-      description: Unauthorized - Authentication token is missing or invalid.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/users_components-schemas-Error'
-          example:
-            status: error
-            error: Authentication required.
-            error_code: UNAUTHORIZED
     users_components-responses-ForbiddenError:
       description: Forbidden - The authenticated user does not have permission for this user operation.
       content:
@@ -15391,16 +15155,6 @@ components:
             status: error
             error: Invalid parameters for phone number search.
             error_code: PHONE_NUMBER_VALDATION_ERROR
-    phone-numbers_components-responses-UnauthorizedError:
-      description: Bad Request - The request was malformed or contained invalid data.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/phone-numbers_components-Error'
-          example:
-            status: error
-            error: Authentication Required
-            error_code: UNAUTHORIZED
     phone-numbers_components-responses-ForbiddenError:
       description: Bad Request - The request was malformed or contained invalid data.
       content:
