@@ -286,11 +286,11 @@ paths:
         - name: addressId
           in: path
           description: The unique identifier of the address record to be updated.
-          required: true
           schema:
             type: integer
             format: int64
             example: 671
+          required: true
       requestBody:
         description: Address attributes to update. All fields in the request are typically required for a PUT, or optional for a PATCH.
         required: true
@@ -7147,45 +7147,53 @@ paths:
       parameters:
         - in: query
           name: search_category
-          type: string
+          schema:
+            type: string
           required: true
           description: >-
             Type of number international or US domestic number. Values - international | domestic
         - in: query
           name: country
           required: true
-          type: string
+          schema:
+            type: string
           description: >-
             The 3 digit country code. The alphanumeric country code for Australia is AUS. Required when you need a international number
         - in: query
           name: state_prov
-          type: string
+          schema:
+            type: string
           description: >-
             If you are looking for a US domestic number you can pass the 2 charcter state code for example city => IL.
             Please note this paramter is required only when searching US domestic numbers. Required if search category `domestic`.
         - in: query
           name: city
-          type: string
+          schema:
+            type: string
           description: >-
             If you are looking for a US domestic number you can pass the city name for example city => Chicago
         - in: query
           name: area_code
-          type: string
+          schema:
+            type: string
           description: >-
             If you are looking for a US domestic number you can pass the area code of the number you are looking for example 312
         - in: query
           name: npanxx
-          type: string
+          schema:
+            type: string
           description: >-
             If you are looking for a US domestic number you can pass the npanxx of the number you are looking for example 312523. Also please keeo in mind the state_prov parameter is required for this search.
         - in: query
           name: zip
-          type: string
+          schema:
+            type: string
           description: >-
             If you are looking for a US domestic number you can pass the zip code you are looking for example 60601. Also please keep in mind the state_prov parameter is required for this search.
         - in: query
           name: q
-          type: string
+          schema:
+            type: string
           description: >-
             The country_code and city or area code
           example: GBR%2CLondon
