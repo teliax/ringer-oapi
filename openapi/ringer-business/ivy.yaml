@@ -710,10 +710,6 @@ paths:
                 status: error
                 error: An account with this email address already exists.
                 error_code: ACCOUNT_ALREADY_EXISTS
-  /call-blocks:
-    $ref: ./call-blocks.yaml#/paths/~1call-blocks
-  /call-blocks/{callBlockId}:
-    $ref: ./call-blocks.yaml#/paths/~1call-blocks~1{callBlockId}
   /call-records:
     get:
       tags:
@@ -931,30 +927,13 @@ paths:
       security:
         - oAuth2:
             - read
-      parameters:
-        - name: page
-          in: query
-          description: Page number for pagination.
-          required: false
-          schema:
-            type: integer
-            default: 1
-            example: 1
-        - name: page_size
-          in: query
-          description: Number of credit cards per page.
-          required: false
-          schema:
-            type: integer
-            default: 25
-            example: 10
       responses:
         '200':
-          description: A paginated list of credit cards.
+          description: A list of credit cards.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedCreditCardListResponse'
+                $ref: '#/components/schemas/CreditCardListResponse'
               example:
                 credit_cards:
                   - id: 101
@@ -971,10 +950,6 @@ paths:
                       - href: /credit-cards/101
                         rel: self
                         method: GET
-                total_items: 1
-                total_pages: 1
-                current_page: 1
-                per_page: 25
                 links:
                   - href: /credit-cards?page=1&page_size=25
                     rel: self
@@ -1056,8 +1031,166 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
-  /credit-cards/{creditCardId}:
-    $ref: ./credit-cards.yaml#/paths/~1credit-cards~1{creditCardId}
+  /credit-cards/{id}:
+    get:
+      tags:
+        - Credit Cards
+      summary: Credit Card Details
+      operationId: creditCardDetails
+      security:
+        - oAuth2:
+            - read
+      description: >-
+        Retrieve information about a Credit Card.
+        The information returned is:
+        1. name
+        2. priority
+        3. active
+        4. expired
+        5. verified
+      parameters:
+        - name: id
+          in: path
+          description: ID of the credit card
+          schema:
+            type: integer
+            format: int64
+            example: 543
+          required: true
+      responses:
+        '200':
+          description: Credit Card Detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditCardResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    put:
+      tags:
+        - Credit Cards
+      summary: Update Credit Card
+      operationId: updateCreditCard
+      description: Update Credit Card
+      parameters:
+        - name: id
+          in: path
+          description: ID of the credit card
+          schema:
+            type: integer
+            format: int64
+            example: 543
+          required: true
+      requestBody:
+        description: Details of the new credit card to be added.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditCardUpdateRequest'
+      responses:
+        '200':
+          description: Credit Card Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditCardResponse'
+        '400':
+          description: Bad Request - Invalid credit card details provided or validation failed (e.g., Luhn check, expiry date).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/credit-cards_components-schemas-Error'
+              example:
+                status: error
+                error: Invalid card number or expiry date provided.
+                error_code: INVALID_CARD_DETAILS
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+    delete:
+      tags:
+        - Credit Cards
+      summary: Delete Credit Card
+      operationId: deleteCreditCard
+      description: Delete Credit Card
+      parameters:
+        - name: id
+          in: path
+          description: ID of the credit card
+          schema:
+            type: integer
+            format: int64
+            example: 543
+          required: true
+      responses:
+        '204':
+          description: Credit Card Deleted. No Content
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  /credit-cards/{id}/verify:
+    patch:
+      tags:
+        - Credit Cards
+      summary: Verify Credit Card
+      operationId: verifyCreditCard
+      description: >-
+        When a credit card is added to your account, a small amount will be charged to the card.
+        To verify that you are the owner of the credit card. The amount should match the amount charged.
+      parameters:
+        - name: id
+          in: path
+          description: ID of the credit card
+          schema:
+            example: 221
+            type: integer
+            format: int64
+          required: true
+      requestBody:
+        description: Request body for credit card 
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                amount_in_dollars:
+                  description: >-
+                    When a credit card is added to your account, a small amount will be charged to the card. Enter that amount here to verify that you are the owner of the credit card.
+                  type: integer
+      responses:
+        '200':
+          description: Credit Card Verified
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditCardResponse'
+        '400':
+          description: Bad Request - Invalid credit card details provided or validation failed (e.g., Luhn check, expiry date).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/credit-cards_components-schemas-Error'
+              example:
+                status: error
+                error: Invalid card number or expiry date provided.
+                error_code: INVALID_CARD_DETAILS
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
   /items:
     $ref: ./items.yaml#/paths/~1items
   /items/{itemId}:
@@ -9124,7 +9257,7 @@ components:
         - active
         - verified
         - expired
-    PaginatedCreditCardListResponse:
+    CreditCardListResponse:
       type: object
       description: A paginated list of credit cards associated with an account.
       properties:
@@ -9132,23 +9265,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CreditCardResponse'
-        total_items:
-          type: integer
-          description: Total number of credit cards.
-        total_pages:
-          type: integer
-          description: Total number of pages.
-        current_page:
-          type: integer
-          description: Current page number.
-        per_page:
-          type: integer
-          description: Number of items per page.
-        links:
-          type: array
-          items:
-            $ref: '#/components/schemas/schemas-Link'
-          nullable: true
       required:
         - credit_cards
       example:
@@ -9202,99 +9318,125 @@ components:
       properties:
         name:
           type: string
-          description: A custom name for the credit card.
-          example: Backup Mastercard
-        card_number:
-          type: string
-          description: The full credit card number (PAN). This will be tokenized and not stored directly by Ringer.
-          example: '5555444433332222'
-        exp_month:
-          type: integer
-          description: Expiration month (1-12).
-          example: 8
-          minimum: 1
-          maximum: 12
-        exp_year:
-          type: integer
-          description: Expiration year (e.g., 2026). Future year expected.
-          example: 2026
-        cvv:
-          type: string
-          description: The 3 or 4-digit card verification value (CVV/CVC).
-          example: '123'
-        first_name:
-          type: string
-          description: Cardholder's first name.
-          example: Jane
-        last_name:
-          type: string
-          description: Cardholder's last name.
-          example: Doe
-        address_line1:
-          type: string
-          description: Cardholder's billing address - street line 1.
-          example: 123 Payment Lane
-        address_line2:
-          type: string
-          nullable: true
-          description: Cardholder's billing address - street line 2 (e.g., apartment, suite).
-          example: Suite B
-        city:
-          type: string
-          description: Cardholder's billing address - city.
-          example: Secure City
-        state_province:
-          type: string
-          nullable: true
-          description: Cardholder's billing address - state or province code.
-          example: CA
-        postal_code:
-          type: string
-          description: Cardholder's billing address - postal or ZIP code.
-          example: '90210'
-        country:
-          type: string
-          description: Cardholder's billing address - two-letter ISO 3166-1 alpha-2 country code.
-          example: US
-        priority:
-          type: integer
-          description: Payment priority (0-100). Higher values are typically tried first.
-          minimum: 0
-          maximum: 100
-          default: 50
-          example: 50
+          example: 'Main Credit Card'
         active:
           type: boolean
-          description: Set whether this card should be active for payments upon creation.
-          default: true
+          description: Inactive cards will not be charged when a payment is made.
           example: true
+        priority:
+          type: integer
+          description: >-
+            When you make a payment, we will attempt to charge payment methods in order from highest priority (closest to 100) to lowest.
+          minimum: 0
+          maximum: 100
+          example: 100
+        fname:
+          type: string
+          description: >-
+            The card holder's first name.
+          example: 'John'
+        lname:
+          type: string
+          description: >-
+            The card holder's last name.
+          example: 'Doe'
+        addr1:
+          type: string
+          description: >-
+            Card holder\'s street address.
+          example: '233 E Wacker Drive'
+        addr2:
+          type: string
+          description: >-
+            Apartment or suite number, if applicable.
+          example: 'Suite #1106'
+        country:
+          type: string
+          description: >-
+            Country where card holder resides.
+          example: US
+        state:
+          type: string
+          description: >-
+            State where card holder resides, if applicable.
+          example: IL
+        city:
+          type: string
+          description: City where card holder resides.
+          example: 'Chicago'
+        postalcode:
+          type: string
+          description: Postal/ZIP code where card holder resides.
+          example: '60601'
+        email:
+          type: string
+          description: Contact email of card holder.
+          example: 'john.doe@teliax.com'
+        dayphone:
+          type: string
+          description: Daytime phone number of card holder.
+        eveningphone:
+          type: string
+          description: Evening phone number of card holder.
+        cardtype:
+          type: string
+          description: Type of credit card.
+          enum:
+            - Visa
+            - Mastercard
+            - American Express
+            - Discover
+          example: 'Visa'
+        cardnumber:
+          type: string
+          description: Credit card number.
+          example: '4111111111111111'
+        cardexpmonth:
+          type: string
+          description: Month of credit card's expiration date.
+          example: '02'
+        cardexpyear:
+          type: string
+          description: Year of credit card\'s expiration date.
+          example: '2024'
+        cvv:
+          type: string
+          description: CVV on back of credit card.
+          example: '786'
       required:
         - name
-        - card_number
-        - exp_month
-        - exp_year
-        - cvv
-        - first_name
-        - last_name
-        - address_line1
-        - city
-        - postal_code
+        - active
+        - priority
+        - fname
+        - lname
+        - addr1
         - country
-      example:
-        name: Personal Amex
-        card_number: '370012345678901'
-        exp_month: 12
-        exp_year: 2027
-        cvv: '1234'
-        first_name: John
-        last_name: Public
-        address_line1: 456 Token Street
-        city: Cardville
-        state_province: NV
-        postal_code: '89101'
-        country: US
-        priority: 75
-        active: true
+        - city
+        - postalcode
+        - cardtype
+        - cardnumber
+        - cardexpmonth
+        - cardexpyear
+        - cvv
+    CreditCardUpdateRequest:
+      required:
+        - name
+        - active
+        - priority
+      properties:
+        name:
+          type: string
+          example: 'Main Credit Card'
+        active:
+          type: boolean
+          example: true
+        priority:
+          type: integer
+          description: >-
+            When you make a payment, we will attempt to charge payment methods in order from highest priority (closest to 100) to lowest.
+          minimum: 0
+          maximum: 100
+          example: 99
     ItemUpdateRequest:
       type: object
       description: Specifies the fields that can be updated for an item.
@@ -14320,7 +14462,7 @@ components:
               rel: self
               method: GET    
       required:
-        - message
+        - message    
   parameters:
     Page:
       name: page
