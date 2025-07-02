@@ -269,7 +269,7 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/responses-NotFoundError'
-  /addresses/{addressId}:
+  /addresses/{id}:
     put:
       tags:
         - Addresses
@@ -283,7 +283,7 @@ paths:
         - oAuth2:
             - write
       parameters:
-        - name: addressId
+        - name: id
           in: path
           description: The unique identifier of the address record to be updated.
           schema:
@@ -7589,7 +7589,7 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '409':
           $ref: '#/components/responses/users_components-responses-ConflictError'
-  /users/{userId}:
+  /users/{id}:
     parameters:
       - $ref: '#/components/parameters/UserIdPath'
     get:
@@ -14977,7 +14977,7 @@ components:
         format: int64
         example: 1
     UserIdPath:
-      name: userId
+      name: id
       in: path
       description: The unique identifier of the user.
       required: true
