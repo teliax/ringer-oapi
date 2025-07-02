@@ -878,8 +878,6 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
-  /call-records/{callRecordId}:
-    $ref: ./call-records.yaml#/paths/~1call-records~1{callRecordId}
   /country-codes:
     get:
       tags:
@@ -1158,7 +1156,7 @@ paths:
             format: int64
           required: true
       requestBody:
-        description: Request body for credit card 
+        description: Request body for credit card
         required: true
         content:
           multipart/form-data:
@@ -1191,11 +1189,9 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-  /items:
-    $ref: ./items.yaml#/paths/~1items
-  /items/{itemId}:
+  /items/{id}:
     parameters:
-      - name: itemId
+      - name: id
         in: path
         description: The unique identifier of the item.
         required: true
@@ -1332,7 +1328,7 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
-  /packages/{packageId}:
+  /packages/{id}:
     parameters:
       - $ref: '#/components/parameters/PackageIdPath'
     get:
@@ -1527,16 +1523,6 @@ paths:
                 error_code: PAYMENT_DECLINED
         '403':
           $ref: '#/components/responses/ForbiddenError'
-  /payments/{paymentId}:
-    $ref: ./payments.yaml#/paths/~1payments~1{paymentId}
-  /phone-numbers:
-    $ref: ./phone-numbers.yaml#/paths/~1phone-numbers
-  /phone-numbers/{phoneNumberId}:
-    $ref: ./phone-numbers.yaml#/paths/~1phone-numbers~1{phoneNumberId}
-  /phone-numbers/available:
-    $ref: ./phone-numbers.yaml#/paths/~1phone-numbers~1available
-  /phone-numbers/port:
-    $ref: ./phone-numbers.yaml#/paths/~1phone-numbers~1port
   /plans:
     get:
       tags:
@@ -1602,7 +1588,7 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
-  /plans/{planId}:
+  /plans/{id}:
     parameters:
       - $ref: '#/components/parameters/PlanIdPath'
     get:
@@ -1745,9 +1731,9 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
-  /sites/{siteId}:
+  /sites/{id}:
     parameters:
-      - $ref: '#/components/parameters/SiteIdPath'
+      - $ref: '#/components/parameters/Id'
     get:
       tags:
         - Sites
@@ -1867,7 +1853,111 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/responses-SiteNotFoundError'
-  /sites/{siteId}/call-blocks:
+  /sites/{id}/rebuild:
+    post:
+      tags:
+      - Sites
+      summary: Rebuild Site
+      operationId: rebuildSite
+      description: >-
+        Rebuild a site. Can be used if newly added calling features did not automatically get registered.
+        Rebuild, will synchronize your site with the associated thin client and refresh the Site.
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Successfully retrieved site details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteResponse'
+              example:
+                id: 6
+                name: Main Office Site
+                dns_extension: hq
+                dns_name: hq.ivy.teliax.com
+                active: true
+                caller_id_name: Teliax Inc HQ
+                caller_id_number: '+13035551212'
+                thin_client_id: 12
+                thin_client_name: Denver Bonsai 7
+                acl: 0.0.0.0/0
+                channel_limit: 55
+                music_on_hold_url: https://cdn.example.com/moh/default.mp3
+                permitted_country_codes:
+                  - US
+                  - CA
+                links:
+                  - href: /sites/6
+                    rel: self
+                    method: GET
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/responses-SiteNotFoundError'
+  /sites/{id}/potential_destinations:
+    get:
+      tags:
+      - Sites
+      summary: Destinations for a Site of a certain type
+      operationId: potentialDestinationsSitesClassName
+      description: >-
+        Retrieve all potential destinations on a site that are of a certain type.
+      parameters:
+        - in: query
+          name: class_name
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Successfully retrieved site details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteDestinationList'
+        '400':
+          $ref: '#/components/responses/responses-BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/responses-SiteNotFoundError'
+  /sites/{id}/potential_fail_overs:
+    get:
+      tags:
+      - Sites
+      summary: Failovers for a Site of a certain type
+      operationId: potential_fail_overs_sites_class_name
+      description: >-
+        Retrieve all potential fail overs on a site that are of a certain type
+      parameters:
+        - $ref: '#/components/parameters/Id'
+        - in: query
+          name: class_name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved site details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteFailOverList'
+        '400':
+          $ref: '#/components/responses/responses-BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/responses-SiteNotFoundError'
+  /sites/{site_id}/call-blocks:
     parameters:
       - $ref: '#/components/parameters/SiteId'
     get:
@@ -1999,10 +2089,10 @@ paths:
           $ref: '#/components/responses/SiteNotFoundError'
         '409':
           $ref: '#/components/responses/ConflictError'
-  /sites/{siteId}/call-blocks/{callBlockId}:
+  /sites/{site_id}/call-blocks/{id}:
     parameters:
-      - $ref: '#/components/parameters/SiteIdPath'
-      - $ref: '#/components/parameters/CallBlockIdPath'
+      - $ref: '#/components/parameters/SiteId'
+      - $ref: '#/components/parameters/Id'
     get:
       tags:
         - Site Features - Call Blocking
@@ -2105,7 +2195,7 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/call-block_components-responses-NotFoundError'
-  /sites/{siteId}/conference-rooms:
+  /sites/{site_id}/conference-rooms:
     parameters:
       - $ref: '#/components/parameters/SiteId'
     get:
@@ -2188,10 +2278,10 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/SiteNotFoundError'
-  /sites/{siteId}/conference-rooms/{conferenceRoomId}:
+  /sites/{site_id}/conference-rooms/{id}:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/ConferenceRoomIdPath'
+      - $ref: '#/components/parameters/Id'
     get:
       tags:
         - Site Features - Conference Rooms
@@ -2287,7 +2377,7 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/ConferenceRoomNotFoundError'
-  /sites/{siteId}/conference-rooms/available:
+  /sites/{site_id}/conference-rooms/available:
     parameters:
       - $ref: '#/components/parameters/SiteId'
     get:
@@ -2334,10 +2424,10 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/SiteNotFoundError'
-  /sites/{siteId}/conference-rooms/{conferenceRoomId}/transfer:
+  /sites/{site_id}/conference-rooms/{id}/transfer:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/ConferenceRoomIdPath'
+      - $ref: '#/components/parameters/Id'
     post:
       tags:
         - Site Features - Conference Rooms
@@ -2404,10 +2494,10 @@ paths:
                 status: error
                 error: Conference room, current site, or target site not found.
                 error_code: RESOURCE_NOT_FOUND_FOR_TRANSFER
-  /sites/{siteId}/conference-rooms/{conferenceRoomId}/upload:
+  /sites/{site_id}/conference-rooms/{id}/upload:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/ConferenceRoomIdPath'
+      - $ref: '#/components/parameters/Id'
     patch:
       tags:
         - Site Features - Conference Rooms
@@ -2468,9 +2558,9 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/ConferenceRoomNotFoundError'
-  /sites/{siteId}/devices:
+  /sites/{site_id}/devices:
     parameters:
-      - $ref: '#/components/parameters/SiteIdPath'
+      - $ref: '#/components/parameters/SiteId'
     get:
       tags:
         - Site Features - Devices
@@ -2585,10 +2675,10 @@ paths:
                 status: error
                 error: Device login 'confroom1.site6' already exists.
                 error_code: DEVICE_LOGIN_CONFLICT
-  /sites/{siteId}/devices/{deviceId}:
+  /sites/{site_id}/devices/{id}:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/DeviceIdPath'
+      - $ref: '#/components/parameters/Id'
     get:
       tags:
         - Site Features - Devices
@@ -2722,7 +2812,7 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/responses-DeviceNotFoundError'
-  /sites/{siteId}/devices/available:
+  /sites/{site_id}/devices/available:
     parameters:
       - $ref: '#/components/parameters/SiteId'
     get:
@@ -2794,10 +2884,43 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/SiteNotFoundError'
-  /sites/{siteId}/devices/{deviceId}/regenerate-password:
+  /sites/{site_id}/devices/status:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/DeviceIdPath'
+    get:
+      tags:
+        - Site Features - Devices
+      summary: List Device Registration Statuses for a Site
+      description: |
+        Retrieves the registration status for all devices configured on the specified site.
+        Indicates which devices are currently online and registered with the call processing services.
+      operationId: getSiteDeviceStatuses
+      security:
+        - oAuth2: [read]
+      responses:
+        '200':
+          description: A list of device registration statuses.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceStatus'
+              example:
+                registered_devices:
+                  - "john.doe.phone1"
+                  - "lobby.phone"
+                unregistered_devices:
+                  - "confroom1.site6"
+                links:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/SiteNotFoundError'
+  /sites/{site_id}/devices/{id}/regenerate-password:
+    parameters:
+      - $ref: '#/components/parameters/SiteId'
+      - $ref: '#/components/parameters/Id'
     patch:
       tags:
         - Site Features - Devices
@@ -2845,12 +2968,10 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/DeviceNotFoundError'
-  /sites/{siteId}/devices/{deviceId}/status:
-    $ref: ./sites/devices/status.yaml#/paths/~1sites~1{siteId}~1devices~1{deviceId}~1status
-  /sites/{siteId}/devices/{deviceId}/transfer:
+  /sites/{site_id}/devices/{id}/transfer:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/DeviceIdPath'
+      - $ref: '#/components/parameters/Id'
     post:
       tags:
         - Site Features - Devices
@@ -2924,7 +3045,7 @@ paths:
                 status: error
                 error: Device, current site, or target site not found.
                 error_code: RESOURCE_NOT_FOUND_FOR_TRANSFER
-  /sites/{siteId}/e911s:
+  /sites/{site_id}/e911s:
     parameters:
       - $ref: '#/components/parameters/SiteId'
     get:
@@ -2967,10 +3088,10 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/SiteNotFoundError'
-  /sites/{siteId}/e911s/{e911Id}:
+  /sites/{site_id}/e911s/{id}:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/E911IdPath'
+      - $ref: '#/components/parameters/Id'
     get:
       tags:
         - Site Features - E911
@@ -3092,7 +3213,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /sites/{siteId}/extensions:
+  /sites/{site_id}/extensions:
     parameters:
       - $ref: '#/components/parameters/SiteId'
     get:
@@ -3202,10 +3323,10 @@ paths:
           $ref: '#/components/responses/index_components-responses-SiteNotFoundError'
         '409':
           $ref: '#/components/responses/components-responses-ConflictError'
-  /sites/{siteId}/extensions/{extensionId}:
+  /sites/{site_id}/extensions/{id}:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/ExtensionIdPath'
+      - $ref: '#/components/parameters/Id'
     get:
       tags:
         - Site Features - Extensions
@@ -3311,7 +3432,7 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/extension_components-responses-NotFoundError'
-  /sites/{siteId}/extensions/available:
+  /sites/{site_id}/extensions/available:
     parameters:
       - $ref: '#/components/parameters/SiteId'
     get:
@@ -3369,10 +3490,10 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/SiteNotFoundError'
-  /sites/{siteId}/extensions/{extensionId}/transfer:
+  /sites/{site_id}/extensions/{id}/transfer:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/ExtensionIdPath'
+      - $ref: '#/components/parameters/Id'
     post:
       tags:
         - Site Features - Extensions
@@ -3427,7 +3548,7 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/transfer_components-responses-NotFoundError'
-  /sites/{siteId}/fax-machines:
+  /sites/{site_id}/fax-machines:
     parameters:
       - $ref: '#/components/parameters/SiteId'
     get:
@@ -3508,10 +3629,10 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/SiteNotFoundError'
-  /sites/{siteId}/fax-machines/{faxMachineId}:
+  /sites/{site_id}/fax-machines/{id}:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/FaxMachineIdPath'
+      - $ref: '#/components/parameters/Id'
     get:
       tags:
         - Site Features - Fax Machines
@@ -3602,7 +3723,7 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/FaxMachineNotFoundError'
-  /sites/{siteId}/fax-machines/available:
+  /sites/{site_id}/fax-machines/available:
     parameters:
       - $ref: '#/components/parameters/SiteId'
     get:
@@ -3648,10 +3769,10 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/SiteNotFoundError'
-  /sites/{siteId}/fax-machines/{faxMachineId}/transfer:
+  /sites/{site_id}/fax-machines/{id}/transfer:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/FaxMachineIdPath'
+      - $ref: '#/components/parameters/Id'
     post:
       tags:
         - Site Features - Fax Machines
@@ -3715,7 +3836,7 @@ paths:
                 status: error
                 error: Fax machine, current site, or target site not found.
                 error_code: RESOURCE_NOT_FOUND_FOR_TRANSFER
-  /sites/{siteId}/forwards:
+  /sites/{site_id}/forwards:
     parameters:
       - $ref: '#/components/parameters/SiteId'
     get:
@@ -3827,10 +3948,10 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/SiteNotFoundError'
-  /sites/{siteId}/forwards/{forwardId}:
+  /sites/{site_id}/forwards/{id}:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/ForwardIdPath'
+      - $ref: '#/components/parameters/Id'
     get:
       tags:
         - Site Features - Forwards
@@ -3935,7 +4056,7 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-  /sites/{siteId}/forwards/available:
+  /sites/{site_id}/forwards/available:
     parameters:
       - $ref: '#/components/parameters/SiteId'
     get:
@@ -3999,10 +4120,10 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/SiteNotFoundError'
-  /sites/{siteId}/forwards/{forwardId}/transfer:
+  /sites/{site_id}/forwards/{id}/transfer:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/ForwardIdPath'
+      - $ref: '#/components/parameters/Id'
     post:
       tags:
         - Site Features - Forwards
@@ -4055,7 +4176,7 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-  /sites/{siteId}/locations:
+  /sites/{site_id}/locations:
     parameters:
       - $ref: '#/components/parameters/SiteId'
     get:
@@ -4180,10 +4301,10 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/SiteNotFoundError'
-  /sites/{siteId}/locations/{locationId}:
+  /sites/{site_id}/locations/{id}:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/LocationIdPath'
+      - $ref: '#/components/parameters/Id'
     get:
       tags:
         - Site Features - Locations
@@ -4312,7 +4433,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /sites/{siteId}/menus:
+  /sites/{site_id}/menus:
     parameters:
       - $ref: '#/components/parameters/SiteId'
     get:
@@ -4420,10 +4541,10 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/SiteNotFoundError'
-  /sites/{siteId}/menus/{menuId}:
+  /sites/{site_id}/menus/{id}:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/MenuIdPath'
+      - $ref: '#/components/parameters/Id'
     get:
       tags:
         - Site Features - Menus
@@ -4523,10 +4644,10 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-  /sites/{siteId}/menus/{menuId}/transfer:
+  /sites/{site_id}/menus/{id}/transfer:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/MenuIdPath'
+      - $ref: '#/components/parameters/Id'
     post:
       tags:
         - Site Features - Menus
@@ -4593,10 +4714,10 @@ paths:
                 status: error
                 error: Menu, current site, or target site not found.
                 error_code: RESOURCE_NOT_FOUND_FOR_TRANSFER
-  /sites/{siteId}/menus/{menuId}/upload:
+  /sites/{site_id}/menus/{id}/upload:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/MenuIdPath'
+      - $ref: '#/components/parameters/Id'
     patch:
       tags:
         - Site Features - Menus
@@ -4651,7 +4772,7 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-  /sites/{siteId}/phone-numbers:
+  /sites/{site_id}/phone-numbers:
     parameters:
       - $ref: '#/components/parameters/SiteId'
     get:
@@ -4779,10 +4900,10 @@ paths:
           $ref: '#/components/responses/SiteNotFoundError'
         '409':
           $ref: '#/components/responses/ConflictError'
-  /sites/{siteId}/phone-numbers/{phoneNumberId}:
+  /sites/{site_id}/phone-numbers/{id}:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/PhoneNumberIdPath'
+      - $ref: '#/components/parameters/Id'
     get:
       tags:
         - Site Features - Phone Numbers
@@ -4892,7 +5013,7 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/PhoneNumberNotFoundError'
-  /sites/{siteId}/phone-numbers/available:
+  /sites/{site_id}/phone-numbers/available:
     parameters:
       - $ref: '#/components/parameters/SiteId'
     get:
@@ -4963,10 +5084,10 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/SiteNotFoundError'
-  /sites/{siteId}/phone-numbers/{phoneNumberId}/transfer:
+  /sites/{site_id}/phone-numbers/{id}/transfer:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/PhoneNumberIdPath'
+      - $ref: '#/components/parameters/Id'
     post:
       tags:
         - Site Features - Phone Numbers
@@ -5038,7 +5159,7 @@ paths:
                 status: error
                 error: Phone number, current site, or target site not found.
                 error_code: RESOURCE_NOT_FOUND_FOR_TRANSFER
-  /sites/{siteId}/ring-groups:
+  /sites/{site_id}/ring-groups:
     parameters:
       - $ref: '#/components/parameters/SiteId'
     get:
@@ -5172,10 +5293,10 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/SiteNotFoundError'
-  /sites/{siteId}/ring-groups/{ringGroupId}:
+  /sites/{site_id}/ring-groups/{id}:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/RingGroupIdPath'
+      - $ref: '#/components/parameters/Id'
     get:
       tags:
         - Site Features - Ring Groups
@@ -5299,10 +5420,10 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-  /sites/{siteId}/ring-groups/{ringGroupId}/transfer:
+  /sites/{site_id}/ring-groups/{id}/transfer:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/RingGroupIdPath'
+      - $ref: '#/components/parameters/Id'
     post:
       tags:
         - Site Features - Ring Groups
@@ -5378,7 +5499,7 @@ paths:
                 status: error
                 error: Ring group, current site, or target site not found.
                 error_code: RESOURCE_NOT_FOUND_FOR_TRANSFER
-  /sites/{siteId}/schedules:
+  /sites/{site_id}/schedules:
     parameters:
       - $ref: '#/components/parameters/SiteId'
     get:
@@ -5539,10 +5660,10 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/SiteNotFoundError'
-  /sites/{siteId}/schedules/{scheduleId}:
+  /sites/{site_id}/schedules/{id}:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/ScheduleIdPath'
+      - $ref: '#/components/parameters/Id'
     get:
       tags:
         - Site Features - Schedules
@@ -5693,9 +5814,9 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/schedule_components-responses-NotFoundError'
-  /sites/{siteId}/schedules/available:
+  /sites/{site_id}/schedules/available:
     parameters:
-      - $ref: '#/components/parameters/SiteIdPath'
+      - $ref: '#/components/parameters/SiteId'
     get:
       tags:
         - Site Features - Schedules
@@ -5766,10 +5887,10 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/available_components-responses-SiteNotFoundError'
-  /sites/{siteId}/schedules/{scheduleId}/transfer:
+  /sites/{site_id}/schedules/{id}/transfer:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/ScheduleIdPath'
+      - $ref: '#/components/parameters/Id'
     post:
       tags:
         - Site Features - Schedules
@@ -5840,7 +5961,7 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/transfer_components-responses-NotFoundError-2'
-  /sites/{siteId}/seats:
+  /sites/{site_id}/seats:
     parameters:
       - $ref: '#/components/parameters/SiteId'
     get:
@@ -5960,10 +6081,10 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/SiteNotFoundError'
-  /sites/{siteId}/seats/{seatId}:
+  /sites/{site_id}/seats/{id}:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/SeatIdPath'
+      - $ref: '#/components/parameters/Id'
     get:
       tags:
         - Site Features - Seats
@@ -6069,10 +6190,10 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-  /sites/{siteId}/seats/{seatId}/transfer:
+  /sites/{site_id}/seats/{id}/transfer:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/SeatIdPath'
+      - $ref: '#/components/parameters/Id'
     post:
       tags:
         - Site Features - Seats
@@ -6140,7 +6261,7 @@ paths:
                 status: error
                 error: Seat, current site, or target site not found.
                 error_code: RESOURCE_NOT_FOUND_FOR_TRANSFER
-  /sites/{siteId}/sip-trunks:
+  /sites/{site_id}/sip-trunks:
     parameters:
       - $ref: '#/components/parameters/SiteId'
     get:
@@ -6284,10 +6405,10 @@ paths:
           $ref: '#/components/responses/SiteNotFoundError'
         '409':
           $ref: '#/components/responses/ConflictError'
-  /sites/{siteId}/sip-trunks/{sipTrunkId}:
+  /sites/{site_id}/sip-trunks/{id}:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/SipTrunkIdPath'
+      - $ref: '#/components/parameters/Id'
     get:
       tags:
         - Site Features - SIP Trunks
@@ -6411,10 +6532,10 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/SipTrunkNotFoundError'
-  /sites/{siteId}/sip-trunks/{sipTrunkId}/regenerate-password:
+  /sites/{site_id}/sip-trunks/{id}/regenerate-password:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/SipTrunkIdPath'
+      - $ref: '#/components/parameters/Id'
     patch:
       tags:
         - Site Features - SIP Trunks
@@ -6451,12 +6572,52 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/SipTrunkNotFoundError'
-  /sites/{siteId}/sip-trunks/{sipTrunkId}/status:
-    $ref: ./sites/sip-trunks/status.yaml#/paths/~1sites~1{siteId}~1sip-trunks~1{sipTrunkId}~1status
-  /sites/{siteId}/sip-trunks/{sipTrunkId}/transfer:
+  /sites/{site_id}/sip-trunks/status:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/SipTrunkIdPath'
+    get:
+      tags:
+        - Site Features - SIP Trunks
+      summary: List SIP Trunk Registration Statuses
+      operationId: getSiteSipTrunkStatuses
+      description: Retrieve the registration status for all SIP Trunks configured on the specified site.
+      security:
+        - oAuth2: [read]
+      responses:
+        '200':
+          description: Registration statuses for the SIP Trunks.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SipTrunkStatus'
+              example:
+                data:
+                  - id: "161"
+                    type: "sip-trunk-status"
+                    attributes:
+                      name: "Main Office SIP Trunk"
+                      login: "main_trunk_user"
+                      status: "registered"
+                      last_registered_at: "2023-10-27T10:20:30Z"
+                      registered_ip_address: "203.0.113.45"
+                  - id: "162"
+                    type: "sip-trunk-status"
+                    attributes:
+                      name: "Backup Trunk"
+                      login: "backup_user"
+                      status: "unregistered"
+                      last_registered_at: null
+                      registered_ip_address: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/SiteNotFoundError'
+  /sites/{site_id}/sip-trunks/{id}/transfer:
+    parameters:
+      - $ref: '#/components/parameters/SiteId'
+      - $ref: '#/components/parameters/Id'
     post:
       tags:
         - Site Features - SIP Trunks
@@ -6548,7 +6709,7 @@ paths:
                 status: error
                 error: Original SIP Trunk, current site, or target site not found.
                 error_code: RESOURCE_NOT_FOUND_FOR_TRANSFER
-  /sites/{siteId}/voice-mail-boxes:
+  /sites/{site_id}/voice-mail-boxes:
     parameters:
       - $ref: '#/components/parameters/SiteId'
     get:
@@ -6639,7 +6800,7 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/VoicemailBoxCreateRequest'
+              $ref: '#/components/schemas/VoicemailBoxRequest'
       responses:
         '201':
           description: Voicemail Box Created Successfully.
@@ -6670,9 +6831,119 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/SiteNotFoundError'
-  /sites/{siteId}/voice-mail-boxes/{voiceMailBoxId}:
-    $ref: ./sites/voice-mail-boxes/voice-mail-box.yaml#/paths/~1sites~1{siteId}~1voice-mail-boxes~1{voiceMailBoxId}
-  /sites/{siteId}/voice-mail-boxes/available:
+  /sites/{site_id}/voice-mail-boxes/{id}:
+    parameters:
+      - $ref: '#/components/parameters/SiteId'
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags:
+        - Site Features - Voicemail Boxes
+      summary: Get Voicemail Box Details
+      operationId: getSiteVoicemailBoxById
+      description: Retrieves the details of a specific Voicemail Box.
+      security:
+        - oAuth2: [read]
+      responses:
+        '200':
+          description: Voicemail Box details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoicemailBoxResponseData'
+              example:
+                id: "553"
+                type: "voicemail-box"
+                attributes:
+                  name: "Sales Team Voicemail"
+                  pin: "****"
+                  notification_emails: "sales@example.com,manager@example.com"
+                  status: "active"
+                  site_id: 6
+                  announcement_url: "https://cdn.example.com/greetings/vm553.mp3"
+                links:
+                  self:
+                    href: "/sites/6/voice-mail-boxes/553"
+                    rel: "self"
+                    method: "GET"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/VoicemailBoxNotFoundError'
+    put:
+      tags:
+        - Site Features - Voicemail Boxes
+      summary: Update Voicemail Box
+      operationId: updateSiteVoicemailBoxById
+      description: |
+        Updates an existing Voicemail Box. Provide only the attributes to be changed.
+        To update the announcement greeting, use the dedicated upload endpoint.
+      security:
+        - oAuth2: [write]
+      requestBody:
+        description: Voicemail Box attributes to update.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoicemailBoxRequest'
+            example:
+              data:
+                type: "voicemail-box"
+                attributes:
+                  name: "Support Voicemail - Updated"
+                  pin: "4321"
+                  notification_emails: "new.support@example.com"
+                  status: "inactive"
+      responses:
+        '200':
+          description: Voicemail Box updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoicemailBoxResponseData'
+              example:
+                id: "553"
+                type: "voicemail-box"
+                attributes:
+                  name: "Support Voicemail - Updated"
+                  pin: "****"
+                  notification_emails: "new.support@example.com"
+                  status: "inactive"
+                  site_id: 6
+                  announcement_url: "https://cdn.example.com/greetings/vm553.mp3"
+                links:
+                  self:
+                    href: "/sites/6/voice-mail-boxes/553"
+                    rel: "self"
+                    method: "GET"
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/VoicemailBoxNotFoundError'
+    delete:
+      tags:
+        - Site Features - Voicemail Boxes
+      summary: Delete a Voicemail Box
+      operationId: deleteSiteVoicemailBoxById
+      description: Permanently deletes a Voicemail Box.
+      security:
+        - oAuth2: [write]
+      responses:
+        '204':
+          description: Voicemail Box deleted successfully.
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/VoicemailBoxNotFoundError'
+  /sites/{site_id}/voice-mail-boxes/available:
     parameters:
       - $ref: '#/components/parameters/SiteId'
     get:
@@ -6739,15 +7010,63 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/SiteNotFoundError'
-  /sites/{siteId}/voice-mail-boxes/{voiceMailBoxId}/transfer:
-    $ref: ./sites/voice-mail-boxes/transfer.yaml#/paths/~1sites~1{siteId}~1voice-mail-boxes~1{voiceMailBoxId}~1transfer
-  /sites/{siteId}/voice-mail-boxes/{voiceMailBoxId}/upload:
+  /sites/{site_id}/voice-mail-boxes/{id}/transfer:
+    post:
+      tags:
+      - Voice Mail Box
+      summary: Transfer Voice Mail Box
+      operationId: transferVoiceMailBox
+      description: >-
+        Transfer a Voice Mail Box to a different Site
+      parameters:
+        - name: siteId
+          in: path
+          description: ID of Site
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          description: ID of Voice Mail Box
+          required: true
+          schema:
+            type: integer
+
+      requestBody:
+        description: Voicemail Box attributes to update.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                new_site_id:
+                  type: integer
+                  format: int64
+                  example: 2296
+      responses:
+        '200':
+          description: >-
+            Sip Trunk Detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoicemailBoxResponseData'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/VoicemailBoxNotFoundError'
+  /sites/{site_id}/voice-mail-boxes/{id}/upload:
     $ref: ./sites/voice-mail-boxes/upload.yaml#/paths/~1sites~1{siteId}~1voice-mail-boxes~1{voiceMailBoxId}~1upload
-  /sites/{siteId}/voicemails:
+  /sites/{site_id}/voicemails:
     $ref: ./sites/voicemails/index.yaml#/paths/~1sites~1{siteId}~1voicemails
-  /sites/{siteId}/voicemails/{voicemailId}/transfer:
+  /sites/{site_id}/voicemails/{id}/transfer:
     $ref: ./sites/voicemails/transfer.yaml#/paths/~1sites~1{siteId}~1voicemails~1{voicemailId}~1transfer
-  /sites/{siteId}/voicemails/{voicemailId}/upload:
+  /sites/{site_id}/voicemails/{id}/upload:
     $ref: ./sites/voicemails/upload.yaml#/paths/~1sites~1{siteId}~1voicemails~1{voicemailId}~1upload
   /statements:
     get:
@@ -8247,6 +8566,54 @@ components:
           - href: /statements/501
             rel: self
             method: GET
+    FailoverAndDestination:
+      allOf:
+        - $ref: '#/components/schemas/FailoverAndDestinationCodeParam'
+        - required:
+          - name
+          properties:
+            name:
+              type: string
+          example:
+            name: 'Netrio - Leap Brand (forward:1254)'
+            code: 'forward:1254'
+    FailoverAndDestinationCodeParam:
+      properties:
+        code:
+          type: string
+          example: 'forward:1254'
+      required:
+        - code
+    SiteDestinationList:
+      properties:
+        destinations:
+          type: 'array'
+          description: Array of Destinations
+          items:
+            $ref: '#/components/schemas/FailoverAndDestination'
+        links:
+          type: array
+          description: HATEOAS links related to this site.
+          items:
+            $ref: '#/components/schemas/schemas-Link'
+          nullable: true
+    SiteFailOverList:
+      properties:
+        fail_overs:
+          type: array
+          items:
+            $ref: '#/components/schemas/FailoverAndDestination'
+        links:
+          type: array
+          description: HATEOAS links related to this site.
+          items:
+            $ref: '#/components/schemas/schemas-Link'
+          nullable: true
+          example:
+            - href: '/sites/1/potential_fail_overs'
+              rel: 'self'
+              title: 'Potential Fail Overs'
+              method: 'GET'
     TemplateRequest:
       $ref: ./templates.yaml#/components/schemas/TemplateRequest
     TemplateResponse:
@@ -10704,6 +11071,35 @@ components:
               - href: /sites/6/devices/1763/regenerate-password
                 rel: regenerate-password
                 method: PATCH
+    DeviceStatus:
+      type: object
+      properties:
+        devices:
+          type: 'array'
+          description: 'Array of login names for registered devices'
+          items:
+            type: 'string'
+        links:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/Link'
+      example:
+        devices:
+          - john_doe
+          - jane_doe
+        links:
+          - href: '/sites/6/devices/status'
+            rel: 'self'
+            title: 'Devices'
+            method: 'GET'
+          - href: '/sites/6/devices'
+            rel: 'List'
+            title: 'Devices'
+            method: 'GET'
+          - href: '/sites/6'
+            rel: 'up'
+            title: 'Site'
+            method: 'GET'
     index_components-schemas-Error:
       type: object
       description: Standard error response format.
@@ -13321,6 +13717,35 @@ components:
           - href: /sites/6/sip-trunks/161
             rel: self
             method: GET
+    SipTrunkStatus:
+      type: object
+      properties:
+        sip_trunks:
+          type: 'array'
+          description: 'Array of login names for registered sip trunks'
+          items:
+            type: 'string'
+        links:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/Link'
+      example:
+        sip_trunks:
+          - john_doe
+          - jane_doe
+        links:
+          - href: '/sites/6/sip-trunks/status'
+            rel: 'self'
+            title: 'Sip Trunks'
+            method: 'GET'
+          - href: '/sites/6/sip-trunks'
+            rel: 'List'
+            title: 'Sip Trunks'
+            method: 'GET'
+          - href: '/sites/6'
+            rel: 'up'
+            title: 'Site'
+            method: 'GET'
     PaginatedSipTrunkListResponse:
       type: object
       description: A paginated list of SIP Trunks.
@@ -13534,6 +13959,13 @@ components:
           readOnly: true
           nullable: true
           description: URL of the current announcement greeting.
+        announcement:
+          type: string
+          format: binary
+          writeOnly: true
+          nullable: true
+          example: /path/to/greeting.mp3
+          description:  Greeting message for the Voicemail Box. This is a file upload field.
         status:
           type: string
           enum:
@@ -13657,31 +14089,10 @@ components:
           total_pages: 1
           current_page: 1
           per_page: 25
-    VoicemailBoxCreateRequest:
-      type: object
-      required:
-        - data
-      properties:
-        data:
-          type: object
-          required:
-            - type
-            - attributes
-          properties:
-            type:
-              type: string
-              enum:
-                - voicemail-box
-            attributes:
-              $ref: '#/components/schemas/VoicemailBoxAttributes'
-      example:
-        data:
-          type: voicemail-box
-          attributes:
-            name: General Inquiries VM
-            pin: '0000'
-            notification_emails: info@example.com
-            status: active
+    VoicemailBoxRequest:
+      allOf:
+        - $ref: '#/components/schemas/VoicemailBoxAttributes'
+      description: Data required to create a new Voicemail Box.
     StatementCore:
       type: object
       properties:
@@ -14372,7 +14783,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DomesticNumberAndLocation'
-    #Number and Location
     DomesticNumberAndLocation:
       type: object
       description: >-
@@ -14460,9 +14870,9 @@ components:
           example:
             - href: /oauth/token
               rel: self
-              method: GET    
+              method: GET
       required:
-        - message    
+        - message
   parameters:
     Page:
       name: page
@@ -14521,17 +14931,26 @@ components:
         example:
           - owner
           - address
+    Id:
+      name: id
+      in: path
+      description: The unique identifier of the resource.
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 1
     SiteId:
-      name: siteId
+      name: site_id
       in: path
       description: The unique identifier of the site.
       required: true
       schema:
-        type: string
-        format: uuid
-        example: a1b2c3d4-e5f6-7890-1234-567890abcdef
+        type: integer
+        format: int64
+        example: 123
     PackageIdPath:
-      name: packageId
+      name: id
       in: path
       description: The unique identifier of the package.
       required: true
@@ -14540,7 +14959,7 @@ components:
         format: int64
         example: 94
     PlanIdPath:
-      name: planId
+      name: id
       in: path
       description: The unique identifier of the plan.
       required: true
@@ -14548,139 +14967,6 @@ components:
         type: integer
         format: int64
         example: 1
-    SiteIdPath:
-      name: siteId
-      in: path
-      description: The unique identifier of the site.
-      required: true
-      schema:
-        type: integer
-        format: int64
-        example: 6
-    CallBlockIdPath:
-      name: callBlockId
-      in: path
-      description: The unique identifier of the Call Block rule.
-      required: true
-      schema:
-        type: string
-        example: '101'
-    ConferenceRoomIdPath:
-      name: conferenceRoomId
-      in: path
-      description: The unique identifier of the conference room.
-      required: true
-      schema:
-        type: integer
-        format: int64
-        example: 3
-    DeviceIdPath:
-      name: deviceId
-      in: path
-      description: The unique identifier of the device.
-      required: true
-      schema:
-        type: integer
-        format: int64
-        example: 1763
-    E911IdPath:
-      name: e911Id
-      in: path
-      description: The unique identifier of the E911 record.
-      required: true
-      schema:
-        type: integer
-        format: int64
-        example: 19
-    ExtensionIdPath:
-      name: extensionId
-      in: path
-      description: The unique identifier of the extension record.
-      required: true
-      schema:
-        type: integer
-        format: int64
-        example: 14
-    FaxMachineIdPath:
-      name: faxMachineId
-      in: path
-      description: The unique identifier of the fax machine configuration.
-      required: true
-      schema:
-        type: integer
-        format: int64
-        example: 3
-    ForwardIdPath:
-      name: forwardId
-      in: path
-      description: Identifier of the forward configuration.
-      required: true
-      schema:
-        type: integer
-        format: int64
-        example: 77
-    LocationIdPath:
-      name: locationId
-      in: path
-      description: The unique identifier of the location record.
-      required: true
-      schema:
-        type: integer
-        format: int64
-        example: 9
-    MenuIdPath:
-      name: menuId
-      in: path
-      description: The unique identifier of the menu.
-      required: true
-      schema:
-        type: integer
-        format: int64
-        example: 55
-    PhoneNumberIdPath:
-      name: phoneNumberId
-      in: path
-      description: The unique identifier of the phone number record.
-      required: true
-      schema:
-        type: integer
-        format: int64
-        example: 127
-    RingGroupIdPath:
-      name: ringGroupId
-      in: path
-      description: The unique identifier of the ring group.
-      required: true
-      schema:
-        type: integer
-        format: int64
-        example: 10
-    ScheduleIdPath:
-      name: scheduleId
-      in: path
-      description: The unique identifier of the Schedule.
-      required: true
-      schema:
-        type: string
-        example: sched_7abx891p
-    SeatIdPath:
-      name: seatId
-      in: path
-      description: The unique identifier of the seat.
-      required: true
-      schema:
-        type: integer
-        format: int64
-        example: 25
-    SipTrunkIdPath:
-      name: sipTrunkId
-      in: path
-      description: The unique identifier of the SIP trunk.
-      required: true
-      schema:
-        type: integer
-        format: int64
-        example: 301
     TemplateIdPath:
       name: templateId
       in: path
