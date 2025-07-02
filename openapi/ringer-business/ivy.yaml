@@ -8214,12 +8214,6 @@ components:
         - confirmation_token
       example:
         confirmation_token: valid_confirmation_token_string
-    PasswordResetRequest:
-      $ref: ./password.yaml#/components/schemas/PasswordResetRequest
-    SignUpRequest:
-      $ref: ./sign-up.yaml#/components/schemas/SignUpRequest
-    CallBlockRequest:
-      $ref: ./call-blocks.yaml#/components/schemas/CallBlockRequest
     CallBlockResponse:
       allOf:
         - $ref: '#/components/schemas/CallBlockCore'
@@ -8258,12 +8252,6 @@ components:
           - href: /sites/6/call-blocks/101
             rel: self
             method: GET
-    CallRecordResponse:
-      $ref: ./call-records.yaml#/components/schemas/CallRecordResponse
-    CountryCodeResponse:
-      $ref: ./country-codes.yaml#/components/schemas/CountryCodeResponse
-    CreditCardRequest:
-      $ref: ./credit-cards.yaml#/components/schemas/CreditCardRequest
     CreditCardResponse:
       allOf:
         - $ref: '#/components/schemas/CreditCardCore'
@@ -8294,8 +8282,6 @@ components:
           - href: /credit-cards/101/verify
             rel: verify
             method: PATCH
-    ItemRequest:
-      $ref: ./items.yaml#/components/schemas/ItemRequest
     ItemResponse:
       allOf:
         - $ref: '#/components/schemas/ItemCore'
@@ -8325,8 +8311,6 @@ components:
           - href: /price-decks/10
             rel: priceDeck
             method: GET
-    PackageRequest:
-      $ref: ./packages.yaml#/components/schemas/PackageRequest
     PackageResponse:
       allOf:
         - $ref: '#/components/schemas/PackageCore'
@@ -8360,8 +8344,6 @@ components:
           - href: /plans/1
             rel: relatedPlan
             method: GET
-    PaymentRequest:
-      $ref: ./payments.yaml#/components/schemas/PaymentRequest
     PaymentResponse:
       allOf:
         - $ref: '#/components/schemas/PaymentCore'
@@ -8387,8 +8369,6 @@ components:
           - href: /payments/7001
             rel: self
             method: GET
-    PhoneNumberRequest:
-      $ref: ./phone-numbers.yaml#/components/schemas/PhoneNumberRequest
     PhoneNumberResponse:
       allOf:
         - $ref: '#/components/schemas/schemas-PhoneNumberCore'
@@ -8514,8 +8494,6 @@ components:
           - href: /plans/1/packages
             rel: listPackages
             method: GET
-    SiteRequest:
-      $ref: ./sites.yaml#/components/schemas/SiteRequest
     SiteResponse:
       allOf:
         - $ref: '#/components/schemas/SiteCore'
@@ -8657,8 +8635,6 @@ components:
               rel: 'self'
               title: 'Potential Fail Overs'
               method: 'GET'
-    TemplateRequest:
-      $ref: ./templates.yaml#/components/schemas/TemplateRequest
     TemplateResponse:
       allOf:
         - $ref: '#/components/schemas/TemplateCore'
@@ -8696,14 +8672,6 @@ components:
           - href: /templates/1
             rel: self
             method: GET
-    ThinClientRequest:
-      $ref: ./thin-clients.yaml#/components/schemas/ThinClientRequest
-    ThinClientResponse:
-      $ref: ./thin-clients.yaml#/components/schemas/ThinClientResponse
-    TimezoneResponse:
-      $ref: ./timezones.yaml#/components/schemas/TimezoneResponse
-    UserRequest:
-      $ref: ./users.yaml#/components/schemas/UserRequest
     UserResponse:
       allOf:
         - $ref: '#/components/schemas/UserCore'
