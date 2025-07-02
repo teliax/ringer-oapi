@@ -7485,8 +7485,6 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
-  /thin-clients/{thinClientId}:
-    $ref: ./thin-clients.yaml#/paths/~1thin-clients~1{thinClientId}
   /timezones:
     get:
       tags:
