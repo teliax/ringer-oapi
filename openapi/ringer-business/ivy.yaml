@@ -7031,7 +7031,6 @@ paths:
           required: true
           schema:
             type: integer
-
       requestBody:
         description: Voicemail Box attributes to update.
         required: true
@@ -7061,13 +7060,59 @@ paths:
         '404':
           $ref: '#/components/responses/VoicemailBoxNotFoundError'
   /sites/{site_id}/voice-mail-boxes/{id}/upload:
-    $ref: ./sites/voice-mail-boxes/upload.yaml#/paths/~1sites~1{siteId}~1voice-mail-boxes~1{voiceMailBoxId}~1upload
-  /sites/{site_id}/voicemails:
-    $ref: ./sites/voicemails/index.yaml#/paths/~1sites~1{siteId}~1voicemails
-  /sites/{site_id}/voicemails/{id}/transfer:
-    $ref: ./sites/voicemails/transfer.yaml#/paths/~1sites~1{siteId}~1voicemails~1{voicemailId}~1transfer
-  /sites/{site_id}/voicemails/{id}/upload:
-    $ref: ./sites/voicemails/upload.yaml#/paths/~1sites~1{siteId}~1voicemails~1{voicemailId}~1upload
+    patch:
+      tags:
+        - Voice Mail Box
+      summary: Upload Greeting Voice Mail Box
+      operationId: patchVoiceMailBoxAnnouncement
+      security:
+        - oAuth2: [read]
+      description: >-
+        Upload the greeting message for Voice Mail Box.
+      parameters:
+        - $ref: '#/components/parameters/SiteId'
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        description: >-
+          The greeting message for the Voice Mail Box.
+          The file should be in a supported audio format (e.g., MP3, WAV).
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                announcement:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Voicemail Box details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoicemailBoxResponseData'
+              example:
+                id: "553"
+                type: "voicemail-box"
+                attributes:
+                  name: "Sales Team Voicemail"
+                  pin: "****"
+                  notification_emails: "sales@example.com,manager@example.com"
+                  status: "active"
+                  site_id: 6
+                  announcement_url: "https://cdn.example.com/greetings/vm553.mp3"
+                links:
+                  self:
+                    href: "/sites/6/voice-mail-boxes/553"
+                    rel: "self"
+                    method: "GET"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/VoicemailBoxNotFoundError'
   /statements:
     get:
       tags:
