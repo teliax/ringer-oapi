@@ -7013,7 +7013,7 @@ paths:
   /sites/{site_id}/voice-mail-boxes/{id}/transfer:
     post:
       tags:
-      - Voice Mail Box
+        - Site Features - Voicemail Boxes
       summary: Transfer Voice Mail Box
       operationId: transferVoiceMailBox
       description: >-
@@ -7062,7 +7062,7 @@ paths:
   /sites/{site_id}/voice-mail-boxes/{id}/upload:
     patch:
       tags:
-        - Voice Mail Box
+        - Site Features - Voicemail Boxes
       summary: Upload Greeting Voice Mail Box
       operationId: patchVoiceMailBoxAnnouncement
       security:
