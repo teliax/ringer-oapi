@@ -1330,7 +1330,7 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
   /packages/{id}:
     parameters:
-      - $ref: '#/components/parameters/PackageIdPath'
+      - $ref: '#/components/parameters/Id'
     get:
       tags:
         - Packages
@@ -1590,7 +1590,7 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
   /plans/{id}:
     parameters:
-      - $ref: '#/components/parameters/PlanIdPath'
+      - $ref: '#/components/parameters/Id'
     get:
       tags:
         - Plans
@@ -7183,16 +7183,9 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
-  /statements/{statementId}:
+  /statements/{id}:
     parameters:
-      - name: statementId
-        in: path
-        description: The unique identifier of the statement.
-        required: true
-        schema:
-          type: integer
-          format: int64
-          example: 501
+      - $ref: '#/components/parameters/Id'
     get:
       tags:
         - Statements
@@ -7353,16 +7346,9 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
-  /templates/{templateId}:
+  /templates/{id}:
     parameters:
-      - name: templateId
-        in: path
-        description: The unique identifier of the template.
-        required: true
-        schema:
-          type: integer
-          format: int64
-          example: 1
+      - $ref: '#/components/parameters/Id'
     get:
       tags:
         - Templates
@@ -7435,8 +7421,6 @@ paths:
         - oAuth2:
             - write
             - admin
-      parameters:
-        - $ref: '#/components/parameters/TemplateIdPath'
       responses:
         '204':
           description: Template deleted successfully. No content is returned.
@@ -7634,7 +7618,7 @@ paths:
           $ref: '#/components/responses/users_components-responses-ConflictError'
   /users/{id}:
     parameters:
-      - $ref: '#/components/parameters/UserIdPath'
+      - $ref: '#/components/parameters/Id'
     get:
       tags:
         - Users
@@ -14960,33 +14944,6 @@ components:
         type: integer
         format: int64
         example: 123
-    PackageIdPath:
-      name: id
-      in: path
-      description: The unique identifier of the package.
-      required: true
-      schema:
-        type: integer
-        format: int64
-        example: 94
-    PlanIdPath:
-      name: id
-      in: path
-      description: The unique identifier of the plan.
-      required: true
-      schema:
-        type: integer
-        format: int64
-        example: 1
-    TemplateIdPath:
-      name: templateId
-      in: path
-      description: The unique identifier of the template.
-      required: true
-      schema:
-        type: integer
-        format: int64
-        example: 1
     UserIdPath:
       name: id
       in: path
