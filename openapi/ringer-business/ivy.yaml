@@ -14944,15 +14944,6 @@ components:
         type: integer
         format: int64
         example: 123
-    UserIdPath:
-      name: id
-      in: path
-      description: The unique identifier of the user.
-      required: true
-      schema:
-        type: integer
-        format: int64
-        example: 5
   responses:
     BadRequestError:
       description: Bad Request - The request was malformed or contained invalid data.
