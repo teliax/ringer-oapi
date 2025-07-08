@@ -153,6 +153,37 @@ paths:
         '404':
           $ref: '#/components/responses/responses-NotFoundError'
   /addresses/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the address record to be updated.
+        schema:
+          type: integer
+          format: int64
+          example: 671
+        required: true
+    get:
+      tags:
+        - Addresses
+      summary: Get an Address
+      description: |
+        Fetch the address record by its ID.
+      operationId: getAccountAddress
+      responses:
+        '200':
+          description: Address updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressResponse'
+        '400':
+          $ref: '#/components/responses/components-responses-BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/components-responses-NotFoundError'
     put:
       tags:
         - Addresses
@@ -162,15 +193,6 @@ paths:
         This is typically used to modify the contact or billing address associated with an account.
         The user must have permissions to update the account to which this address belongs.
       operationId: updateAccountAddress
-      parameters:
-        - name: id
-          in: path
-          description: The unique identifier of the address record to be updated.
-          schema:
-            type: integer
-            format: int64
-            example: 671
-          required: true
       requestBody:
         description: Address attributes to update. All fields in the request are typically required for a PUT, or optional for a PATCH.
         required: true
@@ -178,14 +200,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/AddressUpdateRequest'
-            example:
-              email: updated.contact@example.com
-              street_address: 456 Business Road, Unit 10
-              country: US
-              city: New City
-              state_province: TX
-              postal_code: '75001'
-              contact_number: '+18005550099'
       responses:
         '200':
           description: Address updated successfully.
@@ -193,22 +207,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AddressResponse'
-              example:
-                id: 671
-                email: updated.contact@example.com
-                street_address: 456 Business Road, Unit 10
-                country: US
-                city: New City
-                state_province: TX
-                postal_code: '75001'
-                contact_number: '+18005550099'
-                links:
-                  - href: /addresses/671
-                    rel: self
-                    method: GET
-                  - href: /account
-                    rel: account
-                    method: GET
         '400':
           $ref: '#/components/responses/components-responses-BadRequestError'
         '401':
@@ -7460,33 +7458,10 @@ components:
         - city
         - postal_code
         - contact_number
-      example:
-        email: shipping@example.com
-        street_address: 789 Distribution Way
-        country: CA
-        city: Toronto
-        state_province: 'ON'
-        postal_code: M5V 2T6
-        contact_number: '+14165550199'
     AddressUpdateRequest:
       allOf:
         - $ref: '#/components/schemas/AddressCore'
       description: All fields required to update an existing address. For PUT, typically all fields are provided.
-      required:
-        - email
-        - street_address
-        - country
-        - city
-        - postal_code
-        - contact_number
-      example:
-        email: billing.dept@example.com
-        street_address: Main Square 1, Finance Tower
-        country: DE
-        city: Frankfurt
-        state_province: HE
-        postal_code: '60313'
-        contact_number: '+496912345678'
     AddressResponse:
       allOf:
         - $ref: '#/components/schemas/AddressCore'
@@ -7497,37 +7472,8 @@ components:
               format: int64
               description: Unique identifier for the address record.
               example: 671
-            links:
-              type: array
-              description: HATEOAS links related to this address.
-              items:
-                $ref: '#/components/schemas/schemas-Link'
-              nullable: true
-          required:
-            - id
-            - email
-            - street_address
-            - country
-            - city
-            - postal_code
-            - contact_number
+              readOnly: true
       description: Detailed information about an address record, including its unique ID.
-      example:
-        id: 671
-        email: contact@example.com
-        street_address: 123 Commerce Street, Suite 101
-        country: US
-        city: Metropolis
-        state_province: NY
-        postal_code: '10001'
-        contact_number: '+12125551234'
-        links:
-          - href: /addresses/671
-            rel: self
-            method: GET
-          - href: /account
-            rel: account
-            method: GET
     TokenRequest:
       type: object
       description: Parameters for requesting an OAuth 2.0 access token. Required fields vary by grant_type.
