@@ -56,6 +56,8 @@ tags:
     description: Manage users and their permissions.
   - name: Phone Number Search
     description: Search for available domestic and international phone numbers.
+security:
+  - oAuth2: []
 paths:
   /account:
     get:
@@ -66,9 +68,6 @@ paths:
         Retrieves detailed information about the authenticated user's account.
         The level of detail and available actions might differ based on the user's role (e.g., administrator vs. regular user).
       operationId: getAccountDetails
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: Successfully retrieved account details.
@@ -76,39 +75,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AccountResponse'
-              example:
-                id: 101
-                name: Innovatech Solutions Ltd.
-                status: active
-                plan: enterprise_annual_v2
-                email: billing@innovatech.com
-                phone: '+14155550100'
-                created_at: '2023-01-15T10:30:00Z'
-                locale: en-US
-                balance: '4276.85'
-                balance_preference_in_dollars: '100.00'
-                recharge_preference_in_dollars: '200.00'
-                maximum_recharge_preference_in_dollars: '1000.00'
-                international_enabled: true
-                current_user:
-                  id: 5
-                  first_name: Jane
-                  last_name: Doe
-                  email: jane.doe@innovatech.com
-                  role: administrator
-                address:
-                  id: 25
-                  email: billing@innovatech.com
-                  street_address: 123 Tech Park, Suite 100
-                  country: US
-                  city: San Francisco
-                  state_province: CA
-                  postal_code: '94107'
-                  contact_number: '+14155550100'
-                links:
-                  - href: /account
-                    rel: self
-                    method: GET
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -121,9 +87,6 @@ paths:
         Updates information for the authenticated user's account.
         Certain fields may only be modifiable by users with an administrator role.
       operationId: updateAccount
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Account attributes to update.
         required: true
@@ -131,12 +94,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/AccountUpdateRequest'
-            example:
-              name: Innovatech Global Solutions Ltd.
-              locale: en-GB
-              balance_preference_in_dollars: '150.00'
-              recharge_preference_in_dollars: '250.00'
-              maximum_recharge_preference_in_dollars: '1500.00'
       responses:
         '200':
           description: Account updated successfully.
@@ -144,39 +101,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AccountResponse'
-              example:
-                id: 101
-                name: Innovatech Global Solutions Ltd.
-                status: active
-                plan: enterprise_annual_v2
-                email: billing@innovatech.com
-                phone: '+14155550100'
-                created_at: '2023-01-15T10:30:00Z'
-                locale: en-GB
-                balance: '4026.85'
-                balance_preference_in_dollars: '150.00'
-                recharge_preference_in_dollars: '250.00'
-                maximum_recharge_preference_in_dollars: '1500.00'
-                international_enabled: true
-                current_user:
-                  id: 5
-                  first_name: Jane
-                  last_name: Doe
-                  email: jane.doe@innovatech.com
-                  role: administrator
-                address:
-                  id: 25
-                  email: billing@innovatech.com
-                  street_address: 123 Tech Park, Suite 100
-                  country: US
-                  city: San Francisco
-                  state_province: CA
-                  postal_code: '94107'
-                  contact_number: '+14155550100'
-                links:
-                  - href: /account
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/responses-BadRequestError'
         '401':
@@ -193,10 +117,6 @@ paths:
         Activates an inactive account, making it operational.
         This operation is typically restricted to users with an administrator role and can only be performed on accounts that are currently inactive and ready for activation (e.g., after confirmation and initial setup).
       operationId: activateAccount
-      security:
-        - oAuth2:
-            - write
-            - admin
       responses:
         '200':
           description: Account activated successfully.
@@ -204,39 +124,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AccountResponse'
-              example:
-                id: 101
-                name: Innovatech Global Solutions Ltd.
-                status: active
-                plan: enterprise_annual_v2
-                email: billing@innovatech.com
-                phone: '+14155550100'
-                created_at: '2023-01-15T10:30:00Z'
-                locale: en-GB
-                balance: '4026.85'
-                balance_preference_in_dollars: '150.00'
-                recharge_preference_in_dollars: '250.00'
-                maximum_recharge_preference_in_dollars: '1500.00'
-                international_enabled: true
-                current_user:
-                  id: 5
-                  first_name: Jane
-                  last_name: Doe
-                  email: jane.doe@innovatech.com
-                  role: administrator
-                address:
-                  id: 25
-                  email: billing@innovatech.com
-                  street_address: 123 Tech Park, Suite 100
-                  country: US
-                  city: San Francisco
-                  state_province: CA
-                  postal_code: '94107'
-                  contact_number: '+14155550100'
-                links:
-                  - href: /account
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/responses-BadRequestError'
         '401':
@@ -254,10 +141,6 @@ paths:
         This action is typically permanent and may have prerequisites (e.g., settling outstanding balances).
         Restricted to users with an administrator role.
       operationId: closeAccount
-      security:
-        - oAuth2:
-            - write
-            - admin
       responses:
         '204':
           description: Account closed successfully. No content is returned.
@@ -279,9 +162,6 @@ paths:
         This is typically used to modify the contact or billing address associated with an account.
         The user must have permissions to update the account to which this address belongs.
       operationId: updateAccountAddress
-      security:
-        - oAuth2:
-            - write
       parameters:
         - name: id
           in: path
@@ -430,7 +310,6 @@ paths:
         Revokes an active access token or refresh token, effectively logging the user or application out.
         The request must include the token to be revoked and client credentials for authentication of the revocation request itself.
       operationId: revokeAccessToken
-      security: []
       requestBody:
         description: Parameters for token revocation.
         required: true
@@ -541,6 +420,7 @@ paths:
         to that address containing a password reset token and instructions.
         This endpoint itself usually just confirms that the process has been initiated if the email is found.
       operationId: requestPasswordReset
+      security: []
       requestBody:
         description: The user's email address to initiate the password reset process.
         required: true
@@ -584,6 +464,7 @@ paths:
         Allows a user to set a new password for their account using a valid password reset token.
         The token is typically obtained from a link sent to their email after initiating a password reset request.
       operationId: resetPassword
+      security: []
       requestBody:
         description: The password reset token, new password, and password confirmation.
         required: true
@@ -721,9 +602,6 @@ paths:
         The scope of returned records may depend on the authenticated user's role (e.g., account admin vs. individual user).
         A maximum of 30 days worth of data can be queried at a time.
       operationId: listCallRecords
-      security:
-        - oAuth2:
-            - read
       parameters:
         - name: start_time
           in: query
@@ -887,9 +765,6 @@ paths:
         Retrieves a list of all country codes supported by the system, often grouped by region or zone.
         This information is useful for configuring features like outbound call permissions on Sites.
       operationId: listAvailableCountryCodes
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: A list of available country codes.
@@ -922,9 +797,6 @@ paths:
       summary: List Credit Cards
       description: Retrieves a list of all credit cards associated with the authenticated customer's account.
       operationId: listCreditCards
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: A list of credit cards.
@@ -965,9 +837,6 @@ paths:
         The full card number is tokenized by the payment processor; only partial information (like last4, brand, expiry) is stored and returned by this API.
         A verification step is typically required after adding a new card.
       operationId: createCreditCard
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Details of the new credit card to be added.
         required: true
@@ -1035,9 +904,6 @@ paths:
         - Credit Cards
       summary: Credit Card Details
       operationId: creditCardDetails
-      security:
-        - oAuth2:
-            - read
       description: >-
         Retrieve information about a Credit Card.
         The information returned is:
@@ -1208,10 +1074,6 @@ paths:
         often within the context of a price deck.
         This operation is typically restricted to users with administrative privileges for managing pricing and service definitions.
       operationId: updateItemById
-      security:
-        - oAuth2:
-            - write
-            - admin
       requestBody:
         description: Item attributes to update.
         required: true
@@ -1268,9 +1130,6 @@ paths:
       summary: List Packages
       description: Retrieve a list of all available packages, potentially with pagination.
       operationId: listPackages
-      security:
-        - oAuth2:
-            - read
       parameters:
         - name: page
           in: query
@@ -1337,9 +1196,6 @@ paths:
       summary: Get Package Details
       description: Retrieves detailed information for a specific package by its ID.
       operationId: getPackageById
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: Successfully retrieved package details.
@@ -1384,9 +1240,6 @@ paths:
         Retrieves a paginated list of payments made on the authenticated account.
         The list is typically ordered by creation date, with the most recent payments first.
       operationId: listPayments
-      security:
-        - oAuth2:
-            - read
       parameters:
         - name: page_size
           in: query
@@ -1457,9 +1310,6 @@ paths:
         The payment is typically made using the account's default or highest priority verified payment method.
         The request specifies the amount to be paid.
       operationId: createPayment
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: The amount for the payment.
         required: true
@@ -1532,9 +1382,6 @@ paths:
         Retrieves a paginated list of plan(s) currently active on the authenticated customer's account.
         Typically, an account has one primary active plan.
       operationId: listAccountPlans
-      security:
-        - oAuth2:
-            - read
       parameters:
         - name: page
           in: query
@@ -1597,9 +1444,6 @@ paths:
       summary: Get Plan Details
       description: Retrieves detailed information for a specific subscription plan by its ID.
       operationId: getPlanById
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: Successfully retrieved plan details.
@@ -1636,9 +1480,6 @@ paths:
       summary: List Sites
       description: Retrieves a list of all sites associated with the authenticated customer's account.
       operationId: listSites
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: A list of sites.
@@ -1677,9 +1518,6 @@ paths:
       summary: Create a New Site
       description: Creates a new site with the specified configurations.
       operationId: createSite
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Configuration details for the new site.
         required: true
@@ -1740,9 +1578,6 @@ paths:
       summary: Get Site Details
       description: Retrieves detailed information for a specific site by its ID.
       operationId: getSiteById
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: Successfully retrieved site details.
@@ -1782,9 +1617,6 @@ paths:
       summary: Update Site Configuration
       description: Updates the configuration for an existing site by its ID.
       operationId: updateSiteById
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Site attributes to update.
         required: true
@@ -1840,10 +1672,6 @@ paths:
         Permanently deletes a specific site and all its associated telephony features (e.g., devices, numbers, menus).
         This action cannot be undone.
       operationId: deleteSiteById
-      security:
-        - oAuth2:
-            - write
-            - admin
       responses:
         '204':
           description: Site deleted successfully. No content is returned.
@@ -1966,9 +1794,6 @@ paths:
       summary: List Call Block Rules for a Site
       operationId: listSiteCallBlocks
       description: Retrieves a list of all call blocking rules configured for the specified site.
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: An array of Call Block rules.
@@ -2037,9 +1862,6 @@ paths:
       summary: Create a Call Block Rule
       operationId: createSiteCallBlock
       description: Adds a new call blocking rule to the specified site.
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Call Block rule attributes.
         required: true
@@ -2099,9 +1921,6 @@ paths:
       summary: Get Call Block Rule Details
       operationId: getSiteCallBlockById
       description: Retrieves the details of a specific Call Block rule.
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: Call Block rule details.
@@ -2132,9 +1951,6 @@ paths:
       summary: Update Call Block Rule
       operationId: updateSiteCallBlockById
       description: Updates an existing Call Block rule. Only attributes provided in the request body will be updated.
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Call Block rule attributes to update.
         required: true
@@ -2182,10 +1998,6 @@ paths:
       summary: Delete a Call Block Rule
       operationId: deleteSiteCallBlockById
       description: Permanently deletes a Call Block rule.
-      security:
-        - oAuth2:
-            - write
-            - admin
       responses:
         '204':
           description: Call Block rule deleted successfully. No content returned.
@@ -2204,9 +2016,6 @@ paths:
       summary: List Conference Rooms for a Site
       description: Retrieves a list of all conference rooms configured for the specified site.
       operationId: listSiteConferenceRooms
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: A list of conference rooms for the site.
@@ -2242,9 +2051,6 @@ paths:
         Requires providing a name, participant PIN, and moderator PIN.
         Greeting and music-on-hold audio files can also be uploaded during creation.
       operationId: createSiteConferenceRoom
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Configuration details for the new conference room.
         required: true
@@ -2288,9 +2094,6 @@ paths:
       summary: Get Conference Room Details
       description: Retrieves detailed information for a specific conference room by its ID, belonging to the specified site.
       operationId: getSiteConferenceRoomById
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: Successfully retrieved conference room details.
@@ -2323,9 +2126,6 @@ paths:
         Updates the configuration for a specific conference room on a site.
         Allows changing the name, PINs, profile, and audio files (greeting, music on hold).
       operationId: updateSiteConferenceRoomById
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Conference room attributes to update.
         required: true
@@ -2365,9 +2165,6 @@ paths:
       summary: Delete a Conference Room
       description: Permanently deletes a specific conference room from the site.
       operationId: deleteSiteConferenceRoomById
-      security:
-        - oAuth2:
-            - write
       responses:
         '204':
           description: Conference room deleted successfully. No content is returned.
@@ -2389,9 +2186,6 @@ paths:
         The original Teliax API included an optional `user_id` query parameter, which might imply that availability
         could also be filtered or contextualized by a user. This parameter is included here.
       operationId: listSiteAvailableConferenceRooms
-      security:
-        - oAuth2:
-            - read
       parameters:
         - name: user_id
           in: query
@@ -2436,10 +2230,6 @@ paths:
         Moves a conference room from its current site (specified in the path)
         to a new target site (specified in the request body) within the same customer account.
       operationId: transferConferenceRoomToNewSite
-      security:
-        - oAuth2:
-            - write
-            - admin
       requestBody:
         description: The identifier of the new site to which the conference room should be transferred.
         required: true
@@ -2507,9 +2297,6 @@ paths:
         This is a PATCH operation as it modifies specific parts of the conference room resource (its audio files).
         The original Teliax API had this as PATCH.
       operationId: uploadSiteConferenceRoomAudio
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Audio files for greeting and/or music on hold.
         required: true
@@ -2567,9 +2354,6 @@ paths:
       summary: List Devices for a Site
       description: Retrieves a list of all devices (e.g., IP phones, softphones) configured for the specified site.
       operationId: listSiteDevices
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: A list of devices for the site.
@@ -2612,9 +2396,6 @@ paths:
         Adds a new device to the specified site.
         The system will generate login credentials (login and password) for the device.
       operationId: createSiteDevice
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Configuration details for the new device.
         required: true
@@ -2685,9 +2466,6 @@ paths:
       summary: Get Device Details
       description: Retrieves detailed information for a specific device by its ID, belonging to the specified site.
       operationId: getSiteDeviceById
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: Successfully retrieved device details.
@@ -2729,9 +2507,6 @@ paths:
         Updates the configuration for a specific device on a site.
         Note: The SIP password cannot be updated via this endpoint; use the dedicated regenerate-password endpoint for that.
       operationId: updateSiteDeviceById
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Device attributes to update.
         required: true
@@ -2799,10 +2574,6 @@ paths:
       summary: Delete a Device
       description: Permanently deletes a specific device from the site.
       operationId: deleteSiteDeviceById
-      security:
-        - oAuth2:
-            - write
-            - admin
       responses:
         '204':
           description: Device deleted successfully. No content is returned.
@@ -2824,9 +2595,6 @@ paths:
         The original Teliax API included a `user_id` query parameter, which might imply that availability
         could also be filtered or contextualized by a user. This parameter is included here as optional.
       operationId: listSiteAvailableDevices
-      security:
-        - oAuth2:
-            - read
       parameters:
         - name: user_id
           in: query
@@ -2895,8 +2663,6 @@ paths:
         Retrieves the registration status for all devices configured on the specified site.
         Indicates which devices are currently online and registered with the call processing services.
       operationId: getSiteDeviceStatuses
-      security:
-        - oAuth2: [read]
       responses:
         '200':
           description: A list of device registration statuses.
@@ -2931,9 +2697,6 @@ paths:
         The device will need to be updated with the new password to re-register.
         The new password is included in the response.
       operationId: regenerateSiteDevicePassword
-      security:
-        - oAuth2:
-            - write
       responses:
         '200':
           description: Device password regenerated successfully. The new password is included in the response.
@@ -2981,10 +2744,6 @@ paths:
         (specified in the request body) within the same customer account.
         The device configuration (apart from its site association) generally remains the same.
       operationId: transferDeviceToNewSite
-      security:
-        - oAuth2:
-            - write
-            - admin
       requestBody:
         description: The identifier of the new site to which the device should be transferred.
         required: true
@@ -3054,9 +2813,6 @@ paths:
       summary: List E911 Records for a Site
       description: Retrieves a list of all E911 records (validated emergency addresses) associated with the specified site.
       operationId: listSiteE911Records
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: A list of E911 records for the site.
@@ -3098,9 +2854,6 @@ paths:
       summary: Get E911 Record Details
       description: Retrieves detailed information for a specific E911 record by its ID, belonging to the specified site.
       operationId: getSiteE911RecordById
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: Successfully retrieved E911 record details.
@@ -3136,9 +2889,6 @@ paths:
         Updates the details of an existing E911 record.
         This typically involves providing address information for validation with emergency services.
       operationId: updateSiteE911RecordById
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: E911 record attributes to update.
         required: true
@@ -3195,9 +2945,6 @@ paths:
         This action may also unregister the associated address from emergency services.
         Ensure no phone numbers or devices are solely reliant on this E911 record for emergency calling.
       operationId: deleteSiteE911RecordById
-      security:
-        - oAuth2:
-            - write
       responses:
         '204':
           description: E911 record deleted successfully. No content is returned.
@@ -3222,9 +2969,6 @@ paths:
       summary: List Extensions for a Site
       description: Retrieve a paginated list of all extensions that belong to a site.
       operationId: listSiteExtensions
-      security:
-        - oAuth2:
-            - read
       parameters:
         - name: page
           in: query
@@ -3281,9 +3025,6 @@ paths:
       summary: Create Extension for a Site
       description: Add a new extension to the specified site.
       operationId: createSiteExtension
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Details for the new extension.
         required: true
@@ -3333,9 +3074,6 @@ paths:
       summary: Get Extension Details
       description: Retrieves detailed information for a specific extension by its ID, belonging to the specified site.
       operationId: getSiteExtensionById
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: Successfully retrieved extension details.
@@ -3364,9 +3102,6 @@ paths:
       summary: Update Extension Configuration
       description: Updates the configuration for a specific extension on a site, such as its name, number, or call routing destination.
       operationId: updateSiteExtensionById
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Extension attributes to update.
         required: true
@@ -3419,10 +3154,6 @@ paths:
       summary: Delete an Extension
       description: Permanently deletes a specific extension from the site.
       operationId: deleteSiteExtensionById
-      security:
-        - oAuth2:
-            - write
-            - admin
       responses:
         '204':
           description: Extension deleted successfully. No content is returned.
@@ -3444,9 +3175,6 @@ paths:
         The original Teliax API included an optional `user_id` query parameter, which might imply that availability
         could also be filtered or contextualized by a user. This parameter is included here.
       operationId: listSiteAvailableExtensions
-      security:
-        - oAuth2:
-            - read
       parameters:
         - name: user_id
           in: query
@@ -3500,10 +3228,6 @@ paths:
       summary: Transfer Extension to Another Site
       description: Moves an extension from its current site to a new target site.
       operationId: transferSiteExtension
-      security:
-        - oAuth2:
-            - write
-            - admin
       requestBody:
         description: The identifier of the new site for the extension.
         required: true
@@ -3557,9 +3281,6 @@ paths:
       summary: List Fax Machines for a Site
       description: Retrieves a list of all fax machine (Fax to Email) configurations for the specified site.
       operationId: listSiteFaxMachines
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: A list of fax machines for the site.
@@ -3593,9 +3314,6 @@ paths:
         Adds a new fax machine (Fax to Email) configuration to the specified site.
         Requires a name and one or more notification email addresses where received faxes (as PDFs) will be sent.
       operationId: createSiteFaxMachine
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Configuration details for the new fax machine.
         required: true
@@ -3639,9 +3357,6 @@ paths:
       summary: Get Fax Machine Details
       description: Retrieves detailed information for a specific fax machine configuration by its ID, belonging to the specified site.
       operationId: getSiteFaxMachineById
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: Successfully retrieved fax machine details.
@@ -3669,9 +3384,6 @@ paths:
       summary: Update Fax Machine Configuration
       description: Updates the configuration for a specific fax machine on a site, such as its name or notification email addresses.
       operationId: updateSiteFaxMachineById
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Fax machine attributes to update.
         required: true
@@ -3711,9 +3423,6 @@ paths:
       summary: Delete a Fax Machine Configuration
       description: Permanently deletes a specific fax machine configuration from the site.
       operationId: deleteSiteFaxMachineById
-      security:
-        - oAuth2:
-            - write
       responses:
         '204':
           description: Fax machine configuration deleted successfully. No content is returned.
@@ -3735,9 +3444,6 @@ paths:
         The original Teliax API included an optional `user_id` query parameter, which might imply that availability
         could also be filtered or contextualized by a user. This parameter is included here.
       operationId: listSiteAvailableFaxMachines
-      security:
-        - oAuth2:
-            - read
       parameters:
         - name: user_id
           in: query
@@ -3781,10 +3487,6 @@ paths:
         Moves a fax machine configuration from its current site (specified in the path)
         to a new target site (specified in the request body) within the same customer account.
       operationId: transferFaxMachineToNewSite
-      security:
-        - oAuth2:
-            - write
-            - admin
       requestBody:
         description: The identifier of the new site to which the fax machine configuration should be transferred.
         required: true
@@ -3845,9 +3547,6 @@ paths:
       summary: List Forwards for a Site
       description: Retrieve a paginated list of all call forwards that belong to a site.
       operationId: listSiteForwards
-      security:
-        - oAuth2:
-            - read
       parameters:
         - name: page
           in: query
@@ -3905,9 +3604,6 @@ paths:
       summary: Create Forward for a Site
       description: Add a new call forward to your site.
       operationId: createSiteForward
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Details for the new forward.
         required: true
@@ -3958,9 +3654,6 @@ paths:
       summary: Get Site Forward Details
       description: Retrieve the details of a specific call forward for a site.
       operationId: getSiteForwardById
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: Forward Details
@@ -3993,9 +3686,6 @@ paths:
       summary: Update Site Forward
       description: Update an existing call forward for a site. Provide only fields to be changed.
       operationId: updateSiteForwardById
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Attributes of the forward to update.
         required: true
@@ -4044,9 +3734,6 @@ paths:
       summary: Delete Site Forward
       description: Permanently delete a specific call forward for a site.
       operationId: deleteSiteForwardById
-      security:
-        - oAuth2:
-            - write
       responses:
         '204':
           description: Forward Deleted Successfully. No Content.
@@ -4065,9 +3752,6 @@ paths:
       summary: List Available Forwards for a Site/User
       description: Retrieve all the available and assigned forwards for the site. Optionally filter by user ID to show forwards assigned to a specific user.
       operationId: listSiteAvailableForwards
-      security:
-        - oAuth2:
-            - read
       parameters:
         - name: userId
           in: query
@@ -4130,9 +3814,6 @@ paths:
       summary: Transfer Site Forward
       description: Transfer a call forward to a different site.
       operationId: transferSiteForward
-      security:
-        - oAuth2:
-            - write
       requestBody:
         required: true
         content:
@@ -4185,9 +3866,6 @@ paths:
       summary: List Locations for a Site
       description: Retrieves a paginated list of all physical locations defined for the specified site.
       operationId: listSiteLocations
-      security:
-        - oAuth2:
-            - read
       parameters:
         - name: page
           in: query
@@ -4252,9 +3930,6 @@ paths:
         Adds a new physical location to the specified site.
         This location can then be used for E911 address validation and associating other resources.
       operationId: createSiteLocation
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Details for the new location.
         required: true
@@ -4311,9 +3986,6 @@ paths:
       summary: Get Location Details
       description: Retrieves detailed information for a specific location by its ID, belonging to the specified site.
       operationId: getSiteLocationById
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: Successfully retrieved location details.
@@ -4353,9 +4025,6 @@ paths:
         Updates the details of an existing physical location for a site.
         This can include address components, caller ID name for E911, and E911 enablement status.
       operationId: updateSiteLocationById
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Location attributes to update.
         required: true
@@ -4415,9 +4084,6 @@ paths:
         Permanently deletes a specific location record from the site.
         Ensure no devices or critical services (like E911 entries) are solely dependent on this location before deleting.
       operationId: deleteSiteLocationById
-      security:
-        - oAuth2:
-            - write
       responses:
         '204':
           description: Location deleted successfully. No content is returned.
@@ -4442,9 +4108,6 @@ paths:
       summary: List Menus for a Site
       description: Retrieve a paginated list of all menus (auto attendants) that belong to a site.
       operationId: listSiteMenus
-      security:
-        - oAuth2:
-            - read
       parameters:
         - name: page
           in: query
@@ -4502,9 +4165,6 @@ paths:
       summary: Create Menu for a Site
       description: Add a new menu (auto attendant) to your site. Greeting can be uploaded.
       operationId: createSiteMenu
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Configuration details for the new menu.
         required: true
@@ -4551,9 +4211,6 @@ paths:
       summary: Get Menu Details
       description: Retrieve the details of a specific menu.
       operationId: getSiteMenuById
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: Menu details retrieved successfully.
@@ -4587,9 +4244,6 @@ paths:
       summary: Update Menu Configuration
       description: Updates an existing menu. For `multipart/form-data`, provide only the fields to change. Audio files can be updated.
       operationId: updateSiteMenuById
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Menu attributes to update. Only include fields that need to be changed.
         required: true
@@ -4632,9 +4286,6 @@ paths:
       summary: Delete Menu
       description: Permanently delete a specific menu.
       operationId: deleteSiteMenuById
-      security:
-        - oAuth2:
-            - write
       responses:
         '204':
           description: Menu Deleted Successfully.
@@ -4656,10 +4307,6 @@ paths:
         Moves a menu from its current site (specified in the path)
         to a new target site (specified in the request body) within the same customer account.
       operationId: transferSiteMenu
-      security:
-        - oAuth2:
-            - write
-            - admin
       requestBody:
         description: The identifier of the new site to which the menu should be transferred.
         required: true
@@ -4724,9 +4371,6 @@ paths:
       summary: Upload Menu Greeting
       description: Upload or update the greeting audio file for the specified menu.
       operationId: uploadSiteMenuGreeting
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: The greeting audio file to upload.
         required: true
@@ -4781,9 +4425,6 @@ paths:
       summary: List Phone Numbers for a Site
       description: Retrieve a paginated list of all phone numbers assigned to the specified site.
       operationId: listSitePhoneNumbers
-      security:
-        - oAuth2:
-            - read
       parameters:
         - name: page
           in: query
@@ -4848,9 +4489,6 @@ paths:
       summary: Assign Phone Number to Site
       description: Assigns an available phone number to the specified site and configures its initial routing.
       operationId: assignSitePhoneNumber
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Details of the phone number to assign and its configuration.
         required: true
@@ -4910,9 +4548,6 @@ paths:
       summary: Get Phone Number Details
       description: Retrieves detailed information for a specific phone number assigned to a site.
       operationId: getSitePhoneNumberById
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: Successfully retrieved phone number details.
@@ -4951,9 +4586,6 @@ paths:
       summary: Update Phone Number Configuration
       description: Updates configuration for a specific phone number. Only provided fields are changed.
       operationId: updateSitePhoneNumberById
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Phone number attributes to update.
         required: true
@@ -5001,9 +4633,6 @@ paths:
       summary: Unassign/Delete Phone Number from Site
       description: Removes a phone number assignment from the site. The number may return to inventory.
       operationId: deleteSitePhoneNumberById
-      security:
-        - oAuth2:
-            - write
       responses:
         '204':
           description: Phone number unassigned/deleted successfully. No content is returned.
@@ -5022,9 +4651,6 @@ paths:
       summary: List Available Phone Numbers for a Site
       description: Retrieves phone numbers that are available for assignment to the specified site.  Can be optionally filtered by user ID.
       operationId: listSiteAvailablePhoneNumbers
-      security:
-        - oAuth2:
-            - read
       parameters:
         - name: userId
           in: query
@@ -5096,10 +4722,6 @@ paths:
         Moves an assigned phone number from its current site (specified in the path)
         to a new target site (specified in the request body) within the same customer account.
       operationId: transferSitePhoneNumber
-      security:
-        - oAuth2:
-            - write
-            - admin
       requestBody:
         description: The identifier of the new site to which the phone number should be transferred.
         required: true
@@ -5168,9 +4790,6 @@ paths:
       summary: List Ring Groups for a Site
       description: Retrieve a paginated list of all ring groups configured for the specified site.
       operationId: listSiteRingGroups
-      security:
-        - oAuth2:
-            - read
       parameters:
         - name: page
           in: query
@@ -5238,9 +4857,6 @@ paths:
       summary: Create Ring Group for a Site
       description: Add a new ring group to the specified site.
       operationId: createSiteRingGroup
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Configuration details for the new ring group.
         required: true
@@ -5303,9 +4919,6 @@ paths:
       summary: Get Ring Group Details
       description: Retrieves detailed information for a specific ring group by its ID.
       operationId: getSiteRingGroupById
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: Ring Group details retrieved successfully.
@@ -5347,9 +4960,6 @@ paths:
       summary: Update Ring Group Configuration
       description: Updates an existing ring group. Provide only fields to be changed.
       operationId: updateSiteRingGroupById
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Ring group attributes to update.
         required: true
@@ -5408,9 +5018,6 @@ paths:
       summary: Delete Ring Group
       description: Permanently deletes a specific ring group.
       operationId: deleteSiteRingGroupById
-      security:
-        - oAuth2:
-            - write
       responses:
         '204':
           description: Ring Group Deleted Successfully.
@@ -5432,10 +5039,6 @@ paths:
         Moves a ring group from its current site (specified in the path)
         to a new target site (specified in the request body) within the same customer account.
       operationId: transferSiteRingGroup
-      security:
-        - oAuth2:
-            - write
-            - admin
       requestBody:
         description: The identifier of the new site to which the ring group should be transferred.
         required: true
@@ -5508,9 +5111,6 @@ paths:
       summary: List Schedules for a Site
       description: Retrieve a paginated list of all schedules that belong to a site.
       operationId: listSiteSchedules
-      security:
-        - oAuth2:
-            - read
       parameters:
         - name: page
           in: query
@@ -5592,9 +5192,6 @@ paths:
       summary: Create Schedule for a Site
       description: Add a new schedule to the specified site.
       operationId: createSiteSchedule
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Configuration details for the new schedule.
         required: true
@@ -5670,9 +5267,6 @@ paths:
       summary: Get Schedule Details
       operationId: getSiteScheduleById
       description: Retrieves the details of a specific Schedule.
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: Schedule details retrieved successfully.
@@ -5720,9 +5314,6 @@ paths:
       summary: Update Schedule
       operationId: updateSiteScheduleById
       description: Updates an existing Schedule. Provide only the fields to be changed.
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Schedule attributes to update.
         required: true
@@ -5801,10 +5392,6 @@ paths:
       summary: Delete a Schedule
       operationId: deleteSiteScheduleById
       description: Permanently deletes a Schedule.
-      security:
-        - oAuth2:
-            - write
-            - admin
       responses:
         '204':
           description: Schedule deleted successfully.
@@ -5823,9 +5410,6 @@ paths:
       summary: List Available Schedules for a Site
       operationId: listSiteAvailableSchedules
       description: Retrieves available and (if applicable) assigned Schedules that could be used by the Site or a User on the Site.
-      security:
-        - oAuth2:
-            - read
       parameters:
         - name: userId
           in: query
@@ -5897,10 +5481,6 @@ paths:
       summary: Transfer Schedule to Another Site
       operationId: transferSiteSchedule
       description: Moves a schedule from its current site to a new target site.
-      security:
-        - oAuth2:
-            - write
-            - admin
       requestBody:
         description: The identifier of the new site for the schedule.
         required: true
@@ -5970,9 +5550,6 @@ paths:
       summary: List Seats for a Site
       description: Retrieve a paginated list of all seats configured for the specified site.
       operationId: listSiteSeats
-      security:
-        - oAuth2:
-            - read
       parameters:
         - name: page
           in: query
@@ -6033,9 +5610,6 @@ paths:
       summary: Create Seat for a Site
       description: Provisions a new set of telephony features (a "seat") for a user on a site, based on a selected template.
       operationId: createSiteSeat
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Details for the new seat, including the template and user.
         required: true
@@ -6091,9 +5665,6 @@ paths:
       summary: Get Seat Details
       description: Retrieves detailed information for a specific seat by its ID.
       operationId: getSiteSeatById
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: Seat details retrieved successfully.
@@ -6128,9 +5699,6 @@ paths:
       summary: Update Seat Information
       description: Updates information for an existing seat. Typically name or user assignment. Template is usually fixed post-creation.
       operationId: updateSiteSeatById
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Seat attributes to update.
         required: true
@@ -6177,10 +5745,6 @@ paths:
       summary: Delete Seat
       description: Permanently deletes a seat and de-provisions its associated features.
       operationId: deleteSiteSeatById
-      security:
-        - oAuth2:
-            - write
-            - admin
       responses:
         '204':
           description: Seat deleted successfully.
@@ -6202,10 +5766,6 @@ paths:
         Moves a seat (and its provisioned features) from its current site
         to a new target site within the same customer account.
       operationId: transferSiteSeat
-      security:
-        - oAuth2:
-            - write
-            - admin
       requestBody:
         description: The identifier of the new site to which the seat should be transferred.
         required: true
@@ -6270,9 +5830,6 @@ paths:
       summary: List SIP Trunks for a Site
       description: Retrieve a paginated list of all SIP Trunks configured for the specified site.
       operationId: listSiteSipTrunks
-      security:
-        - oAuth2:
-            - read
       parameters:
         - name: page
           in: query
@@ -6346,9 +5903,6 @@ paths:
       summary: Create SIP Trunk for a Site
       description: Adds a new SIP Trunk to the specified site. Login and password will be generated if not provided.
       operationId: createSiteSipTrunk
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Configuration details for the new SIP Trunk.
         required: true
@@ -6415,9 +5969,6 @@ paths:
       summary: Get SIP Trunk Details
       operationId: getSiteSipTrunkById
       description: Retrieves the details of a specific SIP Trunk.
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: SIP Trunk details retrieved successfully.
@@ -6459,9 +6010,6 @@ paths:
       summary: Update SIP Trunk
       operationId: updateSiteSipTrunkById
       description: Updates an existing SIP Trunk. Only attributes provided in the request body will be updated. Password update should use regenerate-password endpoint.
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: SIP Trunk attributes to update.
         required: true
@@ -6520,9 +6068,6 @@ paths:
       summary: Delete a SIP Trunk
       operationId: deleteSiteSipTrunkById
       description: Permanently deletes a SIP Trunk.
-      security:
-        - oAuth2:
-            - write
       responses:
         '204':
           description: SIP Trunk deleted successfully.
@@ -6545,9 +6090,6 @@ paths:
         Generates a new random SIP password for the specified SIP Trunk.
         The old password will no longer be valid. The SIP Trunk endpoint will need to be updated.
         The new password is included in the response.
-      security:
-        - oAuth2:
-            - write
       responses:
         '200':
           description: SIP Trunk password regenerated successfully. The new password is included.
@@ -6581,8 +6123,6 @@ paths:
       summary: List SIP Trunk Registration Statuses
       operationId: getSiteSipTrunkStatuses
       description: Retrieve the registration status for all SIP Trunks configured on the specified site.
-      security:
-        - oAuth2: [read]
       responses:
         '200':
           description: Registration statuses for the SIP Trunks.
@@ -6624,10 +6164,6 @@ paths:
       summary: Transfer SIP Trunk
       operationId: transfer_sip_trunk
       description: Transfer a SIP Trunk to a different Site
-      security:
-        - oAuth2:
-            - write
-            - admin
       requestBody:
         description: Transfer parameters
         required: true
@@ -6718,9 +6254,6 @@ paths:
       summary: List Voicemail Boxes for a Site
       operationId: listSiteVoicemailBoxes
       description: Retrieve a paginated list of all voicemail boxes configured for the specified site.
-      security:
-        - oAuth2:
-            - read
       parameters:
         - name: page
           in: query
@@ -6791,9 +6324,6 @@ paths:
       summary: Create Voicemail Box for a Site
       operationId: createSiteVoicemailBox
       description: Adds a new voicemail box to the specified site. Announcement greeting can be uploaded.
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Configuration details for the new voicemail box.
         required: true
@@ -6841,8 +6371,6 @@ paths:
       summary: Get Voicemail Box Details
       operationId: getSiteVoicemailBoxById
       description: Retrieves the details of a specific Voicemail Box.
-      security:
-        - oAuth2: [read]
       responses:
         '200':
           description: Voicemail Box details retrieved successfully.
@@ -6879,8 +6407,6 @@ paths:
       description: |
         Updates an existing Voicemail Box. Provide only the attributes to be changed.
         To update the announcement greeting, use the dedicated upload endpoint.
-      security:
-        - oAuth2: [write]
       requestBody:
         description: Voicemail Box attributes to update.
         required: true
@@ -6932,8 +6458,6 @@ paths:
       summary: Delete a Voicemail Box
       operationId: deleteSiteVoicemailBoxById
       description: Permanently deletes a Voicemail Box.
-      security:
-        - oAuth2: [write]
       responses:
         '204':
           description: Voicemail Box deleted successfully.
@@ -6952,9 +6476,6 @@ paths:
       summary: List Available Voicemail Boxes for a Site
       operationId: listSiteAvailableVoicemailBoxes
       description: Retrieves available Voicemail Boxes that could be used by the Site or a User on the Site.
-      security:
-        - oAuth2:
-            - read
       parameters:
         - name: user_id
           in: query
@@ -7065,8 +6586,6 @@ paths:
         - Site Features - Voicemail Boxes
       summary: Upload Greeting Voice Mail Box
       operationId: patchVoiceMailBoxAnnouncement
-      security:
-        - oAuth2: [read]
       description: >-
         Upload the greeting message for Voice Mail Box.
       parameters:
@@ -7122,9 +6641,6 @@ paths:
         Retrieves a list of account statements (receipts) for the authenticated user's account.
         Statements are generated at the end of each service interval (e.g., monthly) and are typically paginated.
       operationId: listStatements
-      security:
-        - oAuth2:
-            - read
       parameters:
         - name: page_size
           in: query
@@ -7192,9 +6708,6 @@ paths:
       summary: Get Statement Details
       description: Retrieves detailed information for a specific account statement by its ID.
       operationId: getStatementById
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: Successfully retrieved statement details.
@@ -7240,9 +6753,6 @@ paths:
         Retrieves a list of service templates available to the authenticated account.
         Can be paginated and filtered, for example, to show all templates in the system (with `all=true`) or search by name (`q`).
       operationId: listTemplates
-      security:
-        - oAuth2:
-            - read
       parameters:
         - name: page_size
           in: query
@@ -7306,9 +6816,6 @@ paths:
         Creates a new service template with a defined set of features and their configurations.
         This allows for streamlined provisioning of new users or services.
       operationId: createTemplate
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Configuration details for the new template.
         required: true
@@ -7355,9 +6862,6 @@ paths:
       summary: Get Template Details
       description: Retrieves detailed information for a specific service template by its ID.
       operationId: getTemplateById
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: Successfully retrieved template details.
@@ -7377,9 +6881,6 @@ paths:
       summary: Update an Existing Template
       description: Updates the configuration of an existing service template.
       operationId: updateTemplateById
-      security:
-        - oAuth2:
-            - write
       requestBody:
         description: Template attributes to update.
         required: true
@@ -7417,10 +6918,6 @@ paths:
       summary: Delete a Template
       description: Permanently deletes a specific service template. This action cannot be undone.
       operationId: deleteTemplateById
-      security:
-        - oAuth2:
-            - write
-            - admin
       responses:
         '204':
           description: Template deleted successfully. No content is returned.
@@ -7439,9 +6936,6 @@ paths:
         Retrieves a list of all available Thin Clients that can be assigned to Sites.
         This information is typically used during Site setup or modification to select the appropriate call processing node.
       operationId: listAvailableThinClients
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: A list of available Thin Clients.
@@ -7478,9 +6972,6 @@ paths:
         Retrieves a list of all IANA timezone identifiers supported by the system.
         This information is essential for accurately configuring any time-dependent settings or features.
       operationId: listAvailableTimezones
-      security:
-        - oAuth2:
-            - read
       responses:
         '200':
           description: A list of available IANA timezone identifiers.
@@ -7509,10 +7000,6 @@ paths:
         Retrieves a list of all users associated with the authenticated account.
         The list can be paginated and is typically sorted by user name.
       operationId: listUsers
-      security:
-        - oAuth2:
-            - read
-            - admin
       parameters:
         - name: page
           in: query
@@ -7571,10 +7058,6 @@ paths:
         The new user will typically receive a confirmation email to activate their account and set a password.
         Requires administrative privileges.
       operationId: addUser
-      security:
-        - oAuth2:
-            - write
-            - admin
       requestBody:
         description: Details of the new user to be created.
         required: true
@@ -7625,10 +7108,6 @@ paths:
       summary: Get User Details
       description: Retrieves detailed information for a specific user by their ID.
       operationId: getUserById
-      security:
-        - oAuth2:
-            - read
-            - admin
       responses:
         '200':
           description: Successfully retrieved user details.
@@ -7651,10 +7130,6 @@ paths:
         Any parameters not provided in the request body will be left unchanged (PATCH-like behavior for PUT).
         Requires administrative privileges.
       operationId: updateUserById
-      security:
-        - oAuth2:
-            - write
-            - admin
       requestBody:
         description: User attributes to update.
         required: true
@@ -7689,10 +7164,6 @@ paths:
         Permanently deletes a specific user by their ID.
         This action cannot be undone. Requires administrative privileges.
       operationId: deleteUserById
-      security:
-        - oAuth2:
-            - write
-            - admin
       responses:
         '204':
           description: User deleted successfully. No content is returned.
@@ -7711,9 +7182,6 @@ paths:
         Searches for available phone numbers based on the provided criteria.
         This endpoint allows filtering by area code, country, and number type.
       operationId: searchPhoneNumbers
-      security:
-        - oAuth2:
-            - read
       parameters:
         - in: query
           name: search_category
@@ -7825,8 +7293,6 @@ components:
           type: string
           description: Maximum permissible auto-recharge amount in a single transaction, in dollars.
           example: '1500.00'
-      example:
-        name: Innovatech Solutions - EMEA Branch
     AccountResponse:
       type: object
       description: Detailed information about a customer account.
@@ -7835,6 +7301,7 @@ components:
           type: integer
           format: int64
           description: Unique identifier for the account.
+          readOnly: true
           example: 101
         name:
           type: string
@@ -7901,6 +7368,10 @@ components:
           description: HATEOAS links related to the account.
           items:
             $ref: '#/components/schemas/schemas-Link'
+          example:
+            - href: /account
+              rel: self
+              method: GET
       required:
         - id
         - name
@@ -7909,39 +7380,6 @@ components:
         - created_at
         - locale
         - balance
-      example:
-        id: 101
-        name: Innovatech Solutions Ltd.
-        status: active
-        plan: enterprise_annual_v2
-        email: billing@innovatech.com
-        phone: '+14155550100'
-        created_at: '2023-01-15T10:30:00Z'
-        locale: en-US
-        balance: '4276.85'
-        balance_preference_in_dollars: '100.00'
-        recharge_preference_in_dollars: '200.00'
-        maximum_recharge_preference_in_dollars: '1000.00'
-        international_enabled: true
-        current_user:
-          id: 5
-          first_name: Jane
-          last_name: Doe
-          email: jane.doe@innovatech.com
-          role: administrator
-        address:
-          id: 25
-          email: billing@innovatech.com
-          street_address: 123 Tech Park, Suite 100
-          country: US
-          city: San Francisco
-          state_province: CA
-          postal_code: '94107'
-          contact_number: '+14155550100'
-        links:
-          - href: /account
-            rel: self
-            method: GET
     UserSummary:
       type: object
       description: A brief summary of a user associated with an account.
