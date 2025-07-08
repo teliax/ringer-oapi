@@ -267,12 +267,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TokenResponse'
-              example:
-                access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOi...
-                token_type: Bearer
-                expires_in: 7200
-                refresh_token: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOi...
-                scope: read write
         '400':
           description: |
             Bad Request.
@@ -287,18 +281,7 @@ paths:
                 error: 'Invalid request: ''username'' is required for grant_type ''password''.'
                 error_code: INVALID_REQUEST_PARAMETERS
         '401':
-          description: |
-            Unauthorized.
-            Authentication failed. This could be due to invalid client credentials,
-            an invalid or expired refresh token, or incorrect user credentials for the password grant.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/oauth_components-schemas-Error'
-              example:
-                status: error
-                error: 'Client authentication failed: Invalid client_id or client_secret.'
-                error_code: INVALID_CLIENT_CREDENTIALS
+          $ref: '#/components/responses/UnauthorizedError'
   /oauth/revoke:
     post:
       tags:
@@ -315,10 +298,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RevokeRequest'
-            example:
-              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOi...
-              client_id: your_application_client_id
-              client_secret: your_application_client_secret
       responses:
         '204':
           description: Token successfully revoked. No content is returned.
@@ -336,18 +315,7 @@ paths:
                 error: 'Invalid request: ''token'' parameter is missing.'
                 error_code: INVALID_REQUEST_PARAMETERS
         '401':
-          description: |
-            Unauthorized.
-            Client authentication failed for the revocation request (e.g., invalid `client_id` or `client_secret`).
-            This does *not* mean the token to be revoked was invalid, but that the revoking client is not authorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/oauth_components-schemas-Error'
-              example:
-                status: error
-                error: Client authentication failed for revocation.
-                error_code: INVALID_CLIENT_CREDENTIALS_FOR_REVOCATION
+          $ref: '#/components/responses/UnauthorizedError'
   /confirmation:
     post:
       tags:
@@ -7544,22 +7512,11 @@ components:
           type: string
           nullable: true
           description: Token that can be used to obtain a new access token when the current access token expires.
-          example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOi...
-        scope:
-          type: string
-          nullable: true
-          description: Space-separated list of scopes that have been granted for this access token.
-          example: read write
+          example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOidsdjfsd334skd3
       required:
         - access_token
         - token_type
         - expires_in
-      example:
-        access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOi...
-        token_type: Bearer
-        expires_in: 7200
-        refresh_token: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOi...
-        scope: read write profile
     RevokeRequest:
       type: object
       description: Parameters for revoking an OAuth 2.0 token.
