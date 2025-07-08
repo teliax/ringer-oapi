@@ -2,7 +2,18 @@ openapi: 3.0.1
 info:
   title: Ringer Portability API
   version: 1.0.0
-  description: Service Order Administration (SOA) API for Local Number Portability (LNP) operations. This API provides comprehensive functionality for managing telephone number porting operations.
+  description: |-
+    Service Order Acceptance (SOA) API for Local Number Portability (LNP) operations.
+
+    This API provides comprehensive functionality for managing telephone number porting operations including:
+    - Port request creation and management
+    - Number activation and disconnection
+    - Conflict resolution
+    - LRN (Location Routing Number) management
+    - Real-time status queries
+    - Event management and notifications
+
+    Authentication: Bearer token required for all endpoints
   contact:
     name: Ringer API Support
     email: api-support@ringer.tel
@@ -10,211 +21,24 @@ info:
   license:
     name: Proprietary
     url: https://ringer.tel/terms
+  x-logo:
+    url: https://ringer.tel/logo.png
+    altText: Ringer Logo
 servers:
-  - url: https://api.ringer.tel
-    description: Production
-  - url: https://staging-api.ringer.tel
-    description: Staging
+  - url: https://soa-api.ringer.tel
+    description: Production server
+  - url: https://staging-soa-api.ringer.tel
+    description: Staging server
+  - url: http://localhost:8080
+    description: Local development server
 tags:
   - name: SOA Operations
-    description: Service Order Administration endpoints for Local Number Portability
+    description: Service Order Acceptance endpoints for Local Number Portability
 paths:
-  /api/v1/admin/tokens/{tokenId}:
-    get:
-      tags:
-        - admin-api-controller
-      operationId: getToken
-      parameters:
-        - name: tokenId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/TokenResponse'
-    put:
-      tags:
-        - admin-api-controller
-      operationId: updateToken
-      parameters:
-        - name: tokenId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateTokenRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/TokenResponse'
-  /api/v1/admin/tokens/{tokenId}/spids:
-    get:
-      tags:
-        - admin-api-controller
-      operationId: getTokenSpids
-      parameters:
-        - name: tokenId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                uniqueItems: true
-                type: array
-                items:
-                  type: string
-    put:
-      tags:
-        - admin-api-controller
-      operationId: updateTokenSpids
-      parameters:
-        - name: tokenId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              uniqueItems: true
-              type: array
-              items:
-                type: string
-        required: true
-      responses:
-        '200':
-          description: OK
-  /api/v1/admin/customers/{customerId}:
-    get:
-      tags:
-        - admin-api-controller
-      operationId: getCustomer
-      parameters:
-        - name: customerId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/CustomerResponse'
-    put:
-      tags:
-        - admin-api-controller
-      operationId: updateCustomer
-      parameters:
-        - name: customerId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateCustomerRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/CustomerResponse'
-    delete:
-      tags:
-        - admin-api-controller
-      operationId: deleteCustomer
-      parameters:
-        - name: customerId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: OK
-  /api/v1/admin/customers/{customerId}/spids/{spid}:
-    put:
-      tags:
-        - admin-api-controller
-      operationId: updateCustomerSpid
-      parameters:
-        - name: customerId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: spid
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              additionalProperties:
-                type: object
-        required: true
-      responses:
-        '200':
-          description: OK
-    delete:
-      tags:
-        - admin-api-controller
-      operationId: removeCustomerSpid
-      parameters:
-        - name: customerId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: spid
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
   /v1/lnp/soa/release:
     post:
       tags:
-        - SOA Operations
+        - SOA Operations SOA Operations
       summary: Release a port request
       description: Releases a telephone number from a port request
       operationId: release
@@ -278,7 +102,7 @@ paths:
   /v1/lnp/soa/lrn/remove:
     post:
       tags:
-        - SOA Operations
+        - SOA Operations SOA Operations
       summary: Remove an LRN
       description: Removes an existing Local Routing Number
       operationId: removeLrn
@@ -342,7 +166,7 @@ paths:
   /v1/lnp/soa/lrn/create:
     post:
       tags:
-        - SOA Operations
+        - SOA Operations SOA Operations
       summary: Create an LRN
       description: Creates a new Local Routing Number
       operationId: createLrn
@@ -415,7 +239,7 @@ paths:
   /v1/lnp/soa/events/{recno}/acknowledge:
     post:
       tags:
-        - SOA Operations
+        - SOA Operations SOA Operations
       summary: Acknowledge an event
       description: Acknowledges a specific SOA event by record number
       operationId: acknowledgeEvent
@@ -460,7 +284,7 @@ paths:
   /v1/lnp/soa/disconnect:
     post:
       tags:
-        - SOA Operations
+        - SOA Operations SOA Operations
       summary: Disconnect a number
       description: Disconnects a telephone number from service
       operationId: disconnect
@@ -515,7 +339,7 @@ paths:
   /v1/lnp/soa/create:
     post:
       tags:
-        - SOA Operations
+        - SOA Operations SOA Operations
       summary: Create a new port request
       description: Creates a new service order for porting a telephone number
       operationId: create
@@ -588,7 +412,7 @@ paths:
   /v1/lnp/soa/conflict/remove:
     post:
       tags:
-        - SOA Operations
+        - SOA Operations SOA Operations
       summary: Remove a conflict
       description: Removes a telephone number from conflict status
       operationId: removeConflict
@@ -634,7 +458,7 @@ paths:
   /v1/lnp/soa/conflict/create:
     post:
       tags:
-        - SOA Operations
+        - SOA Operations SOA Operations
       summary: Create a conflict
       description: Places a telephone number into conflict status
       operationId: createConflict
@@ -680,7 +504,7 @@ paths:
   /v1/lnp/soa/cancel:
     post:
       tags:
-        - SOA Operations
+        - SOA Operations SOA Operations
       summary: Cancel a port request
       description: Cancels an existing port request for a telephone number
       operationId: cancel
@@ -744,7 +568,7 @@ paths:
   /v1/lnp/soa/activate:
     post:
       tags:
-        - SOA Operations
+        - SOA Operations SOA Operations
       summary: Activate a ported number
       description: Activates a telephone number that has been ported
       operationId: activate
@@ -817,7 +641,7 @@ paths:
   /api/v1/soa/release:
     post:
       tags:
-        - soa-operations-controller
+        - SOA Operations soa-operations-controller
       operationId: releasePort
       requestBody:
         content:
@@ -839,7 +663,7 @@ paths:
   /api/v1/soa/query:
     post:
       tags:
-        - soa-operations-controller
+        - SOA Operations soa-operations-controller
       operationId: queryPort
       requestBody:
         content:
@@ -861,7 +685,7 @@ paths:
   /api/v1/soa/npanxxcreate:
     post:
       tags:
-        - soa-operations-controller
+        - SOA Operations soa-operations-controller
       operationId: createNpanxx
       requestBody:
         content:
@@ -883,7 +707,7 @@ paths:
   /api/v1/soa/intrasp:
     post:
       tags:
-        - soa-operations-controller
+        - SOA Operations soa-operations-controller
       operationId: intraSp
       requestBody:
         content:
@@ -905,7 +729,7 @@ paths:
   /api/v1/soa/create:
     post:
       tags:
-        - soa-operations-controller
+        - SOA Operations soa-operations-controller
       operationId: createPort
       requestBody:
         content:
@@ -927,7 +751,7 @@ paths:
   /api/v1/soa/conflictremove:
     post:
       tags:
-        - soa-operations-controller
+        - SOA Operations soa-operations-controller
       operationId: removeConflict_1
       requestBody:
         content:
@@ -949,7 +773,7 @@ paths:
   /api/v1/soa/conflictcreate:
     post:
       tags:
-        - soa-operations-controller
+        - SOA Operations soa-operations-controller
       operationId: createConflict_1
       requestBody:
         content:
@@ -971,7 +795,7 @@ paths:
   /api/v1/soa/actreadyget:
     post:
       tags:
-        - soa-operations-controller
+        - SOA Operations soa-operations-controller
       operationId: getActivationReady
       requestBody:
         content:
@@ -993,279 +817,8 @@ paths:
   /api/v1/soa/activate:
     post:
       tags:
-        - soa-operations-controller
+        - SOA Operations soa-operations-controller
       operationId: activatePort
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              additionalProperties:
-                type: object
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: object
-                additionalProperties:
-                  type: object
-  /api/v1/admin/tokens/{tokenId}/revoke:
-    post:
-      tags:
-        - admin-api-controller
-      operationId: revokeToken
-      parameters:
-        - name: tokenId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: reason
-          in: query
-          required: false
-          schema:
-            type: string
-            default: Revoked via API
-      responses:
-        '200':
-          description: OK
-  /api/v1/admin/reconcile/port/{telephoneNumber}:
-    post:
-      tags:
-        - admin-api-controller
-      operationId: reconcilePort
-      parameters:
-        - name: telephoneNumber
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-  /api/v1/admin/events/{recno}/acknowledge:
-    post:
-      tags:
-        - admin-api-controller
-      operationId: acknowledgeEvent_1
-      parameters:
-        - name: recno
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: object
-                additionalProperties:
-                  type: object
-  /api/v1/admin/events/poll:
-    post:
-      tags:
-        - admin-api-controller
-      operationId: triggerEventPolling
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: object
-                additionalProperties:
-                  type: object
-  /api/v1/admin/events/acknowledge:
-    post:
-      tags:
-        - admin-api-controller
-      operationId: acknowledgeEventBody
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              additionalProperties:
-                type: object
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: object
-                additionalProperties:
-                  type: object
-  /api/v1/admin/customers:
-    get:
-      tags:
-        - admin-api-controller
-      operationId: listCustomers
-      parameters:
-        - name: page
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int32
-            default: 0
-        - name: size
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int32
-            default: 20
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CustomerResponse'
-    post:
-      tags:
-        - admin-api-controller
-      operationId: createCustomer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateCustomerRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/CustomerResponse'
-  /api/v1/admin/customers/{customerId}/tokens:
-    get:
-      tags:
-        - admin-api-controller
-      operationId: listCustomerTokens
-      parameters:
-        - name: customerId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/TokenResponse'
-    post:
-      tags:
-        - admin-api-controller
-      operationId: createToken
-      parameters:
-        - name: customerId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateTokenRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/TokenResponse'
-  /api/v1/admin/customers/{customerId}/spids:
-    get:
-      tags:
-        - admin-api-controller
-      operationId: listCustomerSpids
-      parameters:
-        - name: customerId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  type: object
-                  additionalProperties:
-                    type: object
-    post:
-      tags:
-        - admin-api-controller
-      operationId: addCustomerSpid
-      parameters:
-        - name: customerId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              additionalProperties:
-                type: string
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: object
-                additionalProperties:
-                  type: object
-  /api/v1/admin/customers/{customerId}/generate-sample-data:
-    post:
-      tags:
-        - admin-api-controller
-      operationId: generateSampleData
-      parameters:
-        - name: customerId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: OK
-  /api/v1/admin/conflicts/resolve:
-    post:
-      tags:
-        - admin-api-controller
-      operationId: resolveConflict
       requestBody:
         content:
           application/json:
@@ -1286,7 +839,7 @@ paths:
   /v1/lnp/soa/status/{tn}:
     get:
       tags:
-        - SOA Operations
+        - SOA Operations SOA Operations
       summary: Get number status
       description: Gets the current status of a telephone number
       operationId: getStatus
@@ -1331,7 +884,7 @@ paths:
   /v1/lnp/soa/spid/{tn}:
     get:
       tags:
-        - SOA Operations
+        - SOA Operations SOA Operations
       summary: Get SPID for number
       description: Gets the current SPID information for a telephone number
       operationId: getSpid
@@ -1376,7 +929,7 @@ paths:
   /v1/lnp/soa/query/{tn}:
     get:
       tags:
-        - SOA Operations
+        - SOA Operations SOA Operations
       summary: Query port status
       description: Queries the current status and details of a telephone number
       operationId: query
@@ -1444,7 +997,7 @@ paths:
   /v1/lnp/soa/events:
     get:
       tags:
-        - SOA Operations
+        - SOA Operations SOA Operations
       summary: Get SOA events
       description: Retrieves unacknowledged SOA events
       operationId: getEvents
@@ -1472,7 +1025,7 @@ paths:
   /v1/lnp/soa/activation-ready/{newspid}:
     get:
       tags:
-        - SOA Operations
+        - SOA Operations SOA Operations
       summary: Get activation-ready numbers
       description: Gets all numbers ready for activation for a specific SPID
       operationId: getActivationReady_1
@@ -1517,7 +1070,7 @@ paths:
   /api/v1/soa/status/{tn}:
     get:
       tags:
-        - soa-operations-controller
+        - SOA Operations soa-operations-controller
       operationId: getStatus_1
       parameters:
         - name: tn
@@ -1537,7 +1090,7 @@ paths:
   /api/v1/soa/spidget/{tn}:
     get:
       tags:
-        - soa-operations-controller
+        - SOA Operations soa-operations-controller
       operationId: getSpid_1
       parameters:
         - name: tn
@@ -1554,791 +1107,3 @@ paths:
                 type: object
                 additionalProperties:
                   type: object
-  /api/v1/admin/verify/port/{telephoneNumber}:
-    get:
-      tags:
-        - admin-api-controller
-      operationId: verifyPort
-      parameters:
-        - name: telephoneNumber
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: object
-                additionalProperties:
-                  type: object
-  /api/v1/admin/statistics:
-    get:
-      tags:
-        - admin-api-controller
-      operationId: getStatistics
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: object
-  /api/v1/admin/realtime/port/{telephoneNumber}:
-    get:
-      tags:
-        - admin-api-controller
-      operationId: getRealTimePortInfo
-      parameters:
-        - name: telephoneNumber
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: object
-                additionalProperties:
-                  type: object
-  /api/v1/admin/phone-lookup/{tn}:
-    get:
-      tags:
-        - admin-api-controller
-      operationId: lookupPhoneNumber
-      parameters:
-        - name: tn
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: object
-                additionalProperties:
-                  type: object
-  /api/v1/admin/events:
-    get:
-      tags:
-        - admin-api-controller
-      operationId: getAdminEvents
-      parameters:
-        - name: page
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int32
-            default: 0
-        - name: size
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int32
-            default: 50
-        - name: sortBy
-          in: query
-          required: false
-          schema:
-            type: string
-            default: recNo
-        - name: sortDirection
-          in: query
-          required: false
-          schema:
-            type: string
-            default: desc
-        - name: showAll
-          in: query
-          required: false
-          schema:
-            type: boolean
-            default: false
-        - name: search
-          in: query
-          required: false
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: object
-                additionalProperties:
-                  type: object
-  /api/v1/admin/events/polling-status:
-    get:
-      tags:
-        - admin-api-controller
-      operationId: getPollingStatus
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: object
-                additionalProperties:
-                  type: object
-  /api/v1/admin/customers/{customerId}/verify:
-    get:
-      tags:
-        - admin-api-controller
-      operationId: verifyCustomerTransactions
-      parameters:
-        - name: customerId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: object
-                additionalProperties:
-                  type: object
-  /api/v1/admin/customers/{customerId}/transactions:
-    get:
-      tags:
-        - admin-api-controller
-      operationId: getCustomerTransactions
-      parameters:
-        - name: customerId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: page
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int32
-            default: 0
-        - name: size
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int32
-            default: 10
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: object
-                additionalProperties:
-                  type: object
-  /api/v1/admin/customers/{customerId}/events:
-    get:
-      tags:
-        - admin-api-controller
-      operationId: getCustomerEvents
-      parameters:
-        - name: customerId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: object
-                additionalProperties:
-                  type: object
-  /api/v1/admin/customers/{customerId}/conflicts:
-    get:
-      tags:
-        - admin-api-controller
-      operationId: getCustomerConflicts
-      parameters:
-        - name: customerId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: object
-                additionalProperties:
-                  type: object
-components:
-  schemas:
-    CreateTokenRequest:
-      type: object
-      properties:
-        description:
-          maxLength: 200
-          minLength: 0
-          type: string
-        expires_at:
-          type: string
-          format: date-time
-        ip_whitelist:
-          type: array
-          items:
-            type: string
-        allowed_operations:
-          type: array
-          items:
-            type: string
-        is_active:
-          type: boolean
-        allow_all_operations:
-          type: boolean
-        allowed_spids:
-          uniqueItems: true
-          type: array
-          items:
-            pattern: ^[0-9A-Z]{4}$
-            type: string
-    TokenResponse:
-      type: object
-      properties:
-        token_id:
-          type: string
-          format: uuid
-        customer_id:
-          type: string
-          format: uuid
-        customer_name:
-          type: string
-        token:
-          type: string
-        token_prefix:
-          type: string
-        description:
-          type: string
-        is_active:
-          type: boolean
-        created_at:
-          type: string
-          format: date-time
-        expires_at:
-          type: string
-          format: date-time
-        last_used_at:
-          type: string
-          format: date-time
-        ip_whitelist:
-          type: array
-          items:
-            type: string
-        allowed_operations:
-          type: array
-          items:
-            type: string
-        allowed_spids:
-          uniqueItems: true
-          type: array
-          items:
-            type: string
-        usage_count:
-          type: integer
-          format: int64
-    CreateCustomerRequest:
-      required:
-        - customer_name
-        - email
-        - is_active
-      type: object
-      properties:
-        customer_name:
-          maxLength: 100
-          minLength: 2
-          type: string
-        email:
-          type: string
-        is_active:
-          type: boolean
-        rate_limit:
-          maximum: 10000
-          minimum: 1
-          type: integer
-          format: int32
-        notes:
-          maxLength: 500
-          minLength: 0
-          type: string
-    CustomerResponse:
-      type: object
-      properties:
-        customer_id:
-          type: string
-          format: uuid
-        customer_name:
-          type: string
-        email:
-          type: string
-        is_active:
-          type: boolean
-        rate_limit:
-          type: integer
-          format: int32
-        notes:
-          type: string
-        active_spids:
-          uniqueItems: true
-          type: array
-          items:
-            type: string
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-        token_count:
-          type: integer
-          format: int32
-        last_api_call:
-          type: string
-          format: date-time
-    SoaReleaseRequest:
-      required:
-        - ddd
-        - newspid
-        - oldspid
-        - tn
-      type: object
-      properties:
-        tn:
-          pattern: ^[0-9]{10}$
-          type: string
-          description: 10-digit telephone number
-          example: '2125551234'
-        oldspid:
-          pattern: ^[0-9A-Z]{4}$
-          type: string
-          description: 4-character losing SPID
-          example: '5678'
-        newspid:
-          pattern: ^[0-9A-Z]{4}$
-          type: string
-          description: 4-character gaining SPID
-          example: '1234'
-        ddd:
-          type: string
-          description: Due date
-          example: 12/31/2024
-        region:
-          maxLength: 4
-          type: string
-          description: 4-character region ID (optional)
-          example: EAST
-      description: Request to release a telephone number
-    SoaResponse:
-      type: object
-      properties:
-        timestamp:
-          type: string
-          description: Response timestamp
-          format: date-time
-          example: '2024-12-27T10:30:00Z'
-        status:
-          type: string
-          description: Operation status
-          example: SUCCESS
-        message:
-          type: string
-          description: Response message
-          example: Port request created successfully
-        transactionId:
-          type: string
-          description: Transaction ID if applicable
-        error:
-          type: string
-          description: Error details if status is FAILED
-      description: Generic SOA operation response
-    SoaLrnRemoveRequest:
-      required:
-        - newspid
-        - region
-        - tn
-      type: object
-      properties:
-        tn:
-          pattern: ^[0-9]{10}$
-          type: string
-          description: 10-digit LRN to remove
-          example: '2125550000'
-        newspid:
-          pattern: ^[0-9A-Z]{4}$
-          type: string
-          description: 4-character gaining SPID
-          example: '1234'
-        region:
-          maxLength: 4
-          type: string
-          description: 4-character region ID
-          example: EAST
-      description: Request to remove an LRN
-    SoaLrnCreateRequest:
-      required:
-        - newspid
-        - region
-        - tn
-      type: object
-      properties:
-        tn:
-          pattern: ^[0-9]{10}$
-          type: string
-          description: 10-digit LRN to create
-          example: '2125550000'
-        newspid:
-          pattern: ^[0-9A-Z]{4}$
-          type: string
-          description: 4-character gaining SPID
-          example: '1234'
-        region:
-          maxLength: 4
-          type: string
-          description: 4-character region ID
-          example: EAST
-      description: Request to create an LRN
-    SoaDisconnectRequest:
-      required:
-        - spid
-        - tn
-      type: object
-      properties:
-        tn:
-          pattern: ^[0-9]{10}$
-          type: string
-          description: 10-digit telephone number
-          example: '2125551234'
-        spid:
-          pattern: ^[0-9A-Z]{4}$
-          type: string
-          description: 4-character current SPID
-          example: '1234'
-        region:
-          maxLength: 4
-          type: string
-          description: 4-character region ID (optional)
-          example: EAST
-      description: Request to disconnect a telephone number
-    SoaCreateRequest:
-      required:
-        - lrn
-        - tn
-      type: object
-      properties:
-        tn:
-          pattern: ^[0-9]{10}$
-          type: string
-          description: 10-digit telephone number to port
-          example: '2125551234'
-        lrn:
-          pattern: ^[0-9]{10}$
-          type: string
-          description: 10-digit Location Routing Number
-          example: '2125550000'
-        newspid:
-          type: string
-          description: 4-character gaining SPID (auto-detected from target LRN if not provided)
-          example: '1234'
-        oldspid:
-          type: string
-          description: 4-character losing SPID (auto-detected from current TN if not provided)
-          example: '5678'
-        ddd:
-          type: string
-          description: Port due date in mm/dd/yyyy format (auto-set if not provided)
-          example: 12/31/2024
-        region:
-          maxLength: 4
-          type: string
-          description: 4-character region ID (optional)
-          example: EAST
-      description: Request to create a new port order
-    SoaConflictRemoveRequest:
-      required:
-        - tn
-      type: object
-      properties:
-        tn:
-          pattern: ^[0-9]{10}$
-          type: string
-          description: 10-digit telephone number
-          example: '2125551234'
-      description: Request to remove a conflict from a telephone number
-    SoaConflictCreateRequest:
-      required:
-        - tn
-      type: object
-      properties:
-        tn:
-          pattern: ^[0-9]{10}$
-          type: string
-          description: 10-digit telephone number
-          example: '2125551234'
-      description: Request to create a conflict for a telephone number
-    SoaCancelRequest:
-      required:
-        - newspid
-        - tn
-      type: object
-      properties:
-        tn:
-          pattern: ^[0-9]{10}$
-          type: string
-          description: 10-digit telephone number
-          example: '2125551234'
-        newspid:
-          pattern: ^[0-9A-Z]{4}$
-          type: string
-          description: 4-character gaining SPID
-          example: '1234'
-      description: Request to cancel a port order
-    SoaActivateRequest:
-      required:
-        - tn
-      type: object
-      properties:
-        tn:
-          pattern: ^[0-9]{10}$
-          type: string
-          description: 10-digit telephone number to activate
-          example: '2125551234'
-        newspid:
-          pattern: ^[0-9A-Z]{4}$
-          type: string
-          description: 4-character gaining SPID (optional)
-          example: '1234'
-        region:
-          maxLength: 4
-          type: string
-          description: 4-character region ID (optional)
-          example: EAST
-      description: Request to activate a ported telephone number
-    SoaStatusResponse:
-      type: object
-      properties:
-        timestamp:
-          type: string
-          description: Response timestamp
-          format: date-time
-          example: '2024-12-27T10:30:00Z'
-        status:
-          type: string
-          description: Port status
-          example: PENDING
-        message:
-          type: string
-          description: Response message
-        currentSpid:
-          type: string
-          description: Current SPID
-          example: 567G
-        newSpid:
-          type: string
-          description: New SPID (target)
-          example: 616J
-        oldSpid:
-          type: string
-          description: Old SPID (source)
-          example: 567G
-        lrn:
-          type: string
-          description: Location Routing Number
-          example: '7208441000'
-        dueDate:
-          type: string
-          description: Due date in MM/dd/yyyy format
-          example: 07/02/2025
-        lastAction:
-          type: string
-          description: Last action taken
-          example: CREATE
-        lastActionDate:
-          type: string
-          description: Last action timestamp
-          format: date-time
-        activationDate:
-          type: string
-          description: Activation timestamp if completed
-          format: date-time
-        error:
-          type: string
-          description: Error details if any
-        dataSource:
-          type: string
-      description: SOA port status response
-    SoaSpidResponse:
-      type: object
-      properties:
-        timestamp:
-          type: string
-          description: Response timestamp
-          format: date-time
-          example: '2024-12-27T10:30:00Z'
-        status:
-          type: string
-          description: Operation status
-          example: SUCCESS
-        tn:
-          type: string
-          description: Telephone number
-          example: '3036298301'
-        spid:
-          type: string
-          description: Current SPID
-          example: 567G
-        lrn:
-          type: string
-          description: Location Routing Number
-          example: '7207081999'
-        spName:
-          type: string
-          description: Service provider name
-          example: Verizon
-        error:
-          type: string
-          description: Error message if status is ERROR
-      description: SOA SPID query response
-    SoaQueryResponse:
-      type: object
-      properties:
-        timestamp:
-          type: string
-          description: Response timestamp
-          format: date-time
-          example: '2024-12-27T10:30:00Z'
-        status:
-          type: string
-          description: Operation status
-          example: SUCCESS
-        tn:
-          type: string
-          description: Telephone number
-          example: '3036298301'
-        currentSpid:
-          type: string
-          description: Current SPID
-          example: 567G
-        lrn:
-          type: string
-          description: Location Routing Number
-          example: '7207081999'
-        portStatus:
-          type: string
-          description: Port status
-          example: PENDING
-        lnpType:
-          type: string
-          description: LNP type
-          example: WIRELINE
-        currentSpName:
-          type: string
-          description: Current service provider name
-          example: Verizon
-        currentSpType:
-          type: string
-          description: Current service provider type
-          example: WIRELESS
-        rateCenter:
-          type: string
-          description: Rate center
-          example: DENVER
-        state:
-          type: string
-          description: State
-          example: CO
-        error:
-          type: string
-          description: Error message if status is ERROR
-      description: SOA query response
-    SoaEventsResponse:
-      type: object
-      properties:
-        timestamp:
-          type: string
-          description: Response timestamp
-          format: date-time
-          example: '2024-12-27T10:30:00Z'
-        status:
-          type: string
-          description: Operation status
-          example: SUCCESS
-        events:
-          type: array
-          description: List of events
-          items:
-            type: object
-            additionalProperties:
-              type: object
-              description: List of events
-            description: List of events
-        eventCount:
-          type: integer
-          description: Total number of events
-          format: int32
-        error:
-          type: string
-          description: Error message if status is ERROR
-      description: SOA events response
-    SoaActReadyResponse:
-      type: object
-      properties:
-        timestamp:
-          type: string
-          description: Response timestamp
-          format: date-time
-          example: '2024-12-27T10:30:00Z'
-        status:
-          type: string
-          description: Operation status
-          example: SUCCESS
-        spid:
-          type: string
-          description: SPID
-          example: 616J
-        readyCount:
-          type: integer
-          description: Number of ports ready for activation
-          format: int32
-        readyNumbers:
-          type: array
-          description: List of telephone numbers ready for activation
-          items:
-            type: string
-            description: List of telephone numbers ready for activation
-        error:
-          type: string
-          description: Error message if status is ERROR
-        readyTns:
-          type: array
-          items:
-            type: string
-        dataSource:
-          type: string
-      description: SOA activation ready response
