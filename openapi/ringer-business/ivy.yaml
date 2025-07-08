@@ -7369,9 +7369,23 @@ components:
           items:
             $ref: '#/components/schemas/schemas-Link'
           example:
-            - href: /account
+            - href: /v2/account
               rel: self
               method: GET
+              title: Customer
+            - href: /v2/account
+              rel: delete
+              method: DELETE
+              title: Delete Customer
+            - href: /v2/account
+              rel: edit
+              method: PUT
+              title: Edit Customer
+            - href: /v2/address
+              rel: edit
+              title: Update Address
+              method: PUT
+
       required:
         - id
         - name
