@@ -6966,23 +6966,6 @@ paths:
         Retrieves a list of all users associated with the authenticated account.
         The list can be paginated and is typically sorted by user name.
       operationId: listUsers
-      parameters:
-        - name: page
-          in: query
-          description: Page number for pagination.
-          required: false
-          schema:
-            type: integer
-            default: 1
-            example: 1
-        - name: page_size
-          in: query
-          description: Number of users per page.
-          required: false
-          schema:
-            type: integer
-            default: 25
-            example: 10
       responses:
         '200':
           description: A paginated list of users associated with the account.
@@ -6990,27 +6973,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserListResponse'
-              example:
-                users:
-                  - id: 5
-                    first_name: Jane
-                    last_name: Doe
-                    email: jane.doe@example.com
-                    role: administrator
-                    active: true
-                    locale: en-US
-                    links:
-                      - href: /users/5
-                        rel: self
-                        method: GET
-                total_items: 1
-                total_pages: 1
-                current_page: 1
-                per_page: 25
-                links:
-                  - href: /users?page=1&page_size=25
-                    rel: self
-                    method: GET
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -7030,14 +6992,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserCreateRequest'
-            example:
-              first_name: Alice
-              last_name: Wonderland
-              email: alice.wonder@example.com
-              role: user
-              active: false
-              locale: en-GB
+              $ref: '#/components/schemas/UserRequest'
       responses:
         '201':
           description: User created successfully.
@@ -7102,11 +7057,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserUpdateRequest'
-            example:
-              first_name: Alice Anne
-              locale: en-US
-              role: team_lead
+              $ref: '#/components/schemas/UserRequest'
       responses:
         '200':
           description: User updated successfully.
@@ -8009,36 +7960,6 @@ components:
         owner: Account ABC
         links:
           - href: /templates/1
-            rel: self
-            method: GET
-    UserResponse:
-      allOf:
-        - $ref: '#/components/schemas/UserCore'
-        - type: object
-          properties:
-            id:
-              type: integer
-              format: int64
-              description: Unique identifier for the user.
-              example: 5
-            links:
-              type: array
-              description: HATEOAS links related to the user.
-              items:
-                $ref: '#/components/schemas/schemas-Link'
-          required:
-            - id
-      description: Detailed information about a user.
-      example:
-        id: 5
-        first_name: Jane
-        last_name: Doe
-        email: jane.doe@example.com
-        role: administrator
-        active: true
-        locale: en-US
-        links:
-          - href: /users/5
             rel: self
             method: GET
     Error:
@@ -10343,10 +10264,14 @@ components:
             id:
               type: integer
               format: int64
-            site_id:
-              type: integer
-              format: int64
-              nullable: true
+              readOnly: true
+              description: Unique identifier for the device.
+              example: 1763
+            site:
+              type: string
+              readOnly: true
+              description: The site this device belongs to.
+              example: customer-01.ringer.tel
             password:
               type: string
               description: (Returned on create only)
@@ -10366,31 +10291,6 @@ components:
               items:
                 $ref: '#/components/schemas/schemas-Link'
               nullable: true
-          required:
-            - id
-            - name
-            - login
-      example:
-        id: 1763
-        site_id: 6
-        name: John Doe Desk Phone
-        login: john.doe.phone1
-        active: true
-        channel_limit: 2
-        timeout: 120
-        caller_id_name: John Doe
-        caller_id_number: '+13035551234'
-        acl: 0.0.0.0/0
-        password: aGeneratedPasswordExample
-        fail_over_destination_code: voicemailbox:vm_john_doe
-        fail_over_destination:
-          name: Voicemail for John Doe
-          code: voicemailbox:vm_john_doe
-        user_id: 5
-        links:
-          - href: /sites/6/devices/1763/regenerate-password
-            rel: regenerate-password
-            method: PATCH
     DeviceListResponse:
       type: object
       properties:
@@ -13940,6 +13840,95 @@ components:
         - role
         - active
         - locale
+    UserResponse:
+      allOf:
+        - $ref: '#/components/schemas/UserCore'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+              description: Unique identifier for the user.
+              example: 5
+              readOnly: true
+            # features:
+            #   type: object
+            #   description: Features enabled for the user, such as devices, voicemail boxes, etc.
+            #   properties:
+                # devices:
+                #   type: array
+                #   items:
+                #     $ref: '#/components/schemas/Device'
+                #   description: List of device IDs associated with the user
+                # voice_mail_boxes:
+                #   type: array
+                #   items:
+                #     type: integer
+                #     format: int64
+                #   example: [201]
+                # ring_groups:
+                #   type: array
+                #   items:
+                #     type: integer
+                #     format: int64
+                #   example: [301, 302]
+                # extensions:
+                #   type: array
+                #   items:
+                #     type: integer
+                #     format: int64
+                #   example: [401, 402]
+                # phone_numbers:
+                #   type: array
+                #   items:
+                #     type: integer
+                #     format: int64
+                #   example: [501, 502]
+                # conference_rooms:
+                #   type: array
+                #   items:
+                #     type: integer
+                #     format: int64
+                #   example: [601]
+                # fax_machines:
+                #   type: array
+                #   items:
+                #     type: integer
+                #     format: int64
+                #   example: [701]
+                # forwards:
+                #   type: array
+                #   items:
+                #     type: integer
+                #     format: int64
+                #   example: [801, 802]
+                # schedules:
+                #   type: array
+                #   items:
+                #     type: integer
+                #     format: int64
+                #   example: [901, 902]
+            links:
+              type: array
+              description: HATEOAS links related to the user.
+              items:
+                $ref: '#/components/schemas/schemas-Link'
+              example:
+                - href: /users/5
+                  rel: self
+                  method: GET
+                  title: "View User"
+                - href: /users/5/edit
+                  rel: edit
+                  method: PUT
+                  title: "Edit User"
+                - href: /users/5/delete
+                  rel: delete
+                  method: DELETE
+                  title: "Delete User"
+          required:
+            - id
+      description: Detailed information about a user.
     UserListResponse:
       type: object
       description: A paginated list of users.
@@ -13948,54 +13937,16 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UserResponse'
-        total_items:
-          type: integer
-          description: Total number of users matching the query.
-          example: 120
-        total_pages:
-          type: integer
-          description: Total number of pages based on `per_page`.
-          example: 5
-        current_page:
-          type: integer
-          description: The current page number being displayed.
-          example: 1
-        per_page:
-          type: integer
-          description: The number of items per page.
-          example: 25
         links:
           type: array
           description: HATEOAS links for pagination and related resources.
           items:
             $ref: '#/components/schemas/schemas-Link'
           nullable: true
-      required:
-        - users
-        - total_items
-        - total_pages
-        - current_page
-        - per_page
-      example:
-        users:
-          - id: 5
-            first_name: Jane
-            last_name: Doe
-            email: jane.doe@example.com
-            role: administrator
-            active: true
-            locale: en-US
-            links:
-              - href: /users/5
-                rel: self
-                method: GET
-        total_items: 1
-        total_pages: 1
-        current_page: 1
-        per_page: 25
-        links:
-          - href: /users?page=1&page_size=25
-            rel: self
+          example:
+            - href: /v2/users
+              rel: self
+              method: GET
     users_components-schemas-Error:
       type: object
       description: Standard error response format.
@@ -14013,45 +13964,97 @@ components:
         - status
         - error
         - error_code
-    UserCreateRequest:
+    UserRequest:
       allOf:
         - $ref: '#/components/schemas/UserCore'
+        - properties:
+            site_id:
+              type: integer
+              format: int64
+              description: The identifier of the site to which this user belongs. If not specified, the user is created without a site association.
+              nullable: true
+              example: 6
+              writeOnly: true
+            template_id:
+              type: integer
+              format: int64
+              description: Optional identifier of a template to apply to this user. If not specified, the user is created without a template.
+              nullable: true
+              example: 42
+              writeOnly: true
+        - $ref: '#/components/schemas/UserFeatureRequest'
       description: Information needed to create a new user.
-      example:
-        first_name: Sam
-        last_name: Test
-        email: sam.test@example.com
-        role: user
-        active: false
-        locale: en-CA
-    UserUpdateRequest:
+    UserFeatureRequest:
       type: object
-      description: Information that can be updated for an existing user. Only include fields to be changed.
+      description: Request to update a user's features.
       properties:
-        first_name:
-          type: string
-          description: The user's first name.
-          example: Jane
-        last_name:
-          type: string
-          description: The user's last name.
-          example: Doe
-        role:
-          type: string
-          description: The role assigned to the user.
-          example: administrator
-        active:
-          type: boolean
-          description: Whether the user account is active.
-          example: true
-        locale:
-          type: string
-          description: The user's preferred language and regional settings.
-          example: en-GB
-      example:
-        first_name: Janet
-        locale: fr-FR
-        active: false
+        features:
+          type: object
+          description: List of feature codes to enable for the user.
+          properties:
+            devices:
+              type: array
+              items:
+                type: integer
+                format: int64
+                description: List of device IDs to associate with the user.
+              example: [101, 102]
+            voice_mail_boxes:
+              type: array
+              items:
+                type: integer
+                format: int64
+                description: List of voicemailboxes associated with the user.
+              example: [201]
+            ring_groups:
+              type: array
+              items:
+                type: integer
+                format: int64
+                description: List of ring group IDs to associate with the user.
+              example: [301, 302]
+            extensions:
+              type: array
+              items:
+                type: integer
+                format: int64
+                description: List of extension IDs to associate with the user.
+              example: [401, 402]
+            phone_numbers:
+              type: array
+              items:
+                type: integer
+                format: int64
+                description: List of phone number IDs to associate with the user.
+              example: [501, 502]
+            conference_rooms:
+              type: array
+              items:
+                type: integer
+                format: int64
+                description: List of conference room IDs to associate with the user.
+              example: [601]
+            fax_machines:
+              type: array
+              items:
+                type: integer
+                format: int64
+                description: List of conference room IDs to associate with the user.
+              example: [601]
+            forwards:
+              type: array
+              items:
+                type: integer
+                format: int64
+                description: List of forward IDs to associate with the user.
+              example: [701, 702]
+            schedules:
+              type: array
+              items:
+                type: integer
+                format: int64
+                description: List of forward IDs to associate with the user.
+              example: [801, 802]
     CallBlockCore:
       type: object
       properties:
