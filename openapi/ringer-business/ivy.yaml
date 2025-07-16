@@ -1588,26 +1588,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SiteResponse'
-              example:
-                id: 6
-                name: Main Office Site
-                dns_extension: hq
-                dns_name: hq.ivy.teliax.com
-                active: true
-                caller_id_name: Teliax Inc HQ
-                caller_id_number: '+13035551212'
-                thin_client_id: 12
-                thin_client_name: Denver Bonsai 7
-                acl: 0.0.0.0/0
-                channel_limit: 55
-                music_on_hold_url: https://cdn.example.com/moh/default.mp3
-                permitted_country_codes:
-                  - US
-                  - CA
-                links:
-                  - href: /sites/6
-                    rel: self
-                    method: GET
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -7839,9 +7819,7 @@ components:
           properties:
             name:
               type: string
-          example:
-            name: 'Netrio - Leap Brand (forward:1254)'
-            code: 'forward:1254'
+              example: 'Netrio - Leap Brand (forward:1254)'
     FailoverAndDestinationCodeParam:
       properties:
         code:
@@ -7862,6 +7840,11 @@ components:
           items:
             $ref: '#/components/schemas/schemas-Link'
           nullable: true
+          example:
+            - href: /sites/1/potential_destinations
+              rel: self
+              method: GET`
+              title: Potential Destinations
     SiteFailOverList:
       properties:
         fail_overs:
