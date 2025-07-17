@@ -1467,7 +1467,7 @@ paths:
         description: Configuration details for the new site.
         required: true
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/SiteRequest'
       responses:
@@ -1499,26 +1499,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SiteResponse'
-              example:
-                id: 6
-                name: Main Office Site
-                dns_extension: hq
-                dns_name: hq.ivy.teliax.com
-                active: true
-                caller_id_name: Teliax Inc HQ
-                caller_id_number: '+13035551212'
-                thin_client_id: 12
-                thin_client_name: Denver Bonsai 7
-                acl: 0.0.0.0/0
-                channel_limit: 55
-                music_on_hold_url: https://cdn.example.com/moh/default.mp3
-                permitted_country_codes:
-                  - US
-                  - CA
-                links:
-                  - href: /sites/6
-                    rel: self
-                    method: GET
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -7580,15 +7560,43 @@ components:
               description: Unique identifier for the site.
               example: 6
               readOnly: true
-            dns_name:
-              type: string
-              description: The fully qualified DNS name for the site (e.g., hq.ivy.teliax.com).
-              example: hq.ivy.teliax.com
-            thin_client_name:
+            thin_client:
               type: string
               nullable: true
               description: Name of the assigned thin client.
               example: Denver Bonsai 7
+              readOnly: true
+            music_on_hold:
+              type: string
+              format: uri
+              nullable: true
+              description: URL to the music on hold audio file for the site.
+              example: https://cdn.example.com/moh/site_default.mp3
+            dns_name:
+              type: string
+              readOnly: true
+              description: The fully qualified DNS name for the site (e.g., hq.ivy.teliax.com).
+              example: hq.ivy.teliax.com
+            enterprise_trunking:
+              type: boolean
+              description: Indicates if enterprise trunking is enabled for this site.
+              example: true
+              readOnly: true
+            international_enabled:
+              type: boolean
+              description: Indicates if international calling is enabled for this site.
+              example: true
+              readOnly: true
+            voice_recording_enabled:
+              type: boolean
+              description: Indicates if voice recording is enabled for this site.
+              example: true
+              readOnly: true
+            allow_custom_caller_ids:
+              type: boolean
+              description: Indicates if custom caller IDs are allowed for this site.
+              example: true
+              readOnly: true
             links:
               type: array
               description: HATEOAS links related to this site.
@@ -7609,58 +7617,6 @@ components:
                     rel: "edit"
                     title: 'Edit Site'
                     method: "PUT"
-                  - href: "/sites/6/locations"
-                    rel: "locations"
-                    title: 'Locations'
-                    method: "GET"
-                  - href: "/sites/6/devices"
-                    rel: "devices"
-                    title: 'Devices'
-                    method: "GET"
-                  - href: "/sites/6/conference-rooms"
-                    rel: "conference_rooms"
-                    title: 'Conference Rooms'
-                    method: "GET"
-                  - href: "/sites/6/e911s"
-                    rel: "e911s"
-                    title: 'E911'
-                    method: "GET"
-                  - href: "/sites/6/extensions"
-                    rel: "extensions"
-                    title: 'Extensions'
-                    method: "GET"
-                  - href: "/sites/6/fax-machines"
-                    rel: "fax_machines"
-                    title: 'Fax Machines'
-                    method: "GET"
-                  - href: "/sites/6/forwards"
-                    rel: "forwards"
-                    title: 'Forwards'
-                    method: "GET"
-                  - href: "/sites/6/menus"
-                    rel: "menus"
-                    title: 'Menus'
-                    method: "GET"
-                  - href: "/sites/6/phone-numbers"
-                    rel: "phone_numbers"
-                    title: 'Phone Numbers'
-                    method: "GET"
-                  - href: "/sites/6/ring-groups"
-                    rel: "ring_groups"
-                    title: 'Ring Groups'
-                    method: "GET"
-                  - href: "/sites/6/schedules"
-                    rel: "schedules"
-                    title: 'Schedules'
-                    method: "GET"
-                  - href: "/sites/6/sip-trunks"
-                    rel: "sip_trunks"
-                    title: 'Sip Trunks'
-                    method: "GET"
-                  - href: "/sites/6/voice-mail-boxes"
-                    rel: "voice_mail_boxes"
-                    title: 'Voice Mail Boxes'
-                    method: "GET"
       description: Detailed information about a specific site.
     StatementResponse:
       allOf:
@@ -9441,16 +9397,6 @@ components:
     SiteCore:
       type: object
       properties:
-        id:
-          type: integer
-          format: int64
-          description: Unique identifier for the site.
-          example: 6
-          readOnly: true
-        name:
-          type: string
-          description: A user-friendly name for the site (e.g., "Main Office", "Sales Department").
-          example: Main Office Site
         dns_extension:
           type: string
           description: The DNS extension for the site, used to form part of its unique SIP domain.
@@ -9491,29 +9437,6 @@ components:
             - US
             - CA
             - GB
-        music_on_hold_url:
-          type: string
-          format: uri
-          nullable: true
-          description: URL to the music on hold audio file for the site.
-          example: https://cdn.example.com/moh/site_default.mp3
-          readOnly: true
-        music_on_hold:
-          type: string
-          format: binary
-          example: site_default.mp3
-          writeOnly: true
-        thin_client_name:
-          type: string
-          nullable: true
-          description: Name of the assigned thin client.
-          example: Denver Bonsai 7
-          readOnly: true
-        dns_name:
-          type: string
-          readOnly: true
-          description: The fully qualified DNS name for the site (e.g., hq.ivy.teliax.com).
-          example: hq.ivy.teliax.com
       required:
         - name
         - dns_extension
