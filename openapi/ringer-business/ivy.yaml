@@ -1892,19 +1892,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConferenceRoomListResponse'
-              example:
-                conference_rooms:
-                  - id: 3
-                    site_id: 6
-                    name: Weekly Sales Meeting
-                    pin: '****'
-                    moderator_pin: '****'
-                    profile: default
-                    user_id: 1
-                    links:
-                      - href: /sites/6/conference-rooms/3
-                        rel: self
-                        method: GET
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -1926,7 +1913,7 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ConferenceRoomCreateRequest'
+              $ref: '#/components/schemas/ConferenceRoomRequest'
       responses:
         '201':
           description: Conference room created successfully.
@@ -1934,17 +1921,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConferenceRoomResponse'
-              example:
-                id: 4
-                site_id: 6
-                name: Project Alpha Debrief
-                pin: '9876'
-                moderator_pin: '5432'
-                profile: secure_chat
-                greeting_url: https://cdn.example.com/greetings/conf_4_greeting.mp3
-                music_on_hold_url: https://cdn.example.com/moh/conf_4_moh.mp3
-                user_id: 1
-                links: null
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -1970,17 +1946,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConferenceRoomResponse'
-              example:
-                id: 3
-                site_id: 6
-                name: Weekly Sales Meeting
-                pin: '****'
-                moderator_pin: '****'
-                profile: default
-                greeting_url: https://cdn.example.com/greetings/conf_3.mp3
-                music_on_hold_url: null
-                user_id: 1
-                links: null
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -2001,7 +1966,7 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ConferenceRoomUpdateRequest'
+              $ref: '#/components/schemas/ConferenceRoomRequest'
       responses:
         '200':
           description: Conference room updated successfully.
@@ -2009,17 +1974,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConferenceRoomResponse'
-              example:
-                id: 3
-                site_id: 6
-                name: Updated Sales Meeting
-                pin: '****'
-                moderator_pin: '****'
-                profile: enhanced_audio
-                greeting_url: https://cdn.example.com/greetings/new_conf_3.mp3
-                music_on_hold_url: null
-                user_id: 1
-                links: null
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -2043,50 +1997,6 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/ConferenceRoomNotFoundError'
-  /sites/{site_id}/conference-rooms/available:
-    parameters:
-      - $ref: '#/components/parameters/SiteId'
-    get:
-      tags:
-        - Site Features - Conference Rooms
-      summary: List Available Conference Rooms for a Site/User
-      description: |
-        Retrieves a list of conference rooms available for assignment to the specified site.
-        The original Teliax API included an optional `user_id` query parameter, which might imply that availability
-        could also be filtered or contextualized by a user. This parameter is included here.
-      operationId: listSiteAvailableConferenceRooms
-      parameters:
-        - name: user_id
-          in: query
-          description: Optional. Identifier of a user to filter or contextualize available conference rooms.
-          required: false
-          schema:
-            type: integer
-            format: int64
-            example: 10
-      responses:
-        '200':
-          description: A list of available conference rooms.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ConferenceRoomListResponse'
-              example:
-                conference_rooms:
-                  - id: 15
-                    site_id: null
-                    name: Ad-hoc Meeting Room A
-                    profile: default
-                    pin: null
-                    moderator_pin: null
-                    user_id: null
-                    links: null
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
-        '404':
-          $ref: '#/components/responses/SiteNotFoundError'
   /sites/{site_id}/conference-rooms/{id}/transfer:
     parameters:
       - $ref: '#/components/parameters/SiteId'
@@ -2123,20 +2033,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConferenceRoomResponse'
-              example:
-                id: 3
-                site_id: 7
-                name: Weekly Sales Meeting
-                pin: '****'
-                moderator_pin: '****'
-                profile: default
-                user_id: 1
-                greeting_url: https://cdn.example.com/greetings/conf_3_moved.mp3
-                music_on_hold_url: null
-                links:
-                  - href: /sites/7/conference-rooms/3
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -2192,20 +2088,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConferenceRoomResponse'
-              example:
-                id: 3
-                site_id: 6
-                name: Weekly Sales Meeting
-                pin: '****'
-                moderator_pin: '****'
-                profile: default
-                greeting_url: https://cdn.example.com/greetings/conf_3_new_greeting.mp3
-                music_on_hold_url: https://cdn.example.com/moh/conf_3_new_moh.mp3
-                user_id: 1
-                links:
-                  - href: /sites/6/conference-rooms/3
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -9954,13 +9836,11 @@ components:
           type: string
           nullable: true
           description: Conference profile or type (e.g., default, enhanced audio). Specific values depend on system configuration.
-          example: default
-        user_id:
+          example: defaults
+        channel_limit:
           type: integer
-          format: int64
-          nullable: true
-          description: Identifier of the user primarily associated with this conference room, if any.
-          example: 10
+          description: Maximum number of concurrent participants allowed in this conference room.
+          example: 0
       required:
         - name
         - pin
@@ -9975,51 +9855,50 @@ components:
               format: int64
               description: Unique identifier for the conference room.
               example: 3
-            site_id:
-              type: integer
-              format: int64
-              description: Identifier of the site this conference room belongs to.
-              example: 6
-              nullable: true
-            greeting_url:
+              readOnly: true
+            code:
+              type: string
+              description: A system-usable code or identifier.
+              example: conference_room:8243
+              readOnly: true
+            greeting:
               type: string
               format: uri
               nullable: true
               description: URL to the current greeting audio file.
               example: https://cdn.example.com/greetings/conf_3.mp3
-            music_on_hold_url:
+            music_on_hold:
               type: string
               format: uri
               nullable: true
               description: URL to the current music on hold audio file.
               example: https://cdn.example.com/moh/conf_3.mp3
+            user_id:
+              type: integer
+              format: int64
+              nullable: true
+              description: Identifier of the user primarily associated with this conference room, if any.
+              example: 10
             links:
               type: array
               description: HATEOAS links related to this conference room.
               items:
                 $ref: '#/components/schemas/Link'
               nullable: true
-          required:
-            - id
-            - site_id
-            - name
-            - pin
-            - moderator_pin
+              example:
+              - href: /sites/6/conference-rooms/1662
+                rel: self
+                title: Conference Room Details
+                method: GET
+              - href: /sites/6/conference-rooms/166
+                rel: Delete
+                title: Delete Conference Room
+                method: DELETE
+              - href: /sites/6/conference-rooms/166
+                rel: Edit
+                title: Edit Conference Room
+                method: PUT
       description: Detailed information about a conference room.
-      example:
-        id: 3
-        site_id: 6
-        name: Weekly Sales Meeting
-        pin: '****'
-        moderator_pin: '****'
-        profile: default
-        greeting_url: https://cdn.example.com/greetings/sales_meeting.mp3
-        music_on_hold_url: null
-        user_id: 1
-        links:
-          - href: /sites/6/conference-rooms/3
-            rel: self
-            method: GET
     ConferenceRoomListResponse:
       type: object
       description: A list of conference rooms for a site.
@@ -10028,22 +9907,20 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ConferenceRoomResponse'
+        links:
+              type: array
+              description: HATEOAS links related to this conference room.
+              items:
+                $ref: '#/components/schemas/Link'
+              nullable: true
+              example:
+              - href: /sites/6/conference-rooms
+                rel: self
+                title: Conference Room Details
+                method: GET
       required:
         - conference_rooms
-      example:
-        conference_rooms:
-          - id: 3
-            site_id: 6
-            name: Weekly Sales Meeting
-            profile: default
-            pin: '****'
-            moderator_pin: '****'
-            user_id: 1
-            links:
-              - href: /sites/6/conference-rooms/3
-                rel: self
-                method: GET
-    ConferenceRoomCreateRequest:
+    ConferenceRoomRequest:
       allOf:
         - $ref: '#/components/schemas/ConferenceRoomCore'
         - type: object
@@ -10063,29 +9940,6 @@ components:
         - name
         - pin
         - moderator_pin
-      example:
-        name: Daily Huddle Room
-        pin: '55555'
-        moderator_pin: '11111'
-        profile: default
-    ConferenceRoomUpdateRequest:
-      allOf:
-        - $ref: '#/components/schemas/ConferenceRoomCore'
-        - type: object
-          properties:
-            greeting:
-              type: string
-              format: binary
-              nullable: true
-              description: New audio file for the greeting message. If not provided, existing greeting remains.
-            music_on_hold:
-              type: string
-              format: binary
-              nullable: true
-              description: New audio file for music on hold. If not provided, existing music remains.
-      description: Data for updating an existing conference room, including optional audio file uploads.
-      example:
-        name: Team Sync Room - Updated
     schemas-DeviceCore:
       type: object
       properties:
