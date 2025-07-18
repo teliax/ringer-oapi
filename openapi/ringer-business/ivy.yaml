@@ -3019,18 +3019,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FaxMachineListResponse'
-              example:
-                fax_machines:
-                  - id: 3
-                    site_id: 6
-                    code: fax_machine:3
-                    name: Sales Department Fax
-                    notification_emails: sales-faxes@example.com,manager@example.com
-                    user_id: 1
-                    links:
-                      - href: /sites/6/fax-machines/3
-                        rel: self
-                        method: GET
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -3062,14 +3050,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FaxMachineResponse'
-              example:
-                id: 4
-                site_id: 6
-                code: fax_machine:4
-                name: Legal Department Fax
-                notification_emails: legal@example.com
-                user_id: null
-                links: []
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -3095,14 +3075,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FaxMachineResponse'
-              example:
-                id: 3
-                site_id: 6
-                code: fax_machine:3
-                name: Sales Department Fax
-                notification_emails: sales-faxes@example.com,manager@example.com
-                user_id: 1
-                links: null
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -3122,9 +3094,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/FaxMachineUpdateRequest'
-            example:
-              name: Sales Fax (Primary)
-              notification_emails: sales-faxes@example.com,backup-sales@example.com
       responses:
         '200':
           description: Fax machine configuration updated successfully.
@@ -3132,14 +3101,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FaxMachineResponse'
-              example:
-                id: 3
-                site_id: 6
-                code: fax_machine:3
-                name: Sales Fax (Primary)
-                notification_emails: sales-faxes@example.com,backup-sales@example.com
-                user_id: 1
-                links: null
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -3163,49 +3124,6 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/FaxMachineNotFoundError'
-  /sites/{site_id}/fax-machines/available:
-    parameters:
-      - $ref: '#/components/parameters/SiteId'
-    get:
-      tags:
-        - Site Features - Fax Machines
-      summary: List Available Fax Machines for a Site/User
-      description: |
-        Retrieves a list of fax machine configurations available for assignment to the specified site.
-        The original Teliax API included an optional `user_id` query parameter, which might imply that availability
-        could also be filtered or contextualized by a user. This parameter is included here.
-      operationId: listSiteAvailableFaxMachines
-      parameters:
-        - name: user_id
-          in: query
-          description: Optional. Identifier of a user to filter or contextualize available fax machine configurations.
-          required: false
-          schema:
-            type: integer
-            format: int64
-            example: 25
-      responses:
-        '200':
-          description: A list of available fax machine configurations.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FaxMachineListResponse'
-              example:
-                fax_machines:
-                  - id: 80
-                    site_id: null
-                    code: fax_machine:80
-                    name: Unassigned Fax Service A
-                    notification_emails: unassigned-fax-a@example.com
-                    user_id: null
-                    links: null
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
-        '404':
-          $ref: '#/components/responses/SiteNotFoundError'
   /sites/{site_id}/fax-machines/{id}/transfer:
     parameters:
       - $ref: '#/components/parameters/SiteId'
@@ -3222,7 +3140,7 @@ paths:
         description: The identifier of the new site to which the fax machine configuration should be transferred.
         required: true
         content:
-          application/x-www-form-urlencoded:
+          application/json:
             schema:
               type: object
               properties:
@@ -3242,17 +3160,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FaxMachineResponse'
-              example:
-                id: 3
-                site_id: 8
-                code: fax_machine:3
-                name: Sales Department Fax
-                notification_emails: sales-faxes@example.com,manager@example.com
-                user_id: 1
-                links:
-                  - href: /sites/8/fax-machines/3
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -10604,19 +10511,9 @@ components:
           type: string
           description: Comma-separated list of email addresses to which received faxes (as PDF) will be sent.
           example: incoming-faxes@example.com,admin-faxes@example.com
-        user_id:
-          type: integer
-          format: int64
-          nullable: true
-          description: Identifier of the user primarily associated with this fax machine, if any.
-          example: 25
       required:
         - name
         - notification_emails
-      example:
-        name: Accounting Fax
-        notification_emails: accounts@example.com
-        user_id: 30
     FaxMachineResponse:
       allOf:
         - $ref: '#/components/schemas/FaxMachineCore'
@@ -10627,41 +10524,43 @@ components:
               format: int64
               description: Unique identifier for the fax machine configuration.
               example: 3
-            site_id:
-              type: integer
-              format: int64
+              readOnly: true
+            site:
+              type: string
               description: Identifier of the site this fax machine belongs to.
-              example: 6
+              example: hq.ivy.teliax.com
               nullable: true
             code:
               type: string
               readOnly: true
               description: System-level code for this fax machine, often used in routing configurations.
               example: fax_machine:3
+            user_id:
+              type: integer
+              format: int64
+              nullable: true
+              description: Identifier of the user primarily associated with this fax machine, if any.
+              example: 25
             links:
               type: array
               description: HATEOAS links related to this fax machine.
               items:
                 $ref: '#/components/schemas/Link'
               nullable: true
-          required:
-            - id
-            - site_id
-            - code
-            - name
-            - notification_emails
+              example:
+                - href: /sites/6/fax-machines/3
+                  rel: self
+                  title: "Fax Machine Details"
+                  method: "GET"
+                - href: /sites/6/fax-machines/3
+                  rel: "Delete"
+                  title: "Delete Fax Machine"
+                  method: "DELETE"
+                - href: /sites/6/fax-machines/3
+                  rel: "Edit"
+                  title: "Edit Fax Machine"
+                  method: PUT
       description: Detailed information about a fax machine (Fax to Email) configuration.
-      example:
-        id: 3
-        site_id: 6
-        code: fax_machine:3
-        name: Sales Department Fax
-        notification_emails: sales-faxes@example.com,manager@example.com
-        user_id: 1
-        links:
-          - href: /sites/6/fax-machines/3
-            rel: self
-            method: GET
     FaxMachineListResponse:
       type: object
       description: A list of fax machines for a site.
@@ -10670,20 +10569,19 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FaxMachineResponse'
+        links:
+          type: array
+          description: HATEOAS links related to this fax machine.
+          items:
+            $ref: '#/components/schemas/Link'
+          nullable: true  
+          example:
+            - href: /sites/6/fax-machines
+              rel: self
+              title: "Fax Machine Details"
+              method: "GET"  
       required:
         - fax_machines
-      example:
-        fax_machines:
-          - id: 3
-            site_id: 6
-            code: fax_machine:3
-            name: Sales Department Fax
-            notification_emails: sales-faxes@example.com,manager@example.com
-            user_id: 1
-            links:
-              - href: /sites/6/fax-machines/3
-                rel: self
-                method: GET
     FaxMachineCreateRequest:
       allOf:
         - $ref: '#/components/schemas/FaxMachineCore'
@@ -10691,18 +10589,10 @@ components:
       required:
         - name
         - notification_emails
-      example:
-        name: Customer Service Fax
-        notification_emails: support-faxes@example.com
-        user_id: null
     FaxMachineUpdateRequest:
       allOf:
         - $ref: '#/components/schemas/FaxMachineCore'
       description: Data for updating an existing fax machine configuration. For PUT, all core fields are typically resubmitted.
-      example:
-        name: Support Fax - Updated
-        notification_emails: support@example.com,helpdesk@example.com
-        user_id: 35
     ForwardCore:
       type: object
       properties:
