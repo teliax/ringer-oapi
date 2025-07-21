@@ -2336,24 +2336,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/E911ListResponse'
-              example:
-                e911_records:
-                  - id: 19
-                    site_id: 6
-                    name: Main Office E911
-                    house_number: '2150'
-                    street: West 29th Ave
-                    city: Denver
-                    state_province: CO
-                    postal_code: '80211'
-                    country_code: US
-                    caller_id_name: Teliax Office Emergency
-                    validated: true
-                    did_number: '+13035550100'
-                    links:
-                      - href: /sites/6/e911s/19
-                        rel: self
-                        method: GET
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -2377,20 +2359,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/E911Response'
-              example:
-                id: 19
-                site_id: 6
-                name: Main Office E911
-                caller_id_name: Teliax Office Emergency
-                house_number: '2150'
-                street: West 29th Ave
-                city: Denver
-                state_province: CO
-                postal_code: '80211'
-                country_code: US
-                validated: true
-                did_number: '+13035550123'
-                links: null
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -2412,16 +2380,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/E911UpdateRequest'
-            example:
-              name: Main Office E911 - Updated
-              caller_id_name: Teliax Main Office Emergency Line
-              house_number: '2150'
-              house_number_suffix: Suite 100
-              street: West 29th Avenue
-              city: Denver
-              state_province: CO
-              postal_code: '80211'
-              country_code: US
       responses:
         '200':
           description: E911 record updated and re-validated successfully.
@@ -2429,21 +2387,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/E911Response'
-              example:
-                id: 19
-                site_id: 6
-                name: Main Office E911 - Updated
-                caller_id_name: Teliax Main Office Emergency Line
-                house_number: '2150'
-                house_number_suffix: Suite 100
-                street: West 29th Avenue
-                city: Denver
-                state_province: CO
-                postal_code: '80211'
-                country_code: US
-                validated: true
-                did_number: '+13035550123'
-                links: null
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -2485,50 +2428,13 @@ paths:
       summary: List Extensions for a Site
       description: Retrieve a paginated list of all extensions that belong to a site.
       operationId: listSiteExtensions
-      parameters:
-        - name: page
-          in: query
-          description: Page number for pagination.
-          required: false
-          schema:
-            type: integer
-            default: 1
-            example: 1
-        - name: page_size
-          in: query
-          description: Number of extensions per page.
-          required: false
-          schema:
-            type: integer
-            default: 25
-            example: 10
       responses:
         '200':
           description: A paginated list of extensions.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedExtensionListResponse'
-              example:
-                extensions:
-                  - id: 101
-                    site_id: 6
-                    number: '1001'
-                    name: Sales
-                    destination_code: ring_group:45
-                    destination_name: Sales Team
-                    links:
-                      - href: /sites/6/extensions/101
-                        rel: self
-                        method: GET
-                total_items: 1
-                total_pages: 1
-                current_page: 1
-                per_page: 25
-                links:
-                  - href: /sites/6/extensions?page=1&page_size=25
-                    rel: self
-                    method: GET
+                $ref: '#/components/schemas/ExtensionListResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -2547,11 +2453,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ExtensionCreateRequest'
-            example:
-              number: '1002'
-              name: Support
-              destination_code: ring_group:46
+              $ref: '#/components/schemas/ExtensionRequest'
       responses:
         '201':
           description: Extension Created Successfully
@@ -2559,17 +2461,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExtensionResponse'
-              example:
-                id: 102
-                site_id: 6
-                number: '1002'
-                name: Support
-                destination_code: ring_group:46
-                destination_name: Support Team
-                links:
-                  - href: /sites/6/extensions/102
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/index_components-responses-BadRequestError-2'
         '401':
@@ -2597,15 +2488,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExtensionResponse'
-              example:
-                id: 14
-                site_id: 6
-                name: Sales Hotline Ext
-                number: '1001'
-                destination_code: ringgroup:rg_sales
-                destination_name: Sales Ring Group
-                user_id: 5
-                links: null
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -2624,12 +2506,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ExtensionUpdateRequest'
-            example:
-              name: Marketing Hotdesk
-              number: '2005'
-              destination_code: user:jane_doe_vm
-              user_id: null
+              $ref: '#/components/schemas/ExtensionRequest'
       responses:
         '200':
           description: Extension updated successfully.
@@ -2637,15 +2514,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExtensionResponse'
-              example:
-                id: 14
-                site_id: 6
-                name: Marketing Hotdesk
-                number: '2005'
-                destination_code: user:jane_doe_vm
-                destination_name: Support Desk Main Phone
-                user_id: 10
-                links: null
         '400':
           $ref: '#/components/responses/extension_components-responses-BadRequestError'
         '401':
@@ -2679,61 +2547,6 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/extension_components-responses-NotFoundError'
-  /sites/{site_id}/extensions/available:
-    parameters:
-      - $ref: '#/components/parameters/SiteId'
-    get:
-      tags:
-        - Site Features - Extensions
-      summary: List Available Extensions for a Site/User
-      description: |
-        Retrieves a list of extensions available for assignment to the specified site.
-        The original Teliax API included an optional `user_id` query parameter, which might imply that availability
-        could also be filtered or contextualized by a user. This parameter is included here.
-      operationId: listSiteAvailableExtensions
-      parameters:
-        - name: user_id
-          in: query
-          description: Optional. Identifier of a user to filter or contextualize available extensions.
-          required: false
-          schema:
-            type: integer
-            format: int64
-            example: 12
-      responses:
-        '200':
-          description: A list of available extensions.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ExtensionListResponse'
-              example:
-                extensions:
-                  - id: 75
-                    site_id: null
-                    name: Available Ext 7001
-                    number: '7001'
-                    destination_code: ''
-                    destination_name: null
-                    user_id: null
-                    links: []
-                  - id: 101
-                    site_id: 6
-                    number: '1001'
-                    name: Lobby Phone
-                    destination_code: device:lobby_phone
-                    destination_name: Lobby Phone Device
-                    user_id: null
-                    links:
-                      - href: /sites/6/extensions/101
-                        rel: self
-                        method: GET
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
-        '404':
-          $ref: '#/components/responses/SiteNotFoundError'
   /sites/{site_id}/extensions/{id}/transfer:
     parameters:
       - $ref: '#/components/parameters/SiteId'
@@ -2748,7 +2561,7 @@ paths:
         description: The identifier of the new site for the extension.
         required: true
         content:
-          application/x-www-form-urlencoded:
+          application/json:
             schema:
               type: object
               properties:
@@ -9958,14 +9771,25 @@ components:
           type: string
           description: A user-friendly name for the extension (e.g., "Sales Hotline", "John Doe").
           example: Sales Department
-        destination_code:
-          type: string
-          description: System code for the destination where calls to this extension are routed (e.g., "device:dev_xyz", "menu:ivr_main").
-          example: ring_group:rg_sales
+        destination:
+          type: object
+          description: Represents a potential call destination or failover point.
+          properties:
+            name:
+              type: string
+              description: A human-readable name for the destination.
+              example: Main Menu (menu:main_menu)
+            code:
+              type: string
+              description: A system-usable code or identifier for the destination.
+              example: menu:main_menu
+          required:
+            - name
+            - code
       required:
         - number
         - name
-        - destination_code
+        - destination
     index_components-schemas-Link:
       type: object
       properties:
@@ -10000,49 +9824,43 @@ components:
               format: int64
               description: Unique identifier for the extension.
               example: 101
-            site_id:
-              type: integer
-              format: int64
-              description: Identifier of the site this extension belongs to.
-              example: 6
-              nullable: true
-            destination_name:
+              readOnly: true
+            site:
               type: string
-              description: Human-readable name of the destination this extension points to.
-              example: Sales Team Ring Group
+              description: Identifier of the site this extension belongs to.
+              example: hq.ivy.teliax.com
               nullable: true
+              readOnly: true
             user_id:
               type: integer
               format: int64
               nullable: true
               description: Optional user ID associated with this extension.
               example: 5
+            code:
+              type: string
+              description: The code of the response
+              example: "extension:1232"  
             links:
               type: array
               items:
                 $ref: '#/components/schemas/index_components-schemas-Link'
               nullable: true
-          required:
-            - id
-            - site_id
-            - destination_name
-            - number
-            - name
-            - destination_code
+              example:
+                - href: /sites/2612/extensions/5002
+                  rel: "self"
+                  title: "Extension Details"
+                  method: "GET"
+                - href: /sites/2612/extensions/5002
+                  rel: "Delete"
+                  title: "Delete Extension"
+                  method: "DELETE"
+                - href: /sites/2612/extensions/5002
+                  rel: "Edit"
+                  title: "Edit Extension"
+                  method: "PUT"
       description: Detailed information about a site extension.
-      example:
-        id: 101
-        site_id: 6
-        number: '1001'
-        name: Sales
-        destination_code: ring_group:45
-        destination_name: Sales Team Ring Group
-        user_id: 5
-        links:
-          - href: /sites/6/extensions/101
-            rel: self
-            method: GET
-    PaginatedExtensionListResponse:
+    ExtensionListResponse:
       type: object
       description: A paginated list of extensions.
       properties:
@@ -10050,50 +9868,16 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ExtensionResponse'
-        total_items:
-          type: integer
-          example: 150
-        total_pages:
-          type: integer
-          example: 6
-        current_page:
-          type: integer
-          example: 1
-        per_page:
-          type: integer
-          example: 25
         links:
           type: array
           items:
             $ref: '#/components/schemas/index_components-schemas-Link'
           nullable: true
-      required:
-        - extensions
-        - total_items
-        - total_pages
-        - current_page
-        - per_page
-      example:
-        extensions:
-          - id: 101
-            site_id: 6
-            number: '1001'
-            name: Sales
-            destination_code: ring_group:45
-            destination_name: Sales Team Ring Group
-            user_id: 5
-            links:
-              - href: /sites/6/extensions/101
-                rel: self
-                method: GET
-        total_items: 1
-        total_pages: 1
-        current_page: 1
-        per_page: 25
-        links:
-          - href: /sites/6/extensions?page=1&page_size=25
-            rel: self
-            method: GET
+          example:
+            - href: sites/2612/extensions
+              rel: "self"
+              method: "GET"
+              title: "Extensions list"
     index_components-schemas-Error-2:
       type: object
       description: Standard error response format.
@@ -10121,18 +9905,10 @@ components:
         - status
         - error
         - error_code
-    ExtensionCreateRequest:
+    ExtensionRequest:
       allOf:
         - $ref: '#/components/schemas/ExtensionCore'
       description: Data required to create a new extension.
-      required:
-        - number
-        - name
-        - destination_code
-      example:
-        number: '1003'
-        name: Billing
-        destination_code: voicemailbox:billing_vm
     extension_components-schemas-Error:
       type: object
       description: Standard error response format.
@@ -10162,43 +9938,6 @@ components:
         status: error
         error: An individual extension operation error occurred.
         error_code: EXTENSION_DETAIL_ERROR
-    ExtensionUpdateRequest:
-      allOf:
-        - $ref: '#/components/schemas/ExtensionCore'
-        - type: object
-          properties:
-            user_id:
-              type: integer
-              format: int64
-              nullable: true
-              description: Optional user ID to associate with this extension.
-              example: 10
-      description: Data for updating an existing extension. Only provide fields to be changed.
-      example:
-        name: Marketing Hotdesk
-        number: '2005'
-        destination_code: user:jane_doe_vm
-        user_id: null
-    ExtensionListResponse:
-      type: object
-      description: A list of extensions.
-      properties:
-        extensions:
-          type: array
-          items:
-            $ref: '#/components/schemas/ExtensionResponse'
-      required:
-        - extensions
-      example:
-        extensions:
-          - id: 75
-            site_id: null
-            number: '7001'
-            name: Available Ext 7001
-            destination_code: ''
-            destination_name: null
-            user_id: null
-            links: []
     transfer_components-schemas-Error:
       type: object
       description: Standard error response format.
