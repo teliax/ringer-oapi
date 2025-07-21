@@ -2092,27 +2092,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DeviceListResponse'
-              example:
-                devices:
-                  - id: 1763
-                    site_id: 6
-                    name: John Doe Desk Phone
-                    login: john.doe.phone1
-                    active: true
-                    channel_limit: 2
-                    timeout: 120
-                    caller_id_name: John Doe
-                    caller_id_number: '+13035551234'
-                    acl: 0.0.0.0/0
-                    fail_over_destination_code: voicemailbox:vm_john_doe
-                    fail_over_destination:
-                      name: Voicemail for John Doe
-                      code: voicemailbox:vm_john_doe
-                    user_id: 5
-                    links:
-                      - href: /sites/6/devices/1763
-                        rel: self
-                        method: GET
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -2133,17 +2112,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DeviceCreateRequest'
-            example:
-              name: Lobby Phone
-              login: lobby.phone.site_beta
-              active: true
-              channel_limit: 1
-              timeout: 300
-              caller_id_name: Lobby
-              caller_id_number: '+13035550102'
-              acl: 0.0.0.0/0
-              fail_over_destination_code: voicemailbox:general_vm
+              $ref: '#/components/schemas/schemas-DeviceCore'
       responses:
         '201':
           description: Device created successfully. The response includes the generated password.
@@ -2151,24 +2120,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DeviceResponse'
-              example:
-                id: 1763
-                site_id: 6
-                name: John Doe Desk Phone
-                login: john.doe.phone1
-                active: true
-                channel_limit: 2
-                timeout: 120
-                caller_id_name: John Doe
-                caller_id_number: '+13035551234'
-                acl: 0.0.0.0/0
-                password: aGeneratedPasswordExample
-                fail_over_destination_code: voicemailbox:vm_john_doe
-                fail_over_destination:
-                  name: Voicemail for John Doe
-                  code: voicemailbox:vm_john_doe
-                user_id: 5
-                links: null
         '400':
           $ref: '#/components/responses/index_components-responses-BadRequestError'
         '401':
@@ -2204,26 +2155,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DeviceResponse'
-              example:
-                id: 1763
-                site_id: 6
-                name: John Doe Desk Phone
-                login: john.doe.phone1
-                active: true
-                channel_limit: 2
-                timeout: 120
-                caller_id_name: John Doe
-                caller_id_number: '+13035551234'
-                acl: 0.0.0.0/0
-                fail_over_destination_code: voicemailbox:vm_john_doe
-                fail_over_destination:
-                  name: Voicemail for John Doe
-                  code: voicemailbox:vm_john_doe
-                user_id: 5
-                links:
-                  - href: /sites/6/devices/1763
-                    rel: self
-                    method: GET
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -2244,16 +2175,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DeviceUpdateRequest'
-            example:
-              name: John Doe Desk Phone - Updated
-              active: true
-              channel_limit: 4
-              timeout: 180
-              caller_id_name: JD Phone
-              caller_id_number: '+13035551235'
-              acl: 192.168.1.0/24
-              fail_over_destination_code: menu:main_menu
+              $ref: '#/components/schemas/schemas-DeviceCore'
       responses:
         '200':
           description: Device updated successfully.
@@ -2261,26 +2183,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DeviceResponse'
-              example:
-                id: 1763
-                site_id: 6
-                name: John Doe Desk Phone - Updated
-                login: john.doe.phone1
-                active: true
-                channel_limit: 4
-                timeout: 180
-                caller_id_name: JD Phone
-                caller_id_number: '+13035551235'
-                acl: 192.168.1.0/24
-                fail_over_destination_code: menu:main_menu
-                fail_over_destination:
-                  name: Main Menu
-                  code: menu:main_menu
-                user_id: 5
-                links:
-                  - href: /sites/6/devices/1763
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/device_components-responses-BadRequestError'
         '401':
@@ -2314,75 +2216,6 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/responses-DeviceNotFoundError'
-  /sites/{site_id}/devices/available:
-    parameters:
-      - $ref: '#/components/parameters/SiteId'
-    get:
-      tags:
-        - Site Features - Devices
-      summary: List Available Devices for a Site/User
-      description: |
-        Retrieves a list of devices that are available for assignment to the specified site.
-        The original Teliax API included a `user_id` query parameter, which might imply that availability
-        could also be filtered or contextualized by a user. This parameter is included here as optional.
-      operationId: listSiteAvailableDevices
-      parameters:
-        - name: user_id
-          in: query
-          description: Optional. Identifier of a user to filter or contextualize available devices.
-          required: false
-          schema:
-            type: integer
-            format: int64
-            example: 5
-      responses:
-        '200':
-          description: A list of available devices.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeviceListResponse'
-              example:
-                devices:
-                  - id: 1764
-                    site_id: null
-                    name: Inventory IP Phone XYZ
-                    login: inventory.phone.xyz
-                    active: true
-                    channel_limit: 1
-                    timeout: 120
-                    caller_id_name: null
-                    caller_id_number: null
-                    acl: null
-                    fail_over_destination_code: null
-                    fail_over_destination: null
-                    user_id: null
-                    links: []
-                  - id: 1763
-                    site_id: 6
-                    name: John Doe Desk Phone
-                    login: john.doe.phone1
-                    active: true
-                    channel_limit: 2
-                    timeout: 120
-                    caller_id_name: John Doe
-                    caller_id_number: '+13035551234'
-                    acl: 0.0.0.0/0
-                    fail_over_destination_code: voicemailbox:vm_john_doe
-                    fail_over_destination:
-                      name: Voicemail for John Doe
-                      code: voicemailbox:vm_john_doe
-                    user_id: 5
-                    links:
-                      - href: /sites/6/devices/1763
-                        rel: self
-                        method: GET
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
-        '404':
-          $ref: '#/components/responses/SiteNotFoundError'
   /sites/{site_id}/devices/status:
     parameters:
       - $ref: '#/components/parameters/SiteId'
@@ -2401,13 +2234,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DeviceStatus'
-              example:
-                registered_devices:
-                  - "john.doe.phone1"
-                  - "lobby.phone"
-                unregistered_devices:
-                  - "confroom1.site6"
-                links:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -2435,27 +2261,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DeviceResponseWithPassword'
-              example:
-                id: 1763
-                site_id: 6
-                name: John Doe Desk Phone
-                login: john.doe.phone1
-                password: newStrongPassword123!
-                active: true
-                channel_limit: 2
-                timeout: 120
-                caller_id_name: John Doe
-                caller_id_number: '+13035551234'
-                acl: 0.0.0.0/0
-                fail_over_destination_code: voicemailbox:vm_john_doe
-                fail_over_destination:
-                  name: Voicemail for John Doe
-                  code: voicemailbox:vm_john_doe
-                user_id: 5
-                links:
-                  - href: /sites/6/devices/1763
-                    rel: self
-                    method: GET
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -2499,26 +2304,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DeviceResponse'
-              example:
-                id: 1763
-                site_id: 7
-                name: John Doe Desk Phone
-                login: john.doe.phone1
-                active: true
-                channel_limit: 2
-                timeout: 120
-                caller_id_name: John Doe
-                caller_id_number: '+13035551234'
-                acl: 0.0.0.0/0
-                fail_over_destination_code: voicemailbox:vm_john_doe
-                fail_over_destination:
-                  name: Voicemail for John Doe
-                  code: voicemailbox:vm_john_doe
-                user_id: 5
-                links:
-                  - href: /sites/7/devices/1763
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -9779,9 +9564,6 @@ components:
         login:
           type: string
           example: sales.phone1.site_alpha
-        active:
-          type: boolean
-          default: true
         channel_limit:
           type: integer
           default: 2
@@ -9798,12 +9580,20 @@ components:
           type: string
           nullable: true
           default: 0.0.0.0/0
-        fail_over_destination_code:
-          type: string
-          nullable: true
+        mobile_client:
+          type: boolean
+          description: Indicates if the device is a mobile client
+          example: true
+        fail_over:
+          $ref: '#/components/schemas/schemas-SiteDestination'  
       required:
         - name
         - login
+        - channel_limit
+        - timeout
+        - caller_id_name
+        - caller_id_number
+        - acl
     schemas-SiteDestination:
       type: object
       description: Represents a potential call destination or failover point.
@@ -9835,16 +9625,23 @@ components:
               readOnly: true
               description: The site this device belongs to.
               example: customer-01.ringer.tel
+            active:
+              type: boolean
+              default: true
             password:
               type: string
               description: (Returned on create only)
-            fail_over_destination:
+              example: 'securePassword!23'
+            fail_over:
               oneOf:
                 - $ref: '#/components/schemas/schemas-SiteDestination'
                 - type: object
                   nullable: true
                   properties: {}
                   additionalProperties: false
+                  example: 
+                    name: 'John Doe(voice_mail_box: 21)'
+                    code: 'voice_mail_box:21'
             user_id:
               type: integer
               format: int64
@@ -9854,6 +9651,19 @@ components:
               items:
                 $ref: '#/components/schemas/schemas-Link'
               nullable: true
+              example:
+                - href: /sites/2612/devices/3716
+                  rel: "self"
+                  title: "Device Details"
+                  method: "GET"
+                - href: /sites/2612/devices/3716
+                  rel: Delete
+                  title: "Delete Device"
+                  method: "DELETE"
+                - href: /sites/2612/devices/3716
+                  rel: Edit
+                  title: "Edit Device"
+                  method: "PUT"
     DeviceListResponse:
       type: object
       properties:
@@ -9861,29 +9671,16 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DeviceResponse'
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/schemas-Link'
+          nullable: true    
+          example:
+            - href: /sites/2322/devices
       required:
         - devices
-      example:
-        devices:
-          - id: 1763
-            site_id: 6
-            name: John Doe Desk Phone
-            login: john.doe.phone1
-            active: true
-            channel_limit: 2
-            timeout: 120
-            caller_id_name: John Doe
-            caller_id_number: '+13035551234'
-            acl: 0.0.0.0/0
-            fail_over_destination_code: voicemailbox:vm_john_doe
-            fail_over_destination:
-              name: Voicemail for John Doe
-              code: voicemailbox:vm_john_doe
-            user_id: 5
-            links:
-              - href: /sites/6/devices/1763/regenerate-password
-                rel: regenerate-password
-                method: PATCH
+        - links
     DeviceStatus:
       type: object
       properties:
@@ -9892,27 +9689,9 @@ components:
           description: 'Array of login names for registered devices'
           items:
             type: 'string'
-        links:
-          type: "array"
-          items:
-            $ref: '#/components/schemas/Link'
-      example:
-        devices:
-          - john_doe
-          - jane_doe
-        links:
-          - href: '/sites/6/devices/status'
-            rel: 'self'
-            title: 'Devices'
-            method: 'GET'
-          - href: '/sites/6/devices'
-            rel: 'List'
-            title: 'Devices'
-            method: 'GET'
-          - href: '/sites/6'
-            rel: 'up'
-            title: 'Site'
-            method: 'GET'
+          example:
+            - home
+            - john_doe
     index_components-schemas-Error:
       type: object
       description: Standard error response format.
@@ -9942,22 +9721,6 @@ components:
         status: error
         error: A generic device error occurred.
         error_code: DEVICE_ERROR_GENERIC
-    DeviceCreateRequest:
-      allOf:
-        - $ref: '#/components/schemas/schemas-DeviceCore'
-      required:
-        - name
-        - login
-      example:
-        name: Lobby Phone
-        login: lobby.phone.site_beta
-        active: true
-        channel_limit: 1
-        timeout: 300
-        caller_id_name: Lobby
-        caller_id_number: '+13035550102'
-        acl: 0.0.0.0/0
-        fail_over_destination_code: voicemailbox:general_vm
     device_components-schemas-Error:
       type: object
       description: Standard error response format.
@@ -9987,39 +9750,6 @@ components:
         status: error
         error: A device-specific error occurred.
         error_code: DEVICE_ERROR
-    DeviceUpdateRequest:
-      type: object
-      description: Fields that can be updated for an existing device. Login is typically not updatable.
-      properties:
-        name:
-          type: string
-          example: Sales Desk Phone 1 - Updated
-        active:
-          type: boolean
-        channel_limit:
-          type: integer
-        timeout:
-          type: integer
-        caller_id_name:
-          type: string
-          nullable: true
-        caller_id_number:
-          type: string
-          nullable: true
-        acl:
-          type: string
-          nullable: true
-        fail_over_destination_code:
-          type: string
-          nullable: true
-      example:
-        name: Marketing Phone
-        active: false
-        channel_limit: 1
-        timeout: 90
-        caller_id_name: Marketing Dept
-        acl: 192.168.1.0/24
-        fail_over_destination_code: menu:marketing_overflow
     DeviceResponseWithPassword:
       allOf:
         - $ref: '#/components/schemas/DeviceResponse'
