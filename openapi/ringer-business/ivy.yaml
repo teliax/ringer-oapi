@@ -2783,51 +2783,13 @@ paths:
       summary: List Forwards for a Site
       description: Retrieve a paginated list of all call forwards that belong to a site.
       operationId: listSiteForwards
-      parameters:
-        - name: page
-          in: query
-          description: Page number for pagination.
-          required: false
-          schema:
-            type: integer
-            default: 1
-            example: 1
-        - name: page_size
-          in: query
-          description: Number of forwards per page.
-          required: false
-          schema:
-            type: integer
-            default: 25
-            example: 10
       responses:
         '200':
           description: A paginated list of forwards.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedForwardListResponse'
-              example:
-                forwards:
-                  - id: 77
-                    name: After Hours
-                    destination_dial_string: '+13125559876'
-                    timeout: 30
-                    active: true
-                    site_id: 6
-                    fail_over_destination_code: voicemailbox:general_vm
-                    links:
-                      - href: /sites/6/forwards/77
-                        rel: self
-                        method: GET
-                total_items: 1
-                total_pages: 1
-                current_page: 1
-                per_page: 25
-                links:
-                  - href: /sites/6/forwards?page=1&page_size=25
-                    rel: self
-                    method: GET
+                $ref: '#/components/schemas/ForwardListResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -2846,7 +2808,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ForwardCreateRequest'
+              $ref: '#/components/schemas/ForwardRequest'
             example:
               name: Lunch Break Forward
               destination_dial_string: '+13125559877'
@@ -2860,18 +2822,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ForwardResponse'
-              example:
-                id: 78
-                site_id: 6
-                name: Lunch Break Forward
-                destination_dial_string: '+13125559877'
-                active: true
-                timeout: 60
-                fail_over_destination_code: menu:main_menu
-                links:
-                  - href: /sites/6/forwards/78
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -2897,19 +2847,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ForwardResponse'
-              example:
-                id: 77
-                site_id: 6
-                name: After Hours
-                destination_dial_string: '+13125559876'
-                active: true
-                timeout: 30
-                fail_over_destination_code: voicemailbox:vm_general
-                user_id: 10
-                links:
-                  - href: /sites/6/forwards/77
-                    rel: self
-                    method: GET
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -2928,14 +2865,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ForwardUpdateRequest'
-            example:
-              name: After Hours Main Line
-              destination_dial_string: '+13125559877'
-              active: false
-              timeout: 20
-              fail_over_destination_code: voicemailbox:general_voicemail
-              user_id: 10
+              $ref: '#/components/schemas/ForwardRequest'
       responses:
         '200':
           description: Forward Updated Successfully
@@ -2943,19 +2873,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ForwardResponse'
-              example:
-                id: 77
-                site_id: 6
-                name: After Hours Main Line
-                destination_dial_string: '+13125559877'
-                active: false
-                timeout: 20
-                fail_over_destination_code: voicemailbox:general_voicemail
-                user_id: 10
-                links:
-                  - href: /sites/6/forwards/77
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -2979,67 +2896,6 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-  /sites/{site_id}/forwards/available:
-    parameters:
-      - $ref: '#/components/parameters/SiteId'
-    get:
-      tags:
-        - Site Features - Forwards
-      summary: List Available Forwards for a Site/User
-      description: Retrieve all the available and assigned forwards for the site. Optionally filter by user ID to show forwards assigned to a specific user.
-      operationId: listSiteAvailableForwards
-      parameters:
-        - name: userId
-          in: query
-          description: ID of the user to filter forwards by
-          required: false
-          schema:
-            type: integer
-            format: int64
-            example: 42
-      responses:
-        '200':
-          description: An array of available Forwards.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AvailableForwardListResponse'
-              example:
-                forwards:
-                  - id: 77
-                    site_id: 6
-                    name: After Hours
-                    destination_dial_string: '+13125559876'
-                    active: true
-                    timeout: 30
-                    fail_over_destination_code: voicemailbox:vm_general
-                    assigned: true
-                    assigned_to: 42
-                    user_id: 10
-                    links:
-                      - href: /sites/6/forwards/77
-                        rel: self
-                        method: GET
-                  - id: 78
-                    site_id: 6
-                    name: Lunch Break
-                    destination_dial_string: '+13125559877'
-                    active: false
-                    timeout: 20
-                    fail_over_destination_code: null
-                    assigned: false
-                    assigned_to: null
-                    user_id: null
-                    links:
-                      - href: /sites/6/forwards/78
-                        rel: self
-                        method: GET
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
-        '404':
-          $ref: '#/components/responses/SiteNotFoundError'
   /sites/{site_id}/forwards/{id}/transfer:
     parameters:
       - $ref: '#/components/parameters/SiteId'
@@ -3053,7 +2909,7 @@ paths:
       requestBody:
         required: true
         content:
-          application/x-www-form-urlencoded:
+          application/json:
             schema:
               type: object
               properties:
@@ -3072,19 +2928,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ForwardResponse'
-              example:
-                id: 77
-                site_id: 7
-                name: Transferred Forward
-                destination_dial_string: '+13125551234'
-                active: true
-                timeout: 20
-                fail_over_destination_code: voicemailbox:general_vm
-                user_id: null
-                links:
-                  - href: /sites/7/forwards/77
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -10078,32 +9921,20 @@ components:
           description: How long (in seconds) the forward will be attempted before failing over or disconnecting.
           default: 20
           example: 30
+        fail_over:
+          $ref: '#/components/schemas/schemas-SiteDestination'
+        inactive_destination:
+          $ref: '#/components/schemas/schemas-SiteDestination'
         active:
           type: boolean
           description: Whether this call forward rule is currently active.
           default: true
           example: true
-        fail_over_destination_code:
-          type: string
-          nullable: true
-          description: System code for the destination if the forward attempt fails or times out.
-          example: voicemailbox:general_voicemail
-        user_id:
-          type: integer
-          format: int64
-          nullable: true
-          description: Optional. Identifier of the user primarily associated with this forward.
-          example: 10
       required:
         - name
         - destination_dial_string
-      example:
-        name: Support Line Forward
-        destination_dial_string: '+18005551212'
-        timeout: 25
-        active: true
-        fail_over_destination_code: menu:support_options
-        user_id: 15
+        - timeout
+        - fail_over
     ForwardResponse:
       allOf:
         - $ref: '#/components/schemas/ForwardCore'
@@ -10114,36 +9945,37 @@ components:
               format: int64
               description: Unique identifier for the forward.
               example: 77
-            site_id:
+              readOnly: true
+            site:
+              type: string
+              description: Identifier of the site this forward belongs to.
+              example: hq.ivy.teliax.com
+            user_id:
               type: integer
               format: int64
-              description: Identifier of the site this forward belongs to.
-              example: 6
+              nullable: true
+              description: Optional. Identifier of the user primarily associated with this forward.
+              example: 10
             links:
               type: array
               items:
                 $ref: '#/components/schemas/Link'
               nullable: true
-          required:
-            - id
-            - site_id
-            - name
-            - destination_dial_string
+              example:
+                - href: /sites/6/forwards/2505
+                  rel: "self"
+                  title: "Forward Details"
+                  method: "GET"
+                - href: /sites/6/forwards/2505"
+                  rel: "Delete"
+                  title: "Delete Forward"
+                  method: "DELETE"
+                - href: "/sites/6/forwards/2505"
+                  rel: "Edit"
+                  title: "Edit Forward"
+                  method: "PUT"
       description: Detailed information about a call forward.
-      example:
-        id: 77
-        site_id: 6
-        name: After Hours
-        destination_dial_string: '+13125559876'
-        active: true
-        timeout: 30
-        fail_over_destination_code: voicemailbox:vm_general
-        user_id: 10
-        links:
-          - href: /sites/6/forwards/77
-            rel: self
-            method: GET
-    PaginatedForwardListResponse:
+    ForwardListResponse:
       type: object
       description: A paginated list of call forwards.
       properties:
@@ -10151,100 +9983,20 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ForwardResponse'
-        total_items:
-          type: integer
-          example: 50
-        total_pages:
-          type: integer
-          example: 5
-        current_page:
-          type: integer
-          example: 1
-        per_page:
-          type: integer
-          example: 10
         links:
           type: array
           items:
             $ref: '#/components/schemas/Link'
           nullable: true
-      required:
-        - forwards
-        - total_items
-        - total_pages
-        - current_page
-        - per_page
-      example:
-        forwards:
-          - id: 77
-            site_id: 6
-            name: After Hours
-            destination_dial_string: '+13125559876'
-            active: true
-            timeout: 30
-            fail_over_destination_code: voicemailbox:vm_general
-            user_id: 10
-            links:
-              - href: /sites/6/forwards/77
-                rel: self
-                method: GET
-        total_items: 1
-        total_pages: 1
-        current_page: 1
-        per_page: 25
-        links:
-          - href: /sites/6/forwards?page=1&page_size=25
-            rel: self
-            method: GET
-    ForwardCreateRequest:
+          example:
+            - href: "/sites/6/forwards"
+              rel: "self"
+              method: "GET"
+              title: "Forwards list"
+    ForwardRequest:
       allOf:
         - $ref: '#/components/schemas/ForwardCore'
       description: Data required to create a new call forward.
-      example:
-        name: Holiday Backup Forward
-        destination_dial_string: '+12125557890'
-        timeout: 15
-        active: false
-    ForwardUpdateRequest:
-      type: object
-      properties:
-        name:
-          type: string
-          nullable: true
-          description: A user-friendly name for the forward configuration.
-          example: Main Office After Hours
-        destination_dial_string:
-          type: string
-          nullable: true
-          description: The external phone number (E.164 format recommended) to which calls will be forwarded.
-          example: '+14155550100'
-        timeout:
-          type: integer
-          nullable: true
-          description: How long (in seconds) the forward will be attempted before failing over or disconnecting.
-          example: 30
-        active:
-          type: boolean
-          nullable: true
-          description: Whether this call forward rule is currently active.
-          example: true
-        fail_over_destination_code:
-          type: string
-          nullable: true
-          description: System code for the destination if the forward attempt fails or times out.
-          example: voicemailbox:general_voicemail
-        user_id:
-          type: integer
-          format: int64
-          nullable: true
-          description: Optional. Identifier of the user primarily associated with this forward.
-          example: 10
-      description: Data for updating an existing call forward. Only provide fields to change.
-      example:
-        name: Weekend On-Call Forward
-        destination_dial_string: '+18885550102'
-        active: true
-        timeout: 25
     AvailableForward:
       type: object
       allOf:
