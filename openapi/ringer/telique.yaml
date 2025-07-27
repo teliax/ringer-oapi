@@ -276,7 +276,7 @@ tags:
     description: Operations for Do Not Originate database lookups
   - name: CNAM
     description: Operations for looking up caller name information
-  - name: Local Routing Number (LRN)
+  - name: LRN
     description: Operations for local routing number information
   - name: ROR
     description: Operations for identifying the toll-free Responsible Organization
@@ -418,7 +418,7 @@ paths:
   /telique/lrn/{phoneNumber}:
     get:
       tags:
-        - Local Routing Number (LRN)
+        - LRN
       summary: Retrieve LRN for a phone number
       description: |
         Returns the Local Routing Number (LRN) and Service Provider ID (SPID) 
