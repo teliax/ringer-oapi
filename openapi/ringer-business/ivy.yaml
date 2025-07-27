@@ -15,8 +15,7 @@ info:
 servers:
   - url: https://api.ringer.tel/v2
     description: Production server
-  - url: https://api.staging.ringer.tel/v2
-    description: Staging server
+
 tags:
   - name: Accounts
     description: Endpoints for managing customer accounts and their associated details.

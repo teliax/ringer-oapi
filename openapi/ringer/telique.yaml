@@ -23,7 +23,7 @@ info:
 servers:
   - url: https://api.ringer.tel/v1
     description: Production server
-
+ 
 # Global security definition for IP whitelist
 components:
   securitySchemes:

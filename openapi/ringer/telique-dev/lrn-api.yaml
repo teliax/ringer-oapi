@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: NotADipDip LRN Lookup API
+  title: LRN Lookup API
   description: |
     High-performance Local Routing Number (LRN) lookup service for telephone numbers.
     Part of the Telique API ecosystem.
@@ -9,9 +9,7 @@ info:
     name: Ringer Support
     url: https://docs.ringer.tel
 servers:
-  - url: http://localhost:56660
-    description: Local development server
-  - url: https://api.ringer.tel/notadipdip
+  - url: https://api-dev.ringer.tel/v1/telique/lrn/
     description: Production server
 paths:
   /{telephone_number}:
