@@ -1,0 +1,284 @@
+openapi: 3.0.3
+info:
+  title: NotADipDip LRN Lookup API
+  description: |
+    High-performance Local Routing Number (LRN) lookup service for telephone numbers.
+    Part of the Telique API ecosystem.
+  version: 1.0.0
+  contact:
+    name: Ringer Support
+    url: https://docs.ringer.tel
+servers:
+  - url: http://localhost:56660
+    description: Local development server
+  - url: https://api.ringer.tel/notadipdip
+    description: Production server
+paths:
+  /{telephone_number}:
+    get:
+      summary: Lookup LRN for a telephone number
+      description: |
+        Query the Local Routing Number (LRN) and Service Profile Identifier (SPID) 
+        for a given 10-digit US telephone number.
+      operationId: lookupLRN
+      parameters:
+        - name: telephone_number
+          in: path
+          required: true
+          description: 10-digit US telephone number (NPA-NXX-XXXX format, digits only)
+          schema:
+            type: string
+            pattern: '^[2-9]\d{9}$'
+            example: "2125551234"
+        - name: format
+          in: query
+          required: false
+          description: Response format
+          schema:
+            type: string
+            enum: [json, xml, plain]
+            default: plain
+      responses:
+        '200':
+          description: Successful lookup
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "2125550000;ABCD"
+                description: "Format: {LRN};{SPID} or just {telephone_number} if not found"
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LRNResponse'
+              example:
+                telephone_number: 2125551234
+                lrn: 2125550000
+                spid: "ABCD"
+                status: "found"
+            application/xml:
+              schema:
+                type: string
+                example: |
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <lrn_response>
+                    <telephone_number>2125551234</telephone_number>
+                    <lrn>2125550000</lrn>
+                    <spid>ABCD</spid>
+                    <status>found</status>
+                  </lrn_response>
+        '400':
+          description: Invalid telephone number format
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "BADCOMMAND"
+  /admin/stats:
+    get:
+      summary: Get service statistics
+      description: Returns current service statistics (local access only)
+      operationId: getStats
+      security:
+        - localOnly: []
+      responses:
+        '200':
+          description: Service statistics
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "(1234567,0,Stats {statRequests = 1000000, statErrors = 0, statCacheHit = 950000, statCacheMiss = 50000, statNegResponse = 10000})"
+        '403':
+          description: Access denied (not local)
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "DENY"
+  /admin/clear:
+    post:
+      summary: Clear the LRN cache
+      description: Clears all cached LRN data (local access only)
+      operationId: clearCache
+      security:
+        - localOnly: []
+      responses:
+        '200':
+          description: Cache cleared successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "CLEARED"
+        '403':
+          description: Access denied (not local)
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "DENY"
+  /admin/update:
+    post:
+      summary: Trigger Neustar database update
+      description: Initiates a poll to Neustar for LRN database updates (local access only)
+      operationId: updateDatabase
+      security:
+        - localOnly: []
+      responses:
+        '200':
+          description: Update initiated
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "WILLPOLL"
+        '403':
+          description: Access denied (not local)
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "DENY"
+        '503':
+          description: Service still starting up
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "ERROR_STARTUP"
+  /admin/save:
+    post:
+      summary: Save checkpoint
+      description: Saves the current cache state to disk (local access only)
+      operationId: saveCheckpoint
+      security:
+        - localOnly: []
+      parameters:
+        - name: filename
+          in: query
+          required: false
+          description: Optional checkpoint filename
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Checkpoint saved
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "SAVED"
+        '403':
+          description: Access denied (not local)
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "DENY"
+  /admin/delete/{telephone_number}:
+    delete:
+      summary: Delete a telephone number from cache
+      description: Removes a specific telephone number from the cache (local access only)
+      operationId: deleteNumber
+      security:
+        - localOnly: []
+      parameters:
+        - name: telephone_number
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[2-9]\d{9}$'
+      responses:
+        '200':
+          description: Number deleted
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "DELETED"
+        '403':
+          description: Access denied (not local)
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "DENY"
+  /admin/insert:
+    post:
+      summary: Insert or update a telephone number
+      description: Manually insert or update a telephone number's LRN and SPID (local access only)
+      operationId: insertNumber
+      security:
+        - localOnly: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                telephone_number:
+                  type: string
+                  pattern: '^[2-9]\d{9}$'
+                lrn:
+                  type: string
+                  pattern: '^[2-9]\d{9}$'
+                spid:
+                  type: string
+                  pattern: '^[A-Z0-9]{4}$'
+              required:
+                - telephone_number
+                - lrn
+                - spid
+      responses:
+        '200':
+          description: Number inserted
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "INSERTED"
+        '403':
+          description: Access denied (not local)
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "DENY"
+components:
+  schemas:
+    LRNResponse:
+      type: object
+      properties:
+        telephone_number:
+          type: integer
+          format: int64
+          description: The queried telephone number
+          example: 2125551234
+        lrn:
+          type: integer
+          format: int64
+          nullable: true
+          description: The Local Routing Number (null if not found)
+          example: 2125550000
+        spid:
+          type: string
+          nullable: true
+          description: The Service Profile Identifier (null if not found)
+          pattern: '^[A-Z0-9]{4}$'
+          example: "ABCD"
+        status:
+          type: string
+          enum: [found, not_found]
+          description: Lookup status
+          example: "found"
+      required:
+        - telephone_number
+        - status
+  securitySchemes:
+    localOnly:
+      type: apiKey
+      in: header
+      name: X-Local-Only
+      description: Administrative endpoints are only accessible from localhost (127.0.0.1) 

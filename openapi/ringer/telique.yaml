@@ -23,8 +23,6 @@ info:
 servers:
   - url: https://api.ringer.tel/v1
     description: Production server
-  - url: https://api.staging.ringer.tel/v1
-    description: Staging server
 
 # Global security definition for IP whitelist
 components:
