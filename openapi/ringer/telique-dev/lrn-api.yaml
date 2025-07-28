@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: LRN Lookup API
+  title: NotADipDip LRN Lookup API
   description: |
     High-performance Local Routing Number (LRN) lookup service for telephone numbers.
     Part of the Telique API ecosystem.
@@ -9,7 +9,9 @@ info:
     name: Ringer Support
     url: https://docs.ringer.tel
 servers:
-  - url: https://api-dev.ringer.tel/v1/telique/lrn/
+  - url: http://localhost:56660
+    description: Local development server
+  - url: https://api.ringer.tel/notadipdip
     description: Production server
 paths:
   /{telephone_number}:
@@ -71,179 +73,6 @@ paths:
               schema:
                 type: string
                 example: "BADCOMMAND"
-  /admin/stats:
-    get:
-      summary: Get service statistics
-      description: Returns current service statistics (local access only)
-      operationId: getStats
-      security:
-        - localOnly: []
-      responses:
-        '200':
-          description: Service statistics
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "(1234567,0,Stats {statRequests = 1000000, statErrors = 0, statCacheHit = 950000, statCacheMiss = 50000, statNegResponse = 10000})"
-        '403':
-          description: Access denied (not local)
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "DENY"
-  /admin/clear:
-    post:
-      summary: Clear the LRN cache
-      description: Clears all cached LRN data (local access only)
-      operationId: clearCache
-      security:
-        - localOnly: []
-      responses:
-        '200':
-          description: Cache cleared successfully
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "CLEARED"
-        '403':
-          description: Access denied (not local)
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "DENY"
-  /admin/update:
-    post:
-      summary: Trigger Neustar database update
-      description: Initiates a poll to Neustar for LRN database updates (local access only)
-      operationId: updateDatabase
-      security:
-        - localOnly: []
-      responses:
-        '200':
-          description: Update initiated
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "WILLPOLL"
-        '403':
-          description: Access denied (not local)
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "DENY"
-        '503':
-          description: Service still starting up
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "ERROR_STARTUP"
-  /admin/save:
-    post:
-      summary: Save checkpoint
-      description: Saves the current cache state to disk (local access only)
-      operationId: saveCheckpoint
-      security:
-        - localOnly: []
-      parameters:
-        - name: filename
-          in: query
-          required: false
-          description: Optional checkpoint filename
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Checkpoint saved
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "SAVED"
-        '403':
-          description: Access denied (not local)
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "DENY"
-  /admin/delete/{telephone_number}:
-    delete:
-      summary: Delete a telephone number from cache
-      description: Removes a specific telephone number from the cache (local access only)
-      operationId: deleteNumber
-      security:
-        - localOnly: []
-      parameters:
-        - name: telephone_number
-          in: path
-          required: true
-          schema:
-            type: string
-            pattern: '^[2-9]\d{9}$'
-      responses:
-        '200':
-          description: Number deleted
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "DELETED"
-        '403':
-          description: Access denied (not local)
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "DENY"
-  /admin/insert:
-    post:
-      summary: Insert or update a telephone number
-      description: Manually insert or update a telephone number's LRN and SPID (local access only)
-      operationId: insertNumber
-      security:
-        - localOnly: []
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                telephone_number:
-                  type: string
-                  pattern: '^[2-9]\d{9}$'
-                lrn:
-                  type: string
-                  pattern: '^[2-9]\d{9}$'
-                spid:
-                  type: string
-                  pattern: '^[A-Z0-9]{4}$'
-              required:
-                - telephone_number
-                - lrn
-                - spid
-      responses:
-        '200':
-          description: Number inserted
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "INSERTED"
-        '403':
-          description: Access denied (not local)
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "DENY"
 components:
   schemas:
     LRNResponse:
@@ -274,9 +103,4 @@ components:
       required:
         - telephone_number
         - status
-  securitySchemes:
-    localOnly:
-      type: apiKey
-      in: header
-      name: X-Local-Only
-      description: Administrative endpoints are only accessible from localhost (127.0.0.1) 
+ 
