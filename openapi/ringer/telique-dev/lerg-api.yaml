@@ -5,7 +5,7 @@ info:
     High-performance Local Exchange Routing Guide (LERG) data API for real-time telecom call routing and analytics.
     
     ## Overview
-    The LERG API provides sub-microsecond access to telecom routing data including:
+    The LERG API provides access to telecom routing data including:
     - Operating Company Numbers (OCN)
     - NPA-NXX assignments
     - Switch data
@@ -15,14 +15,9 @@ info:
     ## Authentication
     All API endpoints require an API token to be included in the `x-api-token` header.
     
-    ## Performance
-    - 99th percentile lookup times under 1 microsecond
-    - Handles 50K+ concurrent requests per pod
-    - All data held in memory for maximum performance
-    
     ## Data Updates
-    Data is updated monthly via blue/green deployment with zero downtime.
-  version: 0.8.0
+    Data is updated monthly
+  version: 0.8.10
   contact:
     name: Ringer Telique Support
     email: support@ringer.tel
@@ -33,7 +28,7 @@ info:
 
 servers:
   - url: https://api-dev.ringer.tel/v1/telique/lerg
-    description: Production server
+    description: Testing server (not 99.999% uptime)
 
 security:
   - ApiTokenAuth: []
@@ -395,22 +390,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-
-  /openapi.json:
-    get:
-      tags:
-        - Health
-      summary: Get OpenAPI specification (JSON)
-      description: Returns the OpenAPI 3.0 specification in JSON format
-      operationId: getOpenApiJson
-      security: []
-      responses:
-        '200':
-          description: OpenAPI 3.0 specification in JSON format
-          content:
-            application/json:
-              schema:
-                type: object
 
   /openapi.yaml:
     get:
