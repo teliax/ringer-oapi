@@ -3073,51 +3073,13 @@ paths:
       summary: List Menus for a Site
       description: Retrieve a paginated list of all menus (auto attendants) that belong to a site.
       operationId: listSiteMenus
-      parameters:
-        - name: page
-          in: query
-          description: Page number for pagination.
-          required: false
-          schema:
-            type: integer
-            default: 1
-        - name: page_size
-          in: query
-          description: Number of menus per page.
-          required: false
-          schema:
-            type: integer
-            default: 25
       responses:
         '200':
           description: A paginated list of menus.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedMenuListResponse'
-              example:
-                menus:
-                  - id: 55
-                    site_id: 6
-                    name: Main Menu
-                    pin: '****'
-                    fail_over_destination_code: voicemailbox:42
-                    options:
-                      '0': ring_group:10
-                      '1': extension:101
-                    greeting_url: https://cdn.example.com/greetings/menu_55.mp3
-                    links:
-                      - href: /sites/6/menus/55
-                        rel: self
-                        method: GET
-                total_items: 1
-                total_pages: 1
-                current_page: 1
-                per_page: 25
-                links:
-                  - href: /sites/6/menus?page=1&page_size=25
-                    rel: self
-                    method: GET
+                $ref: '#/components/schemas/MenuListResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -3144,20 +3106,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MenuResponse'
-              example:
-                id: 56
-                site_id: 6
-                name: Support Menu
-                pin: '****'
-                fail_over_destination_code: voicemailbox:43
-                options:
-                  '0': ring_group:11
-                  '1': extension:102
-                greeting_url: https://cdn.example.com/greetings/menu_56_greeting.wav
-                links:
-                  - href: /sites/6/menus/56
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -3183,20 +3131,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MenuResponse'
-              example:
-                id: 55
-                site_id: 6
-                name: Main Menu
-                pin: '****'
-                fail_over_destination_code: voicemailbox:42
-                options:
-                  '0': ring_group:10
-                  '1': extension:101
-                greeting_url: https://cdn.example.com/greetings/menu_55.mp3
-                links:
-                  - href: /sites/6/menus/55
-                    rel: self
-                    method: GET
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -3223,20 +3157,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MenuResponse'
-              example:
-                id: 55
-                site_id: 6
-                name: Updated Main Menu
-                pin: '****'
-                fail_over_destination_code: voicemailbox:43
-                options:
-                  '0': ring_group:sales_updated
-                  '1': extension:105
-                greeting_url: https://cdn.example.com/greetings/menu_55_updated.mp3
-                links:
-                  - href: /sites/6/menus/55
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -3296,20 +3216,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MenuResponse'
-              example:
-                id: 55
-                site_id: 7
-                name: Main Menu
-                pin: '1234'
-                fail_over_destination_code: voicemailbox:general_vm
-                options:
-                  '0': ring_group:sales_rg_new_site
-                  '1': extension:1002_new_site
-                greeting_url: https://cdn.example.com/greetings/menu_55_moved.mp3
-                links:
-                  - href: /sites/7/menus/55
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -3359,20 +3265,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MenuResponse'
-              example:
-                id: 55
-                site_id: 6
-                name: Main Menu
-                pin: '1234'
-                fail_over_destination_code: voicemailbox:general_vm
-                options:
-                  '0': ring_group:sales_rg
-                  '1': extension:1001
-                greeting_url: https://cdn.example.com/greetings/menu_55_new_greeting.mp3
-                links:
-                  - href: /sites/6/menus/55
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -10088,26 +9980,40 @@ components:
           nullable: true
           description: Numeric PIN for accessing menu options or management features (if applicable).
           example: '1234'
-        fail_over_destination_code:
-          type: string
-          description: System code for the destination if no option is selected or an error occurs.
-          example: voicemailbox:general_vm
+        fail_over:
+          type: object
+          description: Destination if no option is selected or an error occurs.
+          properties:
+            code:
+              type: string
+              description: System code for the destination.
+          required:
+            - code
+          example:
+            code: "ring_group:839"
       required:
         - name
-        - fail_over_destination_code
-      example:
-        name: After Hours Menu
-        pin: '9999'
-        fail_over_destination_code: extension:operator
+        - fail_over
+        - pin
     MenuResponseOptions:
       type: object
       additionalProperties:
-        type: string
-        nullable: true
+        type: object
+        properties:
+          name:
+            type: string
+          code:
+            type: string
+        required:
+          - name
+          - code
       example:
-        '0': ring_group:sales_rg
-        '1': extension:1001
-        '*': voicemailbox:operator_vm
+        "4":
+          name: "Company billing (ring_group:629)"
+          code: "ring_group:345"
+        "3":
+          name: "Company technical support (ring_group:839)"
+          code: "ring_group:9832"
     MenuResponse:
       allOf:
         - $ref: '#/components/schemas/MenuCore'
@@ -10118,14 +10024,34 @@ components:
               format: int64
               description: Unique identifier for the menu.
               example: 55
-            site_id:
-              type: integer
-              format: int64
+              readOnly: true
+            site:
+              type: string
               description: Identifier of the site this menu belongs to.
-              example: 6
+              example: hq.den.teliax.com
+            code:
+              type: string
+              description: The idenntifier code for the current menu
+              example: 'menu:55'
+            fail_over:
+              type: object
+              description: Destination if no option is selected or an error occurs.
+              properties:
+                name:
+                  type: string
+                  description: Human-readable label of the destination.
+                code:
+                  type: string
+                  description: System code for the destination.
+              required:
+                - name
+                - code
+              example:
+                name: "teliax technical support (ring_group:839)"
+                code: "ring_group:839"
             options:
               $ref: '#/components/schemas/MenuResponseOptions'
-            greeting_url:
+            greeting:
               type: string
               format: uri
               nullable: true
@@ -10136,27 +10062,25 @@ components:
               items:
                 $ref: '#/components/schemas/Link'
               nullable: true
+              example:
+                - href: "/sites/2612/menus/509"
+                  rel: "self"
+                  title: "Menu Details"
+                  method: "GET"
+                - href: "/sites/2612/menus/509"
+                  rel: "Delete"
+                  title: "Delete Menu"
+                  method": "DELETE"
+                - href: "/sites/2612/menus/509"
+                  rel: "Edit"
+                  title: "Edit Menu"
+                  method: "PUT"
           required:
             - id
-            - site_id
+            - site
             - name
             - fail_over_destination_code
-      example:
-        id: 55
-        site_id: 6
-        name: Main Business Hours Menu
-        pin: '1234'
-        fail_over_destination_code: voicemailbox:general_vm
-        options:
-          '0': ring_group:sales_rg
-          '1': extension:1001
-          '*': voicemailbox:operator_vm
-        greeting_url: https://cdn.example.com/greetings/menu_55.mp3
-        links:
-          - href: /sites/6/menus/55
-            rel: self
-            method: GET
-    PaginatedMenuListResponse:
+    MenuListResponse:
       type: object
       description: A paginated list of menus.
       properties:
@@ -10164,111 +10088,63 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MenuResponse'
-        total_items:
-          type: integer
-          example: 20
-        total_pages:
-          type: integer
-          example: 2
-        current_page:
-          type: integer
-          example: 1
-        per_page:
-          type: integer
-          example: 10
         links:
           type: array
           items:
             $ref: '#/components/schemas/Link'
           nullable: true
+          example:
+            - href: /sites/2612/menus
+              rel: self
+              method: GET
       required:
         - menus
-        - total_items
-        - total_pages
-        - current_page
-        - per_page
-      example:
-        menus:
-          - id: 55
-            site_id: 6
-            name: Main Menu
-            pin: '****'
-            fail_over_destination_code: voicemailbox:42
-            options:
-              '0': ring_group:10
-              '1': extension:101
-            greeting_url: https://cdn.example.com/greetings/menu_55.mp3
-            links:
-              - href: /sites/6/menus/55
-                rel: self
-                method: GET
-        total_items: 1
-        total_pages: 1
-        current_page: 1
-        per_page: 25
-        links:
-          - href: /sites/6/menus?page=1&page_size=25
-            rel: self
-            method: GET
+        - links
     MenuCreateRequest:
-      type: object
-      properties:
-        name:
-          type: string
-        pin:
-          type: string
-          nullable: true
-        fail_over_destination_code:
-          type: string
-        greeting:
-          type: string
-          format: binary
-          nullable: true
-          description: Audio file for the menu greeting.
-        option_routes[0]:
-          type: string
-          nullable: true
-          description: Destination code for key '0'.
-        option_routes[1]:
-          type: string
-          nullable: true
-        option_routes[2]:
-          type: string
-          nullable: true
-        option_routes[3]:
-          type: string
-          nullable: true
-        option_routes[4]:
-          type: string
-          nullable: true
-        option_routes[5]:
-          type: string
-          nullable: true
-        option_routes[6]:
-          type: string
-          nullable: true
-        option_routes[7]:
-          type: string
-          nullable: true
-        option_routes[8]:
-          type: string
-          nullable: true
-        option_routes[9]:
-          type: string
-          nullable: true
-        option_routes[*]:
-          type: string
-          nullable: true
-          description: Destination code for key '*'.
-      required:
-        - name
-        - fail_over_destination_code
-      example:
-        name: New Support IVR
-        pin: '5678'
-        fail_over_destination_code: voicemailbox:support_vm
-        option_routes[0]: ring_group:tech_support
-        option_routes[1]: extension:105
+      allOf:
+        - $ref: '#/components/schemas/LocationCore'
+        - type: object
+          properties:
+            greeting:
+              type: string
+              format: binary
+              nullable: true
+              description: Audio file for the menu greeting.
+            option_routes[0]:
+              type: string
+              nullable: true
+              description: Destination code for key '0'.
+            option_routes[1]:
+              type: string
+              nullable: true
+            option_routes[2]:
+              type: string
+              nullable: true
+            option_routes[3]:
+              type: string
+              nullable: true
+            option_routes[4]:
+              type: string
+              nullable: true
+            option_routes[5]:
+              type: string
+              nullable: true
+            option_routes[6]:
+              type: string
+              nullable: true
+            option_routes[7]:
+              type: string
+              nullable: true
+            option_routes[8]:
+              type: string
+              nullable: true
+            option_routes[9]:
+              type: string
+              nullable: true
+            option_routes[*]:
+              type: string
+              nullable: true
+              description: Destination code for key '*'.
     MenuUpdateRequest:
       type: object
       properties:
@@ -10320,11 +10196,6 @@ components:
           type: string
           nullable: true
       description: Attributes for updating a menu. For multipart/form-data, only include fields to change.
-      example:
-        name: Holiday Menu
-        pin: '2024'
-        fail_over_destination_code: extension:holiday_info
-        option_routes[1]: extension:santa
     PhoneNumberCore:
       type: object
       properties:
