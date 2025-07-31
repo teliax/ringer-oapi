@@ -2945,56 +2945,13 @@ paths:
       summary: List Locations for a Site
       description: Retrieves a paginated list of all physical locations defined for the specified site.
       operationId: listSiteLocations
-      parameters:
-        - name: page
-          in: query
-          description: Page number for pagination.
-          required: false
-          schema:
-            type: integer
-            default: 1
-            example: 1
-        - name: page_size
-          in: query
-          description: Number of locations per page.
-          required: false
-          schema:
-            type: integer
-            default: 25
-            example: 10
       responses:
         '200':
           description: A paginated list of locations for the site.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedLocationListResponse'
-              example:
-                locations:
-                  - id: 9
-                    site_id: 6
-                    name: Main Office - Denver
-                    house_number: '2150'
-                    street: West 29th Ave
-                    city: Denver
-                    state_province: CO
-                    postal_code: '80211'
-                    country_code: US
-                    caller_id_name: Teliax Office Denver
-                    e911_enabled: true
-                    e911_id: 123
-                    links:
-                      - href: /sites/6/locations/9
-                        rel: self
-                        method: GET
-                total_items: 1
-                total_pages: 1
-                current_page: 1
-                per_page: 25
-                links:
-                  - href: /sites/6/locations?page=1&page_size=25
-                    rel: self
-                    method: GET
+                $ref: '#/components/schemas/LocationListResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -3016,16 +2973,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/LocationCreateRequest'
-            example:
-              name: Warehouse A
-              house_number: '100'
-              street: Distribution Rd
-              city: Commerce City
-              state_province: CO
-              postal_code: '80022'
-              country_code: US
-              caller_id_name: Warehouse A Caller ID
-              e911_enabled: true
       responses:
         '201':
           description: Location created successfully.
@@ -3033,20 +2980,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LocationResponse'
-              example:
-                id: 10
-                site_id: 6
-                name: Warehouse A
-                house_number: '100'
-                street: Distribution Rd
-                city: Commerce City
-                state_province: CO
-                postal_code: '80022'
-                country_code: US
-                caller_id_name: Warehouse A Caller ID
-                e911_enabled: true
-                e911_id: 124
-                links: null
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -3072,24 +3005,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LocationResponse'
-              example:
-                id: 9
-                site_id: 6
-                name: Main Office - Denver
-                house_number: '2150'
-                house_number_suffix: Ste 310
-                street: West 29th Ave
-                city: Denver
-                state_province: CO
-                postal_code: '80211'
-                country_code: US
-                caller_id_name: Teliax Office Denver
-                e911_enabled: true
-                e911_id: 123
-                updated_by: system
-                latitude: '39.759000'
-                longitude: '-105.015000'
-                links: null
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -3111,17 +3026,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/LocationUpdateRequest'
-            example:
-              name: Main Office - Denver (Renovated)
-              house_number: '2150'
-              house_number_suffix: Suite 310A
-              street: West 29th Avenue
-              city: Denver
-              state_province: CO
-              postal_code: 80211-3200
-              country_code: US
-              caller_id_name: Teliax Denver Main
-              e911_enabled: true
       responses:
         '200':
           description: Location updated successfully.
@@ -3129,24 +3033,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LocationResponse'
-              example:
-                id: 9
-                site_id: 6
-                name: Main Office - Denver (Renovated)
-                house_number: '2150'
-                house_number_suffix: Suite 310A
-                street: West 29th Avenue
-                city: Denver
-                state_province: CO
-                postal_code: 80211-3200
-                country_code: US
-                caller_id_name: Teliax Denver Main
-                e911_enabled: true
-                e911_id: 123
-                updated_by: current_user_example
-                latitude: '39.759000'
-                longitude: '-105.015000'
-                links: null
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -9241,7 +9127,7 @@ components:
           description: Indicates if the device is a mobile client
           example: true
         fail_over:
-          $ref: '#/components/schemas/schemas-SiteDestination'  
+          $ref: '#/components/schemas/schemas-SiteDestination'
       required:
         - name
         - login
@@ -9295,7 +9181,7 @@ components:
                   nullable: true
                   properties: {}
                   additionalProperties: false
-                  example: 
+                  example:
                     name: 'John Doe(voice_mail_box: 21)'
                     code: 'voice_mail_box:21'
             user_id:
@@ -9331,7 +9217,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/schemas-Link'
-          nullable: true    
+          nullable: true
           example:
             - href: /sites/2322/devices
       required:
@@ -9683,7 +9569,7 @@ components:
             code:
               type: string
               description: The code of the response
-              example: "extension:1232"  
+              example: "extension:1232"
             links:
               type: array
               items:
@@ -9886,12 +9772,12 @@ components:
           description: HATEOAS links related to this fax machine.
           items:
             $ref: '#/components/schemas/Link'
-          nullable: true  
+          nullable: true
           example:
             - href: /sites/6/fax-machines
               rel: self
               title: "Fax Machine Details"
-              method: "GET"  
+              method: "GET"
       required:
         - fax_machines
     FaxMachineCreateRequest:
@@ -10101,6 +9987,14 @@ components:
           description: Indicates if E911 service is enabled for this location. Geocoding and validation occur upon setting this.
           default: true
           example: true
+        latitude:
+          type: string
+          description: Latitude coordinate of the location, if available.
+          example: '39.759000 N'
+        longitude:
+          type: string
+          description: Longitude coordinate of the location, if available.
+          example: '-105.015000 W'
       required:
         - name
         - house_number
@@ -10109,16 +10003,6 @@ components:
         - state_province
         - postal_code
         - country_code
-      example:
-        name: Satellite Office
-        house_number: '1000'
-        street: Commerce St
-        city: Dallas
-        state_province: TX
-        postal_code: '75201'
-        country_code: US
-        caller_id_name: Dallas Office
-        e911_enabled: true
     LocationResponse:
       allOf:
         - $ref: '#/components/schemas/LocationCore'
@@ -10129,11 +10013,12 @@ components:
               format: int64
               description: Unique identifier for the location record.
               example: 9
-            site_id:
-              type: integer
-              format: int64
-              description: Identifier of the site this location belongs to.
-              example: 6
+              readOnly: true
+            site:
+              type: string
+              description: Identifier of the site this forward belongs to.
+              example: hq.ivy.teliax.com
+              readOnly: true
             e911_id:
               type: integer
               format: int64
@@ -10146,53 +10031,27 @@ components:
               readOnly: true
               description: Identifier of the user who last updated this location.
               example: jane.doe@example.com
-            latitude:
-              type: string
-              nullable: true
-              readOnly: true
-            longitude:
-              type: string
-              nullable: true
-              readOnly: true
             links:
               type: array
               description: HATEOAS links related to this location.
               items:
                 $ref: '#/components/schemas/Link'
               nullable: true
-          required:
-            - id
-            - site_id
-            - name
-            - house_number
-            - street
-            - city
-            - state_province
-            - postal_code
-            - country_code
+              example:
+                - href: "/sites/2612/locations/2254"
+                  rel: self
+                  title: "Location Details"
+                  method: "GET"
+                - href: "/sites/2612/locations/2254"
+                  rel: "Delete"
+                  title: "Delete Location"
+                  method: "DELETE"
+                - href: "/sites/2612/locations/2254"
+                  rel: "Edit"
+                  title: "Edit Location"
+                  method: "PUT"
       description: Detailed information about a site location.
-      example:
-        id: 9
-        site_id: 6
-        name: Main Office - Denver
-        house_number: '2150'
-        house_number_suffix: Ste 310
-        street: West 29th Ave
-        city: Denver
-        state_province: CO
-        postal_code: '80211'
-        country_code: US
-        caller_id_name: Teliax Office Denver
-        e911_enabled: true
-        e911_id: 123
-        updated_by: system
-        latitude: '39.759000'
-        longitude: '-105.015000'
-        links:
-          - href: /sites/6/locations/9
-            rel: self
-            method: GET
-    PaginatedLocationListResponse:
+    LocationListResponse:
       type: object
       description: A paginated list of locations for a site.
       properties:
@@ -10200,87 +10059,23 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LocationResponse'
-        total_items:
-          type: integer
-          example: 50
-        total_pages:
-          type: integer
-          example: 5
-        current_page:
-          type: integer
-          example: 1
-        per_page:
-          type: integer
-          example: 10
         links:
           type: array
           items:
             $ref: '#/components/schemas/Link'
           nullable: true
-      required:
-        - locations
-        - total_items
-        - total_pages
-        - current_page
-        - per_page
-      example:
-        locations:
-          - id: 9
-            site_id: 6
-            name: Main Office - Denver
-            house_number: '2150'
-            house_number_suffix: Ste 310
-            street: West 29th Ave
-            city: Denver
-            state_province: CO
-            postal_code: '80211'
-            country_code: US
-            caller_id_name: Teliax Office Denver
-            e911_enabled: true
-            e911_id: 123
-            updated_by: system
-            latitude: '39.759000'
-            longitude: '-105.015000'
-            links:
-              - href: /sites/6/locations/9
-                rel: self
-                method: GET
-        total_items: 1
-        total_pages: 1
-        current_page: 1
-        per_page: 25
-        links:
-          - href: /sites/6/locations?page=1&page_size=25
-            rel: self
-            method: GET
+          example:
+            - href: /sites/2612/locations
+              rel: self
+              method: GET
     LocationCreateRequest:
       allOf:
         - $ref: '#/components/schemas/LocationCore'
       description: Data required to create a new location for a site.
-      example:
-        name: Remote Warehouse
-        house_number: '50'
-        street: Storage Ln
-        city: Aurora
-        state_province: CO
-        postal_code: '80011'
-        country_code: US
-        caller_id_name: Warehouse E911
-        e911_enabled: false
     LocationUpdateRequest:
       allOf:
         - $ref: '#/components/schemas/LocationCore'
       description: Data for updating an existing location. All fields are typically resubmitted for a PUT.
-      example:
-        name: HQ Front Desk - Updated
-        house_number: '123'
-        street: Main St
-        city: Anytown
-        state_province: CA
-        postal_code: '90210'
-        country_code: US
-        caller_id_name: HQ Front Desk Emergency
-        e911_enabled: true
     MenuCore:
       type: object
       properties:
