@@ -3282,58 +3282,13 @@ paths:
       summary: List Phone Numbers for a Site
       description: Retrieve a paginated list of all phone numbers assigned to the specified site.
       operationId: listSitePhoneNumbers
-      parameters:
-        - name: page
-          in: query
-          description: Page number for pagination.
-          required: false
-          schema:
-            type: integer
-            default: 1
-            example: 1
-        - name: page_size
-          in: query
-          description: Number of phone numbers per page.
-          required: false
-          schema:
-            type: integer
-            default: 25
-            example: 25
       responses:
         '200':
           description: A paginated list of phone numbers for the site.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedPhoneNumberListResponse'
-              example:
-                phone_numbers:
-                  - id: 123
-                    site_id: 6
-                    name: Main Office Line
-                    number: '+13035551212'
-                    destination_code: ring_group:10
-                    destination:
-                      name: Sales Team Ring Group
-                      code: ring_group:10
-                    fail_over_destination_code: voicemailbox:vm_sales
-                    fail_over_destination:
-                      name: Sales Voicemail
-                      code: voicemailbox:vm_sales
-                    e911_id: 45
-                    user_id: null
-                    links:
-                      - href: /sites/6/phone-numbers/123
-                        rel: self
-                        method: GET
-                total_items: 1
-                total_pages: 1
-                current_page: 1
-                per_page: 25
-                links:
-                  - href: /sites/6/phone-numbers?page=1&page_size=25
-                    rel: self
-                    method: GET
+                $ref: '#/components/schemas/PhoneNumberListResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -3352,13 +3307,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PhoneNumberCreateRequest'
-            example:
-              name: Customer Service Line
-              number: '+18005550100'
-              destination_code: menu:support_ivr
-              fail_over_destination_code: voicemailbox:support_general_vm
-              e911_id: 46
+              $ref: '#/components/schemas/PhoneNumberRequest'
       responses:
         '201':
           description: Phone number assigned and configured successfully.
@@ -3366,25 +3315,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/schemas-PhoneNumberResponse'
-              example:
-                id: 124
-                site_id: 6
-                name: Customer Service Line
-                number: '+18005550100'
-                destination_code: menu:support_ivr
-                destination:
-                  name: Support IVR Menu
-                  code: menu:support_ivr
-                fail_over_destination_code: voicemailbox:support_general_vm
-                fail_over_destination:
-                  name: General Support Voicemail
-                  code: voicemailbox:support_general_vm
-                e911_id: 46
-                user_id: null
-                links:
-                  - href: /sites/6/phone-numbers/124
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -3412,25 +3342,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/schemas-PhoneNumberResponse'
-              example:
-                id: 123
-                site_id: 6
-                name: Main Office Line
-                number: '+13035551212'
-                destination_code: ring_group:10
-                destination:
-                  name: Sales Team Ring Group
-                  code: ring_group:10
-                fail_over_destination_code: voicemailbox:vm_sales
-                fail_over_destination:
-                  name: Sales Voicemail
-                  code: voicemailbox:vm_sales
-                e911_id: 45
-                user_id: null
-                links:
-                  - href: /sites/6/phone-numbers/123
-                    rel: self
-                    method: GET
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -3449,7 +3360,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PhoneNumberUpdateRequest'
+              $ref: '#/components/schemas/PhoneNumberRequest'
       responses:
         '200':
           description: Phone number configuration updated successfully.
@@ -3457,25 +3368,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/schemas-PhoneNumberResponse'
-              example:
-                id: 127
-                site_id: 6
-                name: Main Sales Line (Overflow)
-                number: '+13035551234'
-                destination_code: ringgroup:sales_team_rg
-                destination:
-                  name: Sales Team Ring Group
-                  code: ringgroup:sales_team_rg
-                fail_over_destination_code: voicemailbox:vm_sales
-                fail_over_destination:
-                  name: Sales Voicemail
-                  code: voicemailbox:vm_sales
-                e911_id: 45
-                user_id: 5
-                links:
-                  - href: /sites/6/phone-numbers/127
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -3499,74 +3391,6 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/PhoneNumberNotFoundError'
-  /sites/{site_id}/phone-numbers/available:
-    parameters:
-      - $ref: '#/components/parameters/SiteId'
-    get:
-      tags:
-        - Site Features - Phone Numbers
-      summary: List Available Phone Numbers for a Site
-      description: Retrieves phone numbers that are available for assignment to the specified site.  Can be optionally filtered by user ID.
-      operationId: listSiteAvailablePhoneNumbers
-      parameters:
-        - name: userId
-          in: query
-          description: Optional. ID of the user to filter available phone numbers by.
-          required: false
-          schema:
-            type: integer
-            format: int64
-            example: 42
-      responses:
-        '200':
-          description: A list of available phone numbers.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AvailablePhoneNumberListResponse'
-              example:
-                phone_numbers:
-                  - id: 125
-                    site_id: null
-                    name: Inventory DID 1
-                    number: '+17205551000'
-                    destination_code: ''
-                    destination: null
-                    fail_over_destination_code: null
-                    fail_over_destination: null
-                    e911_id: null
-                    user_id: null
-                    assigned: false
-                    assigned_to: null
-                    links:
-                      - href: /phone-number-inventory/125
-                        rel: inventoryDetails
-                        method: GET
-                  - id: 123
-                    site_id: 6
-                    name: Main Office
-                    number: '+13125551234'
-                    destination_code: ring_group:10
-                    destination:
-                      code: ring_group:10
-                      name: Sales Team
-                    fail_over_destination:
-                      code: voicemailbox:vm_sales
-                      name: Sales Voicemail
-                    e911_id: 45
-                    user_id: 42
-                    assigned: true
-                    assigned_to: 42
-                    links:
-                      - href: /sites/6/phone-numbers/123
-                        rel: self
-                        method: GET
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
-        '404':
-          $ref: '#/components/responses/SiteNotFoundError'
   /sites/{site_id}/phone-numbers/{id}/transfer:
     parameters:
       - $ref: '#/components/parameters/SiteId'
@@ -3603,25 +3427,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/schemas-PhoneNumberResponse'
-              example:
-                id: 123
-                site_id: 7
-                name: Main Office Line
-                number: '+13035551212'
-                destination_code: ring_group:10
-                destination:
-                  name: Sales Team Ring Group
-                  code: ring_group:10
-                fail_over_destination_code: voicemailbox:vm_sales
-                fail_over_destination:
-                  name: Sales Voicemail
-                  code: voicemailbox:vm_sales
-                e911_id: 45
-                user_id: null
-                links:
-                  - href: /sites/7/phone-numbers/123
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -10156,38 +9961,20 @@ components:
           type: string
           description: The actual phone number in E.164 format (e.g., +13035551212).
           example: '+14155550123'
-        destination_code:
-          type: string
+        destination:
+          type: object
           description: System code for the primary destination where calls to this number are routed.
-          example: device:dev_main_reception
-        fail_over_destination_code:
+          properties:
+            code:
+              type: string
+              description: System code for the destination.
+              example: 'siptrunk:2024'
+          required:
+            - code
+        cnam:
           type: string
-          nullable: true
-          description: System code for the failover destination if the primary is unavailable.
-          example: voicemailbox:general_company_vm
-        e911_id:
-          type: integer
-          format: int64
-          nullable: true
-          description: Identifier of the E911 record associated with this phone number for emergency calling.
-          example: 45
-        user_id:
-          type: integer
-          format: int64
-          nullable: true
-          description: Optional. Identifier of a user primarily associated with this phone number.
-          example: 101
-      required:
-        - name
-        - number
-        - destination_code
-      example:
-        name: Support Line
-        number: '+18885551234'
-        destination_code: ring_group:support_rg
-        fail_over_destination_code: menu:after_hours_support
-        e911_id: 46
-        user_id: 102
+          description: Calling Name Information/LIDB Order Details
+          example: Acme Main Office
     schemas-PhoneNumberResponse:
       allOf:
         - $ref: '#/components/schemas/PhoneNumberCore'
@@ -10196,154 +9983,85 @@ components:
             id:
               type: integer
               format: int64
-            site_id:
+              description: Unique identifier for the phone number.
+              readOnly: true
+              example: 123
+            site:
+              type: string
+              format: uri
+              nullable: true
+              example: hq.ivy.teliax.com
+              description: Identifier of the site this phone number belongs to.
+            code:
+              type: string
+              description: System-level code for this phone number, often used in routing configurations.
+              example: phone_number:123
+            destination:
+              type: object
+              description: System code for the primary destination where calls to this number are routed.
+              properties:
+                name:
+                  type: string
+                  description: Human-readable label of the destination.
+                  example: "first sip trunk (sip_trunk:2014)"
+                code:
+                  type: string
+                  description: System code for the destination.
+                  example: "sip_trunk:2014"
+              required:
+                - name
+                - code
+            user_id:
               type: integer
               format: int64
               nullable: true
-            destination:
-              nullable: true
-              oneOf:
-                - $ref: '#/components/schemas/SiteDestination'
-            fail_over_destination:
-              nullable: true
-              oneOf:
-                - $ref: '#/components/schemas/SiteDestination'
+              description: Optional. Identifier of a user primarily associated with this phone number.
+              example: 101
             links:
               type: array
               items:
                 $ref: '#/components/schemas/Link'
               nullable: true
-          required:
-            - id
-            - name
-            - number
-            - destination_code
+              example:
+                - href: "/sites/2612/phone-numbers/45151"
+                  rel: "self"
+                  title: "Phone Number Details"
+                  method: "GET"
+                - href: "/sites/2612/phone-numbers/45151"
+                  rel: "Delete"
+                  title: "Delete Phone Number"
+                  method: "DELETE"
+                - href: "/sites/2612/phone-numbers/45151"
+                  rel: "Edit"
+                  title: "Edit Phone Number"
+                  method: "PUT"
       description: Detailed information about a phone number assigned to a site.
-      example:
-        id: 123
-        site_id: 6
-        name: Main Office Line
-        number: '+13035551212'
-        destination_code: ring_group:10
-        destination:
-          name: Sales Team Ring Group
-          code: ring_group:10
-        fail_over_destination_code: voicemailbox:vm_sales
-        fail_over_destination:
-          name: Sales Voicemail
-          code: voicemailbox:vm_sales
-        e911_id: 45
-        user_id: null
-        links:
-          - href: /sites/6/phone-numbers/123
-            rel: self
-            method: GET
-    PaginatedPhoneNumberListResponse:
+    PhoneNumberListResponse:
       type: object
-      description: A paginated list of phone numbers.
+      description: A list of phone numbers.
       properties:
         phone_numbers:
           type: array
           items:
             $ref: '#/components/schemas/schemas-PhoneNumberResponse'
-        total_items:
-          type: integer
-          example: 50
-        total_pages:
-          type: integer
-          example: 5
-        current_page:
-          type: integer
-          example: 1
-        per_page:
-          type: integer
-          example: 10
         links:
           type: array
           items:
             $ref: '#/components/schemas/Link'
           nullable: true
-      required:
-        - phone_numbers
-        - total_items
-        - total_pages
-        - current_page
-        - per_page
-      example:
-        phone_numbers:
-          - id: 123
-            site_id: 6
-            name: Main Office Line
-            number: '+13035551212'
-            destination_code: ring_group:10
-            destination:
-              name: Sales Team Ring Group
-              code: ring_group:10
-            fail_over_destination_code: voicemailbox:vm_sales
-            fail_over_destination:
-              name: Sales Voicemail
-              code: voicemailbox:vm_sales
-            e911_id: 45
-            user_id: null
-            links:
-              - href: /sites/6/phone-numbers/123
-                rel: self
-                method: GET
-        total_items: 1
-        total_pages: 1
-        current_page: 1
-        per_page: 25
-        links:
-          - href: /sites/6/phone-numbers?page=1&page_size=25
-            rel: self
-            method: GET
-    PhoneNumberCreateRequest:
+          example:
+            - href: "s/sites/2612/phone-numbers"
+              rel: "self"
+              method: "GET"
+              title: "Phone numbers list"
+    PhoneNumberRequest:
       allOf:
         - $ref: '#/components/schemas/PhoneNumberCore'
       description: Data required to assign/create a phone number for a site.
       required:
         - name
         - number
-        - destination_code
-      example:
-        name: Marketing Campaign DID
-        number: +1800555PROMO
-        destination_code: menu:marketing_ivr
-        e911_id: null
-    PhoneNumberUpdateRequest:
-      type: object
-      description: Data for updating an existing phone number's configuration on a site.
-      properties:
-        name:
-          type: string
-          nullable: true
-          description: New user-friendly name for the phone number.
-          example: Support Hotline - Updated
-        destination_code:
-          type: string
-          nullable: true
-          description: New system code for the call routing destination.
-          example: voicemailbox:support_general_vm
-        fail_over_destination_code:
-          type: string
-          nullable: true
-          description: New system code for the failover destination.
-          example: menu:after_hours_support_menu
-        e911_id:
-          type: integer
-          format: int64
-          nullable: true
-          description: New E911 record ID to associate.
-          example: 47
-        user_id:
-          type: integer
-          format: int64
-          nullable: true
-          description: New user ID to associate with the phone number.
-          example: 103
-      example:
-        name: Main Office Line (Primary - Updated)
-        destination_code: device:reception_phone_new
+        - destination
     AvailablePhoneNumber:
       type: object
       allOf:
