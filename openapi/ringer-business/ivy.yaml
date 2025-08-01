@@ -3098,7 +3098,7 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/MenuCreateRequest'
+              $ref: '#/components/schemas/MenuRequest'
       responses:
         '201':
           description: Menu Created Successfully.
@@ -3149,7 +3149,7 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/MenuUpdateRequest'
+              $ref: '#/components/schemas/MenuRequest'
       responses:
         '200':
           description: Menu Updated Successfully.
@@ -10100,7 +10100,7 @@ components:
       required:
         - menus
         - links
-    MenuCreateRequest:
+    MenuRequest:
       allOf:
         - $ref: '#/components/schemas/LocationCore'
         - type: object
@@ -10145,57 +10145,6 @@ components:
               type: string
               nullable: true
               description: Destination code for key '*'.
-    MenuUpdateRequest:
-      type: object
-      properties:
-        name:
-          type: string
-          nullable: true
-        pin:
-          type: string
-          nullable: true
-        fail_over_destination_code:
-          type: string
-          nullable: true
-        greeting:
-          type: string
-          format: binary
-          nullable: true
-          description: New audio file for the menu greeting.
-        option_routes[0]:
-          type: string
-          nullable: true
-        option_routes[1]:
-          type: string
-          nullable: true
-        option_routes[2]:
-          type: string
-          nullable: true
-        option_routes[3]:
-          type: string
-          nullable: true
-        option_routes[4]:
-          type: string
-          nullable: true
-        option_routes[5]:
-          type: string
-          nullable: true
-        option_routes[6]:
-          type: string
-          nullable: true
-        option_routes[7]:
-          type: string
-          nullable: true
-        option_routes[8]:
-          type: string
-          nullable: true
-        option_routes[9]:
-          type: string
-          nullable: true
-        option_routes[*]:
-          type: string
-          nullable: true
-      description: Attributes for updating a menu. For multipart/form-data, only include fields to change.
     PhoneNumberCore:
       type: object
       properties:
