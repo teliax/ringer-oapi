@@ -3452,61 +3452,13 @@ paths:
       summary: List Ring Groups for a Site
       description: Retrieve a paginated list of all ring groups configured for the specified site.
       operationId: listSiteRingGroups
-      parameters:
-        - name: page
-          in: query
-          description: Page number for pagination.
-          required: false
-          schema:
-            type: integer
-            default: 1
-            example: 1
-        - name: page_size
-          in: query
-          description: Number of ring groups per page.
-          required: false
-          schema:
-            type: integer
-            default: 25
-            example: 25
       responses:
         '200':
           description: A paginated list of ring groups.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedRingGroupListResponse'
-              example:
-                ring_groups:
-                  - id: 10
-                    site_id: 6
-                    name: Sales Team
-                    destination_codes:
-                      - device:dev_sales1
-                      - extension:ext_sales_mobile
-                    destinations:
-                      - name: Sales Device 1
-                        code: device:dev_sales1
-                      - name: Sales Extension Mobile
-                        code: extension:ext_sales_mobile
-                    ring_strategy: simultaneous
-                    timeout: 30
-                    fail_over_destination:
-                      code: voicemailbox:vm_sales
-                      name: Sales Voicemail
-                    user_id: null
-                    links:
-                      - href: /sites/6/ring-groups/10
-                        rel: self
-                        method: GET
-                total_items: 1
-                total_pages: 1
-                current_page: 1
-                per_page: 25
-                links:
-                  - href: /sites/6/ring-groups?page=1&page_size=25
-                    rel: self
-                    method: GET
+                $ref: '#/components/schemas/RingGroupListResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -3525,15 +3477,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RingGroupCreateRequest'
-            example:
-              name: Support Queue
-              destination_codes:
-                - device:support1
-                - device:support2
-              ring_strategy: sequential
-              timeout: 20
-              fail_over_destination_code: voicemailbox:support_vm
+              $ref: '#/components/schemas/RingGroupRequest'
       responses:
         '201':
           description: Ring Group Created Successfully.
@@ -3541,28 +3485,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RingGroupResponse'
-              example:
-                id: 11
-                site_id: 6
-                name: Support Queue
-                destination_codes:
-                  - device:support1
-                  - device:support2
-                destinations:
-                  - name: Support Agent 1 (device:support1)
-                    code: device:support1
-                  - name: Support Agent 2 (device:support2)
-                    code: device:support2
-                ring_strategy: sequential
-                timeout: 20
-                fail_over_destination:
-                  code: voicemailbox:support_vm
-                  name: Support Voicemail
-                user_id: null
-                links:
-                  - href: /sites/6/ring-groups/11
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -3588,28 +3510,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RingGroupResponse'
-              example:
-                id: 10
-                site_id: 6
-                name: Sales Team
-                destination_codes:
-                  - device:dev101
-                  - extension:ext102
-                destinations:
-                  - name: John Smith (device:dev101)
-                    code: device:dev101
-                  - name: Jane Doe (extension:ext102)
-                    code: extension:ext102
-                ring_strategy: simultaneous
-                timeout: 30
-                fail_over_destination:
-                  name: Sales Voicemail (voicemailbox:vm_sales)
-                  code: voicemailbox:vm_sales
-                user_id: null
-                links:
-                  - href: /sites/6/ring-groups/10
-                    rel: self
-                    method: GET
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -3628,15 +3528,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RingGroupUpdateRequest'
-            example:
-              name: Sales & Support Combined
-              destination_codes:
-                - device:dev101
-                - extension:ext_support
-              ring_strategy: sequential
-              timeout: 25
-              fail_over_destination_code: menu:main_company_menu
+              $ref: '#/components/schemas/RingGroupRequest'
       responses:
         '200':
           description: Ring Group Updated Successfully.
@@ -3644,28 +3536,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RingGroupResponse'
-              example:
-                id: 10
-                site_id: 6
-                name: Sales & Support Combined
-                destination_codes:
-                  - device:dev101
-                  - extension:ext_support
-                destinations:
-                  - name: Sales Phone 1
-                    code: device:dev101
-                  - name: Support Ext
-                    code: extension:ext_support
-                ring_strategy: sequential
-                timeout: 25
-                fail_over_destination:
-                  name: Main Company Menu
-                  code: menu:main_company_menu
-                user_id: null
-                links:
-                  - href: /sites/6/ring-groups/10
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -3725,29 +3595,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RingGroupResponse'
-              example:
-                id: 10
-                site_id: 7
-                name: Sales Team
-                destination_codes:
-                  - device:dev_sales1
-                  - extension:ext_sales_mobile
-                destinations:
-                  - name: Sales Phone 1
-                    code: device:dev_sales1
-                  - name: Sales Mobile Ext
-                    code: extension:ext_sales_mobile
-                ring_strategy: simultaneous
-                timeout: 30
-                fail_over_destination_code: voicemailbox:vm_sales
-                fail_over_destination:
-                  name: Sales Voicemail
-                  code: voicemailbox:vm_sales
-                user_id: null
-                links:
-                  - href: /sites/7/ring-groups/10
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -10134,52 +9981,38 @@ components:
           type: string
           description: A user-friendly name for the ring group.
           example: Main Sales Line
-        destination_codes:
-          type: array
-          items:
-            type: string
-          description: An array of system codes for the destinations to be rung.
+        destination:
+          type: object
+          description: Destination if no option is selected or an error occurs.
+          properties:
+            code:
+              type: string
+              description: System code for the destination.
+          required:
+            - code
           example:
-            - device:dev123
-            - extension:ext456
-        ring_strategy:
-          type: string
-          enum:
-            - simultaneous
-            - sequential
-            - random
-          description: How the destinations are rung.
-          example: simultaneous
+            code: "siptrunk:839"
         timeout:
           type: integer
           description: Duration in seconds to ring the group before proceeding to failover.
           default: 20
           example: 30
-        fail_over_destination_code:
-          type: string
-          nullable: true
-          description: System code for the failover destination if the ring group is not answered.
-          example: voicemailbox:general_sales_vm
-        user_id:
-          type: integer
-          format: int64
-          nullable: true
-          description: Optional. Identifier of a user primarily associated with this ring group.
-          example: 10
+        fail_over:
+          type: object
+          description: Destination if no option is selected or an error occurs.
+          properties:
+            code:
+              type: string
+              description: System code for the destination.
+          required:
+            - code
+          example:
+            code: "siptrunk:839"
       required:
         - name
         - destination_codes
         - ring_strategy
         - timeout
-      example:
-        name: Customer Support
-        destination_codes:
-          - device:agent1
-          - extension:agent2_mobile
-        ring_strategy: random
-        timeout: 25
-        fail_over_destination_code: menu:support_escalation
-        user_id: 20
     RingGroupResponse:
       allOf:
         - $ref: '#/components/schemas/RingGroupCore'
@@ -10188,14 +10021,23 @@ components:
             id:
               type: integer
               format: int64
-            site_id:
+              example: 1
+              readOnly: true
+            site:
+              type: string
+              example: hq.ivy.teliax.com
+            user_id:
               type: integer
               format: int64
-            destinations:
-              type: array
-              items:
-                $ref: '#/components/schemas/SiteDestination'
-            fail_over_destination:
+              nullable: true
+              description: Optional. Identifier of a user primarily associated with this ring group.
+              example: 10
+            destination:
+              type: object
+              nullable: true
+              allOf:
+                - $ref: '#/components/schemas/SiteDestination'
+            fail_over:
               type: object
               nullable: true
               allOf:
@@ -10205,155 +10047,44 @@ components:
               items:
                 $ref: '#/components/schemas/Link'
               nullable: true
-          required:
-            - id
-            - site_id
-            - name
-            - destination_codes
-            - ring_strategy
-            - timeout
+              example:
+                - href: "/v2/sites/6/ring-groups/800"
+                  rel: "self"
+                  title: "Ring Group Details"
+                  method": "GET"
+                - href: "/v2/sites/6/ring-groups/800"
+                  rel: "Delete"
+                  title: "Delete Ring Group"
+                  method: "DELETE"
+                - href: "/v2/sites/6/ring-groups/800"
+                  rel: "Edit"
+                  title: "Edit Ring Group"
+                  method: "PUT"
       description: Detailed information about a ring group.
-      example:
-        id: 10
-        site_id: 6
-        name: Sales Team
-        destination_codes:
-          - device:dev_sales1
-          - extension:ext_sales_mobile
-        destinations:
-          - name: Sales Device 1
-            code: device:dev_sales1
-          - name: Sales Extension Mobile
-            code: extension:ext_sales_mobile
-        ring_strategy: simultaneous
-        timeout: 30
-        fail_over_destination_code: voicemailbox:vm_sales
-        fail_over_destination:
-          name: Sales Voicemail
-          code: voicemailbox:vm_sales
-        user_id: null
-        links:
-          - href: /sites/6/ring-groups/10
-            rel: self
-            method: GET
-    PaginatedRingGroupListResponse:
+    RingGroupListResponse:
       type: object
-      description: A paginated list of ring groups.
+      description: A list of ring groups.
       properties:
         ring_groups:
           type: array
           items:
             $ref: '#/components/schemas/RingGroupResponse'
-        total_items:
-          type: integer
-          example: 30
-        total_pages:
-          type: integer
-          example: 3
-        current_page:
-          type: integer
-          example: 1
-        per_page:
-          type: integer
-          example: 10
         links:
           type: array
           items:
             $ref: '#/components/schemas/Link'
           nullable: true
+          example:
+            - href: "/v2/sites/6/ring-groups"
+              rel: "self"
+              method: "GET"
+              title: "Ring groups list"
       required:
         - ring_groups
-        - total_items
-        - total_pages
-        - current_page
-        - per_page
-      example:
-        ring_groups:
-          - id: 10
-            site_id: 6
-            name: Sales Team
-            destination_codes:
-              - device:dev_sales1
-              - extension:ext_sales_mobile
-            destinations:
-              - name: Sales Device 1
-                code: device:dev_sales1
-              - name: Sales Extension Mobile
-                code: extension:ext_sales_mobile
-            ring_strategy: simultaneous
-            timeout: 30
-            fail_over_destination_code: voicemailbox:vm_sales
-            fail_over_destination:
-              name: Sales Voicemail
-              code: voicemailbox:vm_sales
-            user_id: null
-            links:
-              - href: /sites/6/ring-groups/10
-                rel: self
-                method: GET
-        total_items: 1
-        total_pages: 1
-        current_page: 1
-        per_page: 25
-        links:
-          - href: /sites/6/ring-groups?page=1&page_size=25
-            rel: self
-            method: GET
-    RingGroupCreateRequest:
+    RingGroupRequest:
       allOf:
         - $ref: '#/components/schemas/RingGroupCore'
       description: Data required to create a new ring group.
-      required:
-        - name
-        - destination_codes
-        - ring_strategy
-        - timeout
-      example:
-        name: Tech Support Tier 1
-        destination_codes:
-          - user:tech1
-          - user:tech2
-        ring_strategy: simultaneous
-        timeout: 60
-        fail_over_destination_code: ring_group:tech_support_tier2
-    RingGroupUpdateRequest:
-      type: object
-      description: Attributes for updating a ring group. Only provide fields to be changed.
-      properties:
-        name:
-          type: string
-          nullable: true
-        destination_codes:
-          type: array
-          items:
-            type: string
-          nullable: true
-        ring_strategy:
-          type: string
-          enum:
-            - simultaneous
-            - sequential
-            - random
-          nullable: true
-        timeout:
-          type: integer
-          nullable: true
-        fail_over_destination_code:
-          type: string
-          nullable: true
-        user_id:
-          type: integer
-          format: int64
-          nullable: true
-          description: Optional. Identifier of a user primarily associated with this ring group.
-          example: 10
-      example:
-        name: Billing Department RG
-        destination_codes:
-          - user:billing_agent1
-          - user:billing_agent2
-        ring_strategy: simultaneous
-        timeout: 15
     ScheduleAttributes:
       type: object
       properties:
