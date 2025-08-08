@@ -5365,19 +5365,19 @@ components:
           items:
             $ref: '#/components/schemas/schemas-Link'
           example:
-            - href: /v2/account
+            - href: /account
               rel: self
               method: GET
               title: Customer
-            - href: /v2/account
+            - href: /account
               rel: delete
               method: DELETE
               title: Delete Customer
-            - href: /v2/account
+            - href: /account
               rel: edit
               method: PUT
               title: Edit Customer
-            - href: /v2/address
+            - href: /address
               rel: edit
               title: Update Address
               method: PUT
@@ -9584,15 +9584,15 @@ components:
                 $ref: '#/components/schemas/Link'
               nullable: true
               example:
-                - href: "/v2/sites/6/ring-groups/800"
+                - href: "/sites/6/ring-groups/800"
                   rel: "self"
                   title: "Ring Group Details"
                   method: "GET"
-                - href: "/v2/sites/6/ring-groups/800"
+                - href: "/sites/6/ring-groups/800"
                   rel: "Delete"
                   title: "Delete Ring Group"
                   method: "DELETE"
-                - href: "/v2/sites/6/ring-groups/800"
+                - href: "/sites/6/ring-groups/800"
                   rel: "Edit"
                   title: "Edit Ring Group"
                   method: "PUT"
@@ -9611,7 +9611,7 @@ components:
             $ref: '#/components/schemas/Link'
           nullable: true
           example:
-            - href: "/v2/sites/6/ring-groups"
+            - href: "/sites/6/ring-groups"
               rel: "self"
               method: "GET"
               title: "Ring groups list"
@@ -11089,7 +11089,7 @@ components:
             $ref: '#/components/schemas/schemas-Link'
           nullable: true
           example:
-            - href: /v2/users
+            - href: /users
               rel: self
               method: GET
     users_components-schemas-Error:
