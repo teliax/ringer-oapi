@@ -4058,67 +4058,13 @@ paths:
       summary: List SIP Trunks for a Site
       description: Retrieve a paginated list of all SIP Trunks configured for the specified site.
       operationId: listSiteSipTrunks
-      parameters:
-        - name: page
-          in: query
-          description: Page number for pagination.
-          required: false
-          schema:
-            type: integer
-            default: 1
-            example: 1
-        - name: page_size
-          in: query
-          description: Number of SIP Trunks per page.
-          required: false
-          schema:
-            type: integer
-            default: 25
-            example: 10
       responses:
         '200':
           description: A paginated list of SIP Trunks.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedSipTrunkListResponse'
-              example:
-                sip_trunks:
-                  - id: 161
-                    site_id: 6
-                    name: Main Office SIP Trunk
-                    login: main_trunk_user
-                    active: true
-                    channel_limit: 10
-                    contact_ip: 1.2.3.4:5060
-                    acl: 0.0.0.0/0
-                    caller_id_name: Teliax HQ
-                    caller_id_number: '+13035551212'
-                    disable_comfort_noise: false
-                    timeout: 120
-                    fail_over_destination_code: menu:main_ivr
-                    user_id: null
-                    links:
-                      - href: /sites/6/sip-trunks/161
-                        rel: self
-                        method: GET
-                total_items: 1
-                total_pages: 1
-                current_page: 1
-                per_page: 25
-                links:
-                  self:
-                    href: /sites/6/sip-trunks?page=1&page_size=25
-                    rel: self
-                    method: GET
-                  first:
-                    href: /sites/6/sip-trunks?page=1&page_size=25
-                    rel: first
-                    method: GET
-                  last:
-                    href: /sites/6/sip-trunks?page=1&page_size=25
-                    rel: last
-                    method: GET
+                $ref: '#/components/schemas/SipTrunkListResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -4137,19 +4083,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SipTrunkCreateRequest'
-            example:
-              name: Branch Office Trunk
-              login: branch_user
-              active: true
-              channel_limit: 5
-              contact_ip: 2.3.4.5:5060
-              acl: 192.168.2.0/24
-              caller_id_name: Branch Office
-              caller_id_number: '+17205550102'
-              disable_comfort_noise: false
-              timeout: 60
-              fail_over_destination_code: voicemailbox:branch_main_vm
+              $ref: '#/components/schemas/SipTrunkRequest'
       responses:
         '201':
           description: SIP Trunk Created Successfully. Includes generated credentials if applicable.
@@ -4157,26 +4091,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SipTrunkResponse'
-              example:
-                id: 162
-                site_id: 6
-                name: Branch Office Trunk
-                login: branch_user_generated
-                password: newlyGeneratedSipPassword
-                active: true
-                channel_limit: 5
-                contact_ip: 2.3.4.5:5060
-                acl: 192.168.2.0/24
-                caller_id_name: Branch Office
-                caller_id_number: '+17205550102'
-                disable_comfort_noise: false
-                timeout: 60
-                fail_over_destination_code: voicemailbox:branch_main_vm
-                user_id: null
-                links:
-                  - href: /sites/6/sip-trunks/162
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -4204,28 +4118,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SipTrunkResponse'
-              example:
-                id: 161
-                site_id: 6
-                name: Main Office SIP Trunk
-                login: main_trunk_user
-                active: true
-                channel_limit: 10
-                contact_ip: 1.2.3.4:5060
-                acl: 0.0.0.0/0
-                caller_id_name: Teliax HQ
-                caller_id_number: '+13035551212'
-                disable_comfort_noise: false
-                timeout: 120
-                fail_over_destination_code: menu:main_ivr
-                fail_over_destination:
-                  name: Main IVR Menu
-                  code: menu:main_ivr
-                user_id: null
-                links:
-                  - href: /sites/6/sip-trunks/161
-                    rel: self
-                    method: GET
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -4244,13 +4136,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SipTrunkUpdateRequest'
-            example:
-              name: Primary Outbound Trunk - Updated
-              active: false
-              channel_limit: 15
-              contact_ip: 1.2.3.5:5060
-              caller_id_name: Main Line Updated
+              $ref: '#/components/schemas/SipTrunkRequest'
       responses:
         '200':
           description: SIP Trunk updated successfully.
@@ -4258,28 +4144,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SipTrunkResponse'
-              example:
-                id: 161
-                site_id: 6
-                name: Primary Outbound Trunk - Updated
-                login: main_trunk_user
-                active: false
-                channel_limit: 15
-                contact_ip: 1.2.3.5:5060
-                acl: 0.0.0.0/0
-                caller_id_name: Main Line Updated
-                caller_id_number: '+13035551212'
-                disable_comfort_noise: false
-                timeout: 120
-                fail_over_destination_code: menu:main_ivr
-                fail_over_destination:
-                  name: Main IVR Menu
-                  code: menu:main_ivr
-                user_id: null
-                links:
-                  - href: /sites/6/sip-trunks/161
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -4324,18 +4188,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SipTrunkResponseWithPassword'
-              example:
-                id: 161
-                site_id: 6
-                name: Main Office SIP Trunk
-                login: main_trunk_user
-                password: newGeneratedS3cur3SipP@ss!
-                active: true
-                links:
-                  - href: /sites/6/sip-trunks/161
-                    rel: self
-                    method: GET
+                $ref: '#/components/schemas/SipTrunkResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -4358,24 +4211,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SipTrunkStatus'
-              example:
-                data:
-                  - id: "161"
-                    type: "sip-trunk-status"
-                    attributes:
-                      name: "Main Office SIP Trunk"
-                      login: "main_trunk_user"
-                      status: "registered"
-                      last_registered_at: "2023-10-27T10:20:30Z"
-                      registered_ip_address: "203.0.113.45"
-                  - id: "162"
-                    type: "sip-trunk-status"
-                    attributes:
-                      name: "Backup Trunk"
-                      login: "backup_user"
-                      status: "unregistered"
-                      last_registered_at: null
-                      registered_ip_address: null
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -4396,38 +4231,19 @@ paths:
         description: Transfer parameters
         required: true
         content:
-          application/json:
+          application/x-www-form-urlencoded:
             schema:
               type: object
-              required:
-                - data
               properties:
-                data:
-                  type: object
-                  required:
-                    - type
-                    - attributes
-                  properties:
-                    type:
-                      type: string
-                      enum:
-                        - transfer
-                      example: transfer
-                    attributes:
-                      type: object
-                      required:
-                        - new_site_id
-                      properties:
-                        new_site_id:
-                          type: integer
-                          format: int64
-                          description: ID of the site to transfer the SIP Trunk to
-                          example: 8
+                new_site_id:
+                  type: integer
+                  format: int64
+                  description: The unique identifier of the target site.
+                  example: 8
+              required:
+                - new_site_id
               example:
-                data:
-                  type: transfer
-                  attributes:
-                    new_site_id: 8
+                new_site_id: 8
       responses:
         '200':
           description: SIP Trunk Detail
@@ -4435,28 +4251,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SipTrunkResponse'
-              example:
-                id: 161
-                site_id: 8
-                name: Main Office SIP Trunk
-                login: main_trunk_user
-                active: true
-                channel_limit: 10
-                contact_ip: 1.2.3.4:5060
-                acl: 0.0.0.0/0
-                caller_id_name: Teliax HQ
-                caller_id_number: '+13035551212'
-                disable_comfort_noise: false
-                timeout: 120
-                fail_over_destination_code: menu:main_ivr
-                fail_over_destination:
-                  name: Main IVR Menu
-                  code: menu:main_ivr
-                user_id: null
-                links:
-                  - href: /sites/8/sip-trunks/161
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -10084,32 +9878,17 @@ components:
           default: 120
           description: Timeout in seconds for call attempts or registration.
           example: 120
-        fail_over_destination_code:
-          type: string
-          nullable: true
-          description: System code for the failover destination if the trunk is unavailable.
-          example: menu:main_ivr
-        user_id:
-          type: integer
-          format: int64
-          nullable: true
-          description: Optional. Identifier of a user primarily associated with this SIP trunk.
-          example: 11
-      required:
-        - name
-      example:
-        name: Backup Outbound Trunk
-        login: backup_trunk_user
-        active: true
-        channel_limit: 5
-        contact_ip: 4.3.2.1:5060
-        acl: 10.0.0.0/8
-        caller_id_name: Backup Line
-        caller_id_number: '+18005551213'
-        disable_comfort_noise: true
-        timeout: 90
-        fail_over_destination_code: voicemailbox:general_backup_vm
-        user_id: 12
+        fail_over:
+          type: object
+          description: Destination if no option is selected or an error occurs.
+          properties:
+            code:
+              type: string
+              description: System code for the destination.
+              example:
+                code: "ring_group:8369"
+          required:
+            - code
     SipTrunkResponse:
       allOf:
         - $ref: '#/components/schemas/SipTrunkCore'
@@ -10118,54 +9897,55 @@ components:
             id:
               type: integer
               format: int64
-            site_id:
-              type: integer
-              format: int64
+              readOnly: true
+              example: 1
+            site:
+              type: string
+              example: hq.ivy.teliax.com
             password:
               type: string
               format: password
               readOnly: true
               description: The SIP password (only returned on creation if generated by system).
-            login:
-              type: string
-            fail_over_destination:
-              type: object
+            user_id:
+              type: integer
+              format: int64
               nullable: true
-              allOf:
-                - $ref: '#/components/schemas/SiteDestination'
+              description: Optional. Identifier of a user primarily associated with this SIP trunk.
+              example: 11
+            fail_over:
+              type: object
+              description: Destination if no option is selected or an error occurs.
+              properties:
+                code:
+                  type: string
+                  description: System code for the destination.
+                  example:
+                    code: "ring_group:839"
+                name:
+                  type: string
+                  description: Human-readable label of the destination.
+                  example:
+                    name: "teliax technical support (ring_group:839)"
             links:
               type: array
               items:
                 $ref: '#/components/schemas/Link'
               nullable: true
-          required:
-            - id
-            - site_id
-            - login
-            - name
+              example:
+                - href: "/sites/6/sip-trunks/1514"
+                  rel: "self"
+                  title: "Sip Trunk Details"
+                  method: "GET"
+                - href: "/sites/6/sip-trunks/1514"
+                  rel: "Delete"
+                  title: "Delete Sip Trunk"
+                  method: "DELETE"
+                - href: "/sites/6/sip-trunks/1514"
+                  rel: "Edit"
+                  title: "Edit Sip Trunk"
+                  method: "PUT"
       description: Detailed information about a SIP Trunk.
-      example:
-        id: 161
-        site_id: 6
-        name: Main Office SIP Trunk
-        login: main_trunk_user
-        active: true
-        channel_limit: 10
-        contact_ip: 1.2.3.4:5060
-        acl: 0.0.0.0/0
-        caller_id_name: Teliax HQ
-        caller_id_number: '+13035551212'
-        disable_comfort_noise: false
-        timeout: 120
-        fail_over_destination_code: menu:main_ivr
-        fail_over_destination:
-          name: Main IVR Menu
-          code: menu:main_ivr
-        user_id: null
-        links:
-          - href: /sites/6/sip-trunks/161
-            rel: self
-            method: GET
     SipTrunkStatus:
       type: object
       properties:
@@ -10178,24 +9958,7 @@ components:
           type: "array"
           items:
             $ref: '#/components/schemas/Link'
-      example:
-        sip_trunks:
-          - john_doe
-          - jane_doe
-        links:
-          - href: '/sites/6/sip-trunks/status'
-            rel: 'self'
-            title: 'Sip Trunks'
-            method: 'GET'
-          - href: '/sites/6/sip-trunks'
-            rel: 'List'
-            title: 'Sip Trunks'
-            method: 'GET'
-          - href: '/sites/6'
-            rel: 'up'
-            title: 'Site'
-            method: 'GET'
-    PaginatedSipTrunkListResponse:
+    SipTrunkListResponse:
       type: object
       description: A paginated list of SIP Trunks.
       properties:
@@ -10203,190 +9966,20 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SipTrunkResponse'
-        total_items:
-          type: integer
-          example: 10
-        total_pages:
-          type: integer
-          example: 1
-        current_page:
-          type: integer
-          example: 1
-        per_page:
-          type: integer
-          example: 25
         links:
-          $ref: '#/components/schemas/PaginationLinks'
-      required:
-        - sip_trunks
-        - total_items
-        - total_pages
-        - current_page
-        - per_page
-      example:
-        sip_trunks:
-          - id: 161
-            site_id: 6
-            name: Main Office SIP Trunk
-            login: main_trunk_user
-            active: true
-            channel_limit: 10
-            contact_ip: 1.2.3.4:5060
-            acl: 0.0.0.0/0
-            caller_id_name: Teliax HQ
-            caller_id_number: '+13035551212'
-            disable_comfort_noise: false
-            timeout: 120
-            fail_over_destination_code: menu:main_ivr
-            user_id: null
-            links:
-              - href: /sites/6/sip-trunks/161
-                rel: self
-                method: GET
-        total_items: 1
-        total_pages: 1
-        current_page: 1
-        per_page: 25
-        links:
-          self:
-            href: /sites/6/sip-trunks?page=1&page_size=25
-            rel: self
-            method: GET
-          first:
-            href: /sites/6/sip-trunks?page=1&page_size=25
-            rel: first
-            method: GET
-          last:
-            href: /sites/6/sip-trunks?page=1&page_size=25
-            rel: last
-            method: GET
-    SipTrunkCreateRequest:
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+          nullable: true
+          example:
+            - href: "/sites/6/sip-trunks"
+              rel: "self"
+              method: "GET"
+              title: "Siptrunks list"
+    SipTrunkRequest:
       allOf:
         - $ref: '#/components/schemas/SipTrunkCore'
-      required:
-        - name
       description: Data required to create a new SIP Trunk.
-      example:
-        name: New Office Trunk
-        login: newoffice_user
-        active: true
-        channel_limit: 20
-        caller_id_name: New Office Main
-        caller_id_number: '+17205559999'
-    SipTrunkUpdateRequest:
-      type: object
-      description: Attributes for updating a SIP Trunk. Password should be updated via regenerate-password endpoint.
-      properties:
-        name:
-          type: string
-          nullable: true
-          example: Primary International Trunk
-        login:
-          type: string
-          nullable: true
-          example: international_user_updated
-        active:
-          type: boolean
-          nullable: true
-          example: true
-        channel_limit:
-          type: integer
-          nullable: true
-          example: 20
-        contact_ip:
-          type: string
-          nullable: true
-          example: 5.6.7.8:5060
-        acl:
-          type: string
-          nullable: true
-          example: 172.16.0.0/12
-        caller_id_name:
-          type: string
-          nullable: true
-          example: Intl. Calls
-        caller_id_number:
-          type: string
-          nullable: true
-          example: '+18005550105'
-        disable_comfort_noise:
-          type: boolean
-          nullable: true
-          example: false
-        timeout:
-          type: integer
-          nullable: true
-          example: 180
-        fail_over_destination_code:
-          type: string
-          nullable: true
-          example: ring_group:intl_support
-        user_id:
-          type: integer
-          format: int64
-          nullable: true
-          description: Optional. Identifier of a user primarily associated with this SIP Trunk.
-          example: 15
-      example:
-        name: Main Office Trunk - Modified
-    SipTrunkResponseWithPassword:
-      allOf:
-        - $ref: '#/components/schemas/SipTrunkCore'
-        - type: object
-          properties:
-            id:
-              type: integer
-              format: int64
-            site_id:
-              type: integer
-              format: int64
-            login:
-              type: string
-            password:
-              type: string
-              format: password
-              description: The newly generated SIP password for the trunk.
-            fail_over_destination:
-              oneOf:
-                - $ref: '#/components/schemas/SiteDestination'
-                - type: object
-                  nullable: true
-                  description: Failover destination, null if not set.
-            links:
-              type: array
-              items:
-                $ref: '#/components/schemas/Link'
-              nullable: true
-          required:
-            - id
-            - site_id
-            - login
-            - password
-            - name
-      description: SIP Trunk details including the newly regenerated SIP password.
-      example:
-        id: 161
-        site_id: 6
-        name: Main Office SIP Trunk
-        login: main_trunk_user
-        password: newlyGeneratedS3cur3SipP@ss!
-        active: true
-        channel_limit: 10
-        contact_ip: 1.2.3.4:5060
-        acl: 0.0.0.0/0
-        caller_id_name: Teliax HQ
-        caller_id_number: '+13035551212'
-        disable_comfort_noise: false
-        timeout: 120
-        fail_over_destination_code: menu:main_ivr
-        fail_over_destination:
-          name: Main IVR Menu
-          code: menu:main_ivr
-        user_id: null
-        links:
-          - href: /sites/6/sip-trunks/161
-            rel: self
-            method: GET
     VoicemailBoxAttributes:
       type: object
       properties:
