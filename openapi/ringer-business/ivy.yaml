@@ -4303,22 +4303,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ThinClientListResponse'
-              example:
-                thin_clients:
-                  - id: 11
-                    name: Denver - Bonsai 5
-                    active: true
-                    category: public
-                    ipv4_address: 63.211.239.115
-                    provider: Teliax Inc.
-                    identification: 00-21-5e-96-e3-bc
-                  - id: 12
-                    name: Denver - Bonsai 6
-                    active: true
-                    category: public
-                    ipv4_address: 63.211.239.116
-                    provider: Teliax Inc.
-                    identification: 00-21-5e-96-fe-6c
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -9648,7 +9632,8 @@ components:
           format: int64
           description: Unique identifier for the Thin Client.
           example: 11
-        name:
+          readOnly: true
+        string:
           type: string
           description: A descriptive name for the Thin Client (e.g., its location and type).
           example: Denver - Bonsai 5
@@ -9674,21 +9659,10 @@ components:
           nullable: true
           description: A unique hardware or system identifier for the Thin Client (e.g., MAC address).
           example: 00-21-5e-96-e3-bc
-      required:
-        - id
-        - name
-        - active
-        - category
-        - ipv4_address
-        - provider
-      example:
-        id: 11
-        name: Denver - Bonsai 5
-        active: true
-        category: public
-        ipv4_address: 63.211.239.115
-        provider: Teliax Inc.
-        identification: 00-21-5e-96-e3-bc
+        enterprise_trunking:
+          type: boolean
+          description: Indicator for if enterprise trunking is enabled on the thin client
+          example: false
     ThinClientListResponse:
       type: object
       description: A list of available Thin Clients.
@@ -9697,24 +9671,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ThinClient'
-      required:
-        - thin_clients
-      example:
-        thin_clients:
-          - id: 11
-            name: Denver - Bonsai 5
-            active: true
-            category: public
-            ipv4_address: 63.211.239.115
-            provider: Teliax Inc.
-            identification: 00-21-5e-96-e3-bc
-          - id: 12
-            name: Denver - Bonsai 6
-            active: true
-            category: public
-            ipv4_address: 63.211.239.116
-            provider: Teliax Inc.
-            identification: 00-21-5e-96-fe-6c
     thin-clients_components-schemas-Error:
       type: object
       description: Standard error response format.
