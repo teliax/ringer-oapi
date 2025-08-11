@@ -3925,18 +3925,8 @@ paths:
       description: >-
         Transfer a Voice Mail Box to a different Site
       parameters:
-        - name: siteId
-          in: path
-          description: ID of Site
-          required: true
-          schema:
-            type: integer
-        - name: id
-          in: path
-          description: ID of Voice Mail Box
-          required: true
-          schema:
-            type: integer
+        - $ref: '#/components/parameters/SiteId'
+        - $ref: '#/components/parameters/Id'
       requestBody:
         description: Voicemail Box attributes to update.
         required: true
@@ -10518,36 +10508,6 @@ components:
             status: error
             error: A conflict occurred with the current resource state.
             error_code: RESOURCE_CONFLICT
-    call-block_components-responses-NotFoundError:
-      description: Not Found - The requested resource could not be found.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/call-block_components-schemas-Error'
-          example:
-            status: error
-            error: Resource not found.
-            error_code: RESOURCE_NOT_FOUND
-    call-block_components-responses-BadRequestError:
-      description: Bad Request - Invalid data provided.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/call-block_components-schemas-Error'
-          example:
-            status: error
-            error: Invalid request parameters.
-            error_code: VALIDATION_ERROR
-    responses-ConflictError:
-      description: Conflict - The resource already exists or the request conflicts with the current state.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/call-block_components-schemas-Error'
-          example:
-            status: error
-            error: Resource conflict.
-            error_code: CONFLICT_ERROR
     components-responses-SiteNotFoundError:
       description: Not Found - The specified site could not be found.
       content:
