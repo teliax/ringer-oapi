@@ -1450,11 +1450,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: Couldn't find plan record
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
+          $ref: '#/components/responses/plans_components-responses-NotFoundError'
   /sites:
     get:
       tags:
