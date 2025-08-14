@@ -1116,7 +1116,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedPackageListResponse'
+                $ref: '#/components/schemas/PackageListResponse'
               example:
                 packages:
                   - id: 94
@@ -1340,102 +1340,229 @@ paths:
     get:
       tags:
         - Plans
-      summary: List Current Account Plan(s)
-      description: |
-        Retrieves a paginated list of plan(s) currently active on the authenticated customer's account.
-        Typically, an account has one primary active plan.
-      operationId: listAccountPlans
-      parameters:
-        - name: page
-          in: query
-          description: Page number for pagination.
-          required: false
-          schema:
-            type: integer
-            default: 1
-            example: 1
-        - name: page_size
-          in: query
-          description: Number of plans per page.
-          required: false
-          schema:
-            type: integer
-            default: 25
-            example: 10
+      summary: List Plans
+      operationId: list_plans
+      description: >
+        List Plans associated to a Customer Account. Only one plan can be associated with a customer.
+        If no plan is assigned then an empty collection is returned.
       responses:
         '200':
-          description: A paginated list of currently active plans for the account.
+          description: Array of Plans
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedPlanListResponse'
-              example:
-                plans:
-                  - id: 1
-                    name: Standard Business Plan
-                    description: Includes core calling features, 1000 domestic minutes, and basic voicemail.
-                    total_cost: '49.99'
-                    currency: USD
-                    removable: true
-                    active: true
-                    approved: true
-                    finalized: true
-                    items: null
-                    packages: {}
-                    links:
-                      - href: /plans/1
-                        rel: self
-                        method: GET
-                total_items: 1
-                total_pages: 1
-                current_page: 1
-                per_page: 25
-                links:
-                  - href: /plans?page=1&page_size=25
-                    rel: self
-                    method: GET
+                $ref: '#/components/schemas/PlanListResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
-  /plans/{id}:
-    parameters:
-      - $ref: '#/components/parameters/Id'
+  /plans/available:
     get:
       tags:
         - Plans
-      summary: Get Plan Details
-      description: Retrieves detailed information for a specific subscription plan by its ID.
-      operationId: getPlanById
+      summary: List Plans
+      operationId: list_available_plans
+      description: List Plans available to a Customer Account.
       responses:
         '200':
-          description: Successfully retrieved plan details.
+          description: Array of Plans
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PlanResponse'
-              example:
-                id: 1
-                name: Standard Business Plan
-                description: Includes core calling features, 1000 domestic minutes, and basic voicemail.
-                total_cost: '49.99'
-                currency: USD
-                removable: true
-                active: true
-                approved: true
-                finalized: true
-                items: null
-                packages: {}
-                links:
-                  - href: /plans/1
-                    rel: self
-                    method: GET
+                $ref: '#/components/schemas/PlanListResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+  /plans/remove:
+    patch:
+      tags:
+        - Plans
+      summary: Remove Plan
+      operationId: remove_plan
+      description: >
+        Remove your Current Plan from the Customer account.
+        If you are Partnership, this operation is not permitted.
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '#/components/responses/plans_components-responses-BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/plans_components-responses-NotFoundError'
+  /plans/change-plan:
+    patch:
+      tags:
+        - Plans
+      summary: Schedule Plan Change for an Account
+      operationId: schedule_change_plan
+      description: >
+        Schedule a plan to be added to your account at the end of the current billing period.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  description: ID of the Plan
+              required:
+                - id
+      responses:
+        '200':
+          description: Plan Detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponse'
+        '400':
+          $ref: '#/components/responses/plans_components-responses-BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/plans_components-responses-NotFoundError'
+  /plans/{id}:
+    get:
+      tags:
+        - Plans
+      summary: Plan Detail
+      operationId: show_plan
+      description: >
+        Retrieve information of the required plan. Supply the unique id for the plan you need details for.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the plan
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Plan Detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponse'
+        '400':
+          $ref: '#/components/responses/plans_components-responses-BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/plans_components-responses-NotFoundError'
+  /plans/{id}/packages:
+    get:
+      tags:
+        - Plans
+      summary: List packages of a Plan
+      operationId: list_plan_packages
+      description: >
+        List packages for the Plan. The packages collection are divided into 2 parts.
+        1. Included Packages
+        2. Optional Packages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the Plan
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Array of Packages
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackageListResponse'
+        '400':
+          $ref: '#/components/responses/plans_components-responses-BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/plans_components-responses-NotFoundError'
+  /plans/{id}/add-package:
+    patch:
+      tags:
+        - Plans
+      summary: Add Package to the Plan
+      operationId: add_plans_package
+      description: Add a package to be added to your plan.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                package_id:
+                  type: integer
+                  description: ID of the Package
+              required:
+                - package_id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the plan
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Package Detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackageResponse'
+        '400':
+          $ref: '#/components/responses/plans_components-responses-BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/plans_components-responses-NotFoundError'
+  /plans/{id}/remove-package:
+    patch:
+      tags:
+        - Plans
+      summary: Remove the Package attached to a Plan
+      operationId: remove_plans_package
+      description: Remove a package from your Plan.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                package_id:
+                  type: integer
+                  description: ID of the Package
+              required:
+                - package_id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the plan
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Removed Package. No Content.
+        '400':
+          $ref: '#/components/responses/plans_components-responses-BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Couldn't find plan record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   /sites:
     get:
       tags:
@@ -4922,24 +5049,11 @@ components:
               items:
                 $ref: '#/components/schemas/schemas-Link'
               nullable: true
+              example:
+                - href: /items/94
+                  rel: self
+                  method: GET
       description: Detailed information about a billable item or feature.
-      example:
-        id: 449
-        name: Emergency Call Service (E911)
-        item_type: service_fee
-        item_rules: e911_access
-        item_price: '1.50'
-        currency: USD
-        price_deck_id: 10
-        tax_category: 59
-        tax_code: 8
-        links:
-          - href: /items/449
-            rel: self
-            method: GET
-          - href: /price-decks/10
-            rel: priceDeck
-            method: GET
     PackageResponse:
       allOf:
         - $ref: '#/components/schemas/PackageCore'
@@ -4952,27 +5066,6 @@ components:
                 $ref: '#/components/schemas/schemas-Link'
               nullable: true
       description: Detailed information about a service package.
-      example:
-        id: 94
-        name: Plan Subscription Fee
-        description: Monthly fee for the Unlimited Device Plan.
-        item_type: subscription
-        item_rules: base_fee
-        item_quantity: 1
-        price: '25.00'
-        currency: USD
-        plan_id: 1
-        included: true
-        removable: false
-        category: base_plan
-        renewable: true
-        links:
-          - href: /packages/94
-            rel: self
-            method: GET
-          - href: /plans/1
-            rel: relatedPlan
-            method: GET
     PaymentResponse:
       allOf:
         - $ref: '#/components/schemas/PaymentCore'
@@ -5069,60 +5162,7 @@ components:
                     $ref: '#/components/schemas/PackageResponse'
                   description: Additional packages that can be added to this plan at an extra cost.
               nullable: true
-            links:
-              type: array
-              description: HATEOAS links related to this plan.
-              items:
-                $ref: '#/components/schemas/schemas-Link'
-              nullable: true
       description: Detailed information about a subscription plan.
-      example:
-        id: 1
-        name: Standard Business Plan
-        description: Includes core calling features, 1000 domestic minutes, and basic voicemail.
-        total_cost: '49.99'
-        currency: USD
-        removable: true
-        active: true
-        approved: true
-        finalized: true
-        items:
-          - id: 449
-            name: Emergency Call Service
-            item_type: service_fee
-            item_rules: e911_access
-            item_price: '1.50'
-            currency: USD
-        packages:
-          included_packages:
-            - id: 10
-              name: Core Calling Features
-              item_type: feature_set
-              item_rules: standard_call_handling
-              item_quantity: 1
-              price: '0.00'
-              currency: USD
-              plan_id: 1
-              included: true
-              removable: false
-          optional_packages:
-            - id: 22
-              name: International Calling Pack - 100 Mins
-              item_type: usage_minutes
-              item_rules: international_zone_a
-              item_quantity: 100
-              price: '10.00'
-              currency: USD
-              plan_id: 1
-              included: false
-              removable: true
-        links:
-          - href: /plans/1
-            rel: self
-            method: GET
-          - href: /plans/1/packages
-            rel: listPackages
-            method: GET
     SiteResponse:
       allOf:
         - $ref: '#/components/schemas/SiteCore'
@@ -6457,6 +6497,7 @@ components:
           format: int64
           description: Unique identifier for the item.
           example: 449
+          readOnly: true
         name:
           type: string
           description: The human-readable name of the item or feature.
@@ -6474,6 +6515,30 @@ components:
           type: string
           description: The price of this individual item (e.g., per unit, per month).
           example: '1.50'
+        item_type_and_rules:
+          type: string
+          description: Join the item rule and price
+          example: service_fee e911_access
+          readOnly: true
+        markup_quantity:
+          type: number
+          format: float
+          description: >-
+            The quantity of this item that should be used for billing purposes.
+            For example, if this is a per-minute service, this would be the number of minutes.
+          example: 1.0
+        markup_mode:
+          type: string
+          description: >-
+            The mode of markup for this item, such as per-minute or per-call.
+            This is used to determine how the item is billed.
+          example: pennies
+        price_deck:
+          type: string
+          description: The price deck this item belongs to, if applicable.
+          nullable: true
+          example: 'Price Deck'
+          readOnly: true
         currency:
           type: string
           description: Three-letter ISO currency code for the item price.
@@ -6495,12 +6560,6 @@ components:
           nullable: true
           description: Specific tax code applicable to this item.
           example: 8
-      required:
-        - id
-        - name
-        - item_type
-        - item_price
-        - currency
     items_components-schemas-Error:
       type: object
       description: Standard error response format.
@@ -6548,6 +6607,7 @@ components:
           format: int64
           description: Unique identifier for the package.
           example: 94
+          readOnly: true
         name:
           type: string
           description: The name of the package.
@@ -6566,25 +6626,23 @@ components:
           nullable: true
           description: Specific rules or subclassifications for the item type.
           example: monthly_fee
+        item_type_and_rules:
+          type: string
+          description: Combination of item type and rules for easier identification.
+          example: subscription monthly_fee
+          readOnly: true
         item_quantity:
           type: integer
           description: The quantity of the item provided by this package (e.g., number of minutes, 1 for a subscription).
           example: 1
-        price:
+        price_in_dollars:
           type: string
           description: The cost of this package if it's optional or its contribution to a plan's price.
           example: '25.00'
-        currency:
+        plan:
           type: string
-          description: Three-letter ISO currency code for the package price.
-          default: USD
-          example: USD
-        plan_id:
-          type: integer
-          format: int64
-          nullable: true
-          description: Identifier of the plan this package definition might be primarily associated with or templated from.
-          example: 1
+          description: The plan name
+          example: Basic Plan
         included:
           type: boolean
           description: True if this package is an included part of a plan, false if it's optional.
@@ -6593,101 +6651,53 @@ components:
           type: boolean
           description: Indicates if this package can be removed from a plan by the customer.
           example: false
-        category:
-          type: string
-          description: Category of the package
-          enum:
-            - calling
-            - messaging
-            - conferencing
-            - faxing
-            - security
-            - base_plan
-            - add_on
-          example: base_plan
-        renewable:
-          type: boolean
-          description: Whether the package renews automatically
-          example: true
-        features:
-          type: array
-          description: List of features included in the package
-          items:
-            $ref: '#/components/schemas/PackageFeature'
-          nullable: true
-      required:
-        - id
-        - name
-        - item_type
-        - item_quantity
-        - price
-        - currency
-        - included
-        - removable
-    PaginatedPackageListResponse:
-      type: object
-      description: A paginated list of packages.
-      properties:
-        packages:
-          type: array
-          items:
-            $ref: '#/components/schemas/PackageResponse'
-        total_items:
-          type: integer
-          description: Total number of packages matching the query.
-          example: 50
-        total_pages:
-          type: integer
-          description: Total number of pages based on `per_page`.
-          example: 5
-        current_page:
-          type: integer
-          description: The current page number being displayed.
-          example: 1
-        per_page:
-          type: integer
-          description: The number of items per page.
-          example: 10
         links:
           type: array
           description: HATEOAS links for pagination and related resources.
           items:
             $ref: '#/components/schemas/schemas-Link'
           nullable: true
-      required:
-        - packages
-        - total_items
-        - total_pages
-        - current_page
-        - per_page
-      example:
+          example:
+            - href: "/packages/174"
+              rel: "self"
+              title: "Package Details"
+              method: "GET"
+            - href": "/packages/174"
+              rel: "Delete"
+              title: "Delete Package"
+              method: "DELETE"
+            - href: "/packages/174"
+              rel: "Edit"
+              title: "Edit Package"
+              method: "PUT"
+    PackageListResponse:
+      type: object
+      description: A list of packages.
+      properties:
         packages:
-          - id: 94
-            name: Plan Subscription Fee
-            description: Monthly fee for the Unlimited Device Plan.
-            item_type: subscription
-            item_rules: base_fee
-            item_quantity: 1
-            price: '25.00'
-            currency: USD
-            plan_id: 1
-            included: true
-            removable: false
-            category: base_plan
-            renewable: true
-            features: null
-            links:
-              - href: /packages/94
-                rel: self
-                method: GET
-        total_items: 1
-        total_pages: 1
-        current_page: 1
-        per_page: 25
+          type: object
+          description: >-
+            A list of included and optional packages available for a plan.
+          properties:
+            included_packages:
+              type: array
+              items:
+                $ref: '#/components/schemas/PackageResponse'
+            optional_packages:
+              type: array
+              items:
+                $ref: '#/components/schemas/PackageResponse'
         links:
-          - href: /packages?page=1&page_size=25
-            rel: self
-            method: GET
+          type: array
+          description: HATEOAS links for pagination and related resources.
+          items:
+            $ref: '#/components/schemas/schemas-Link'
+          nullable: true
+          example:
+            - href: "/plans/26/packages"
+              rel: "self"
+              title: "Packages"
+              method: "GET"
     packages_components-schemas-Error:
       type: object
       description: Standard error response format.
@@ -6862,6 +6872,7 @@ components:
           type: integer
           format: int64
           example: 1
+          readOnly: true
         name:
           type: string
           example: Standard Business Plan
@@ -6888,57 +6899,20 @@ components:
         finalized:
           type: boolean
           example: true
-      required:
-        - id
-        - name
-        - total_cost
-        - currency
-        - removable
-        - active
-        - approved
-        - finalized
-    PaginatedPlanListResponse:
+        price_deck:
+          type: string
+          nullable: true
+          example: "Customer Price Deck"
+    PlanListResponse:
       type: object
-      description: A paginated list of subscription plans.
+      description: A list of subscription plans.
       properties:
-        plans:
+        current_plan:
+          $ref: '#/components/schemas/PlanResponse'
+        available_plans:
           type: array
           items:
             $ref: '#/components/schemas/PlanResponse'
-        total_items:
-          type: integer
-          example: 10
-        total_pages:
-          type: integer
-          example: 1
-        current_page:
-          type: integer
-          example: 1
-        per_page:
-          type: integer
-          example: 25
-        links:
-          type: array
-          items:
-            $ref: '#/components/schemas/schemas-Link'
-          nullable: true
-      required:
-        - plans
-        - total_items
-        - total_pages
-        - current_page
-        - per_page
-      example:
-        plans:
-          - $ref: '#/components/schemas/PlanResponse/example'
-        total_items: 1
-        total_pages: 1
-        current_page: 1
-        per_page: 25
-        links:
-          - href: /plans?page=1&page_size=25
-            rel: self
-            method: GET
     plans_components-schemas-Error:
       type: object
       description: Standard error response format.
@@ -10433,6 +10407,16 @@ components:
             status: error
             error: The requested plan was not found.
             error_code: PLAN_NOT_FOUND
+    plans_components-responses-BadRequestError:
+      description: Bad Request - The request was malformed or contained invalid data.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/plans_components-schemas-Error'
+          example:
+            status: error
+            error: 'Invalid input: dns_extension is required.'
+            error_code: VALIDATION_ERROR
     sites_components-responses-BadRequestError:
       description: Bad Request - The request was malformed or contained invalid data.
       content:
