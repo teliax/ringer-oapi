@@ -21,9 +21,6 @@ info:
   license:
     name: Proprietary
     url: https://ringer.tel/terms
-  x-logo:
-    url: https://ringer.tel/logo.png
-    altText: Ringer Logo
 servers:
   - url: https://soa-api.ringer.tel
     description: Production server
