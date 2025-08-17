@@ -23,8 +23,6 @@ tags:
     description: Endpoints for managing address records.
   - name: Authentication
     description: Authentication and authorization endpoints.
-  - name: Call Blocks
-    description: Manage call blocking rules and settings.
   - name: Call Records
     description: Access and manage call history and records.
   - name: Country Codes
@@ -1633,228 +1631,6 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/responses-SiteNotFoundError'
-  /sites/{site_id}/call-blocks:
-    parameters:
-      - $ref: '#/components/parameters/SiteId'
-    get:
-      tags:
-        - Site Features - Call Blocking
-      summary: List Call Block Rules for a Site
-      operationId: listSiteCallBlocks
-      description: Retrieves a list of all call blocking rules configured for the specified site.
-      responses:
-        '200':
-          description: An array of Call Block rules.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CallBlockListResponse'
-              example:
-                data:
-                  - data:
-                      id: '101'
-                      type: call-block
-                      attributes:
-                        name: Block nuisance caller
-                        phone_number: '+15551234567'
-                        direction: inbound
-                        status: active
-                        site_id: 6
-                        created_at: '2023-01-01T12:00:00Z'
-                        updated_at: '2023-01-01T12:00:00Z'
-                    links:
-                      self:
-                        href: /sites/6/call-blocks/101
-                        rel: self
-                        method: GET
-                  - data:
-                      id: '102'
-                      type: call-block
-                      attributes:
-                        name: Another Block Rule
-                        phone_number: '+15550001111'
-                        direction: inbound
-                        status: active
-                        site_id: 6
-                        created_at: '2023-01-02T14:00:00Z'
-                        updated_at: '2023-01-02T14:00:00Z'
-                    links:
-                      self:
-                        href: /sites/6/call-blocks/102
-                        rel: self
-                        method: GET
-                links:
-                  self:
-                    href: /sites/6/call-blocks?page%5Bnumber%5D=1&page_size=25
-                    rel: self
-                    method: GET
-                  first:
-                    href: /sites/6/call-blocks?page%5Bnumber%5D=1&page_size=25
-                    rel: first
-                    method: GET
-                  last:
-                    href: /sites/6/call-blocks?page%5Bnumber%5D=1&page_size=25
-                    rel: last
-                    method: GET
-                  next: null
-                  prev: null
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
-        '404':
-          $ref: '#/components/responses/SiteNotFoundError'
-    post:
-      tags:
-        - Site Features - Call Blocking
-      summary: Create a Call Block Rule
-      operationId: createSiteCallBlock
-      description: Adds a new call blocking rule to the specified site.
-      requestBody:
-        description: Call Block rule attributes.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CallBlockCreateRequest'
-            example:
-              data:
-                type: call-block
-                attributes:
-                  name: Marketing Block
-                  phone_number: +1800MARKETER
-                  direction: inbound
-                  status: active
-      responses:
-        '201':
-          description: Call Block rule created successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/schemas-CallBlockResponse'
-              example:
-                data:
-                  id: '103'
-                  type: call-block
-                  attributes:
-                    name: Marketing Block
-                    phone_number: +1800MARKETER
-                    direction: inbound
-                    status: active
-                    site_id: 6
-                    created_at: '2023-01-15T10:30:00Z'
-                    updated_at: '2023-01-15T10:30:00Z'
-                links:
-                  self:
-                    href: /sites/6/call-blocks/103
-                    rel: self
-                    method: GET
-        '400':
-          $ref: '#/components/responses/BadRequestError'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
-        '404':
-          $ref: '#/components/responses/SiteNotFoundError'
-        '409':
-          $ref: '#/components/responses/ConflictError'
-  /sites/{site_id}/call-blocks/{id}:
-    parameters:
-      - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/Id'
-    get:
-      tags:
-        - Site Features - Call Blocking
-      summary: Get Call Block Rule Details
-      operationId: getSiteCallBlockById
-      description: Retrieves the details of a specific Call Block rule.
-      responses:
-        '200':
-          description: Call Block rule details.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/schemas-CallBlockResponse'
-              example:
-                data:
-                  type: call-block
-                  id: '101'
-                  attributes:
-                    name: Marketing Block Rule
-                    phone_number: '+18005551234'
-                    direction: inbound
-                    status: active
-                  links:
-                    self: /sites/6/call-blocks/101
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
-        '404':
-          $ref: '#/components/responses/call-block_components-responses-NotFoundError'
-    put:
-      tags:
-        - Site Features - Call Blocking
-      summary: Update Call Block Rule
-      operationId: updateSiteCallBlockById
-      description: Updates an existing Call Block rule. Only attributes provided in the request body will be updated.
-      requestBody:
-        description: Call Block rule attributes to update.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CallBlockUpdateRequest'
-            example:
-              data:
-                type: call-block
-                attributes:
-                  name: Updated Marketing Block
-                  status: inactive
-      responses:
-        '200':
-          description: Call Block rule updated successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/schemas-CallBlockResponse'
-              example:
-                data:
-                  type: call-block
-                  id: '101'
-                  attributes:
-                    name: Updated Marketing Block
-                    phone_number: '+18005551234'
-                    direction: inbound
-                    status: inactive
-                  links:
-                    self: /sites/6/call-blocks/101
-        '400':
-          $ref: '#/components/responses/call-block_components-responses-BadRequestError'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
-        '404':
-          $ref: '#/components/responses/call-block_components-responses-NotFoundError'
-        '409':
-          $ref: '#/components/responses/responses-ConflictError'
-    delete:
-      tags:
-        - Site Features - Call Blocking
-      summary: Delete a Call Block Rule
-      operationId: deleteSiteCallBlockById
-      description: Permanently deletes a Call Block rule.
-      responses:
-        '204':
-          description: Call Block rule deleted successfully. No content returned.
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
-        '404':
-          $ref: '#/components/responses/call-block_components-responses-NotFoundError'
   /sites/{site_id}/conference-rooms:
     parameters:
       - $ref: '#/components/parameters/SiteId'
@@ -2944,56 +2720,13 @@ paths:
       summary: List Locations for a Site
       description: Retrieves a paginated list of all physical locations defined for the specified site.
       operationId: listSiteLocations
-      parameters:
-        - name: page
-          in: query
-          description: Page number for pagination.
-          required: false
-          schema:
-            type: integer
-            default: 1
-            example: 1
-        - name: page_size
-          in: query
-          description: Number of locations per page.
-          required: false
-          schema:
-            type: integer
-            default: 25
-            example: 10
       responses:
         '200':
           description: A paginated list of locations for the site.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedLocationListResponse'
-              example:
-                locations:
-                  - id: 9
-                    site_id: 6
-                    name: Main Office - Denver
-                    house_number: '2150'
-                    street: West 29th Ave
-                    city: Denver
-                    state_province: CO
-                    postal_code: '80211'
-                    country_code: US
-                    caller_id_name: Teliax Office Denver
-                    e911_enabled: true
-                    e911_id: 123
-                    links:
-                      - href: /sites/6/locations/9
-                        rel: self
-                        method: GET
-                total_items: 1
-                total_pages: 1
-                current_page: 1
-                per_page: 25
-                links:
-                  - href: /sites/6/locations?page=1&page_size=25
-                    rel: self
-                    method: GET
+                $ref: '#/components/schemas/LocationListResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -3015,16 +2748,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/LocationCreateRequest'
-            example:
-              name: Warehouse A
-              house_number: '100'
-              street: Distribution Rd
-              city: Commerce City
-              state_province: CO
-              postal_code: '80022'
-              country_code: US
-              caller_id_name: Warehouse A Caller ID
-              e911_enabled: true
       responses:
         '201':
           description: Location created successfully.
@@ -3032,20 +2755,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LocationResponse'
-              example:
-                id: 10
-                site_id: 6
-                name: Warehouse A
-                house_number: '100'
-                street: Distribution Rd
-                city: Commerce City
-                state_province: CO
-                postal_code: '80022'
-                country_code: US
-                caller_id_name: Warehouse A Caller ID
-                e911_enabled: true
-                e911_id: 124
-                links: null
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -3071,24 +2780,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LocationResponse'
-              example:
-                id: 9
-                site_id: 6
-                name: Main Office - Denver
-                house_number: '2150'
-                house_number_suffix: Ste 310
-                street: West 29th Ave
-                city: Denver
-                state_province: CO
-                postal_code: '80211'
-                country_code: US
-                caller_id_name: Teliax Office Denver
-                e911_enabled: true
-                e911_id: 123
-                updated_by: system
-                latitude: '39.759000'
-                longitude: '-105.015000'
-                links: null
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -3110,17 +2801,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/LocationUpdateRequest'
-            example:
-              name: Main Office - Denver (Renovated)
-              house_number: '2150'
-              house_number_suffix: Suite 310A
-              street: West 29th Avenue
-              city: Denver
-              state_province: CO
-              postal_code: 80211-3200
-              country_code: US
-              caller_id_name: Teliax Denver Main
-              e911_enabled: true
       responses:
         '200':
           description: Location updated successfully.
@@ -3128,24 +2808,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LocationResponse'
-              example:
-                id: 9
-                site_id: 6
-                name: Main Office - Denver (Renovated)
-                house_number: '2150'
-                house_number_suffix: Suite 310A
-                street: West 29th Avenue
-                city: Denver
-                state_province: CO
-                postal_code: 80211-3200
-                country_code: US
-                caller_id_name: Teliax Denver Main
-                e911_enabled: true
-                e911_id: 123
-                updated_by: current_user_example
-                latitude: '39.759000'
-                longitude: '-105.015000'
-                links: null
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -3186,51 +2848,13 @@ paths:
       summary: List Menus for a Site
       description: Retrieve a paginated list of all menus (auto attendants) that belong to a site.
       operationId: listSiteMenus
-      parameters:
-        - name: page
-          in: query
-          description: Page number for pagination.
-          required: false
-          schema:
-            type: integer
-            default: 1
-        - name: page_size
-          in: query
-          description: Number of menus per page.
-          required: false
-          schema:
-            type: integer
-            default: 25
       responses:
         '200':
           description: A paginated list of menus.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedMenuListResponse'
-              example:
-                menus:
-                  - id: 55
-                    site_id: 6
-                    name: Main Menu
-                    pin: '****'
-                    fail_over_destination_code: voicemailbox:42
-                    options:
-                      '0': ring_group:10
-                      '1': extension:101
-                    greeting_url: https://cdn.example.com/greetings/menu_55.mp3
-                    links:
-                      - href: /sites/6/menus/55
-                        rel: self
-                        method: GET
-                total_items: 1
-                total_pages: 1
-                current_page: 1
-                per_page: 25
-                links:
-                  - href: /sites/6/menus?page=1&page_size=25
-                    rel: self
-                    method: GET
+                $ref: '#/components/schemas/MenuListResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -3249,7 +2873,7 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/MenuCreateRequest'
+              $ref: '#/components/schemas/MenuRequest'
       responses:
         '201':
           description: Menu Created Successfully.
@@ -3257,20 +2881,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MenuResponse'
-              example:
-                id: 56
-                site_id: 6
-                name: Support Menu
-                pin: '****'
-                fail_over_destination_code: voicemailbox:43
-                options:
-                  '0': ring_group:11
-                  '1': extension:102
-                greeting_url: https://cdn.example.com/greetings/menu_56_greeting.wav
-                links:
-                  - href: /sites/6/menus/56
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -3296,20 +2906,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MenuResponse'
-              example:
-                id: 55
-                site_id: 6
-                name: Main Menu
-                pin: '****'
-                fail_over_destination_code: voicemailbox:42
-                options:
-                  '0': ring_group:10
-                  '1': extension:101
-                greeting_url: https://cdn.example.com/greetings/menu_55.mp3
-                links:
-                  - href: /sites/6/menus/55
-                    rel: self
-                    method: GET
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -3328,7 +2924,7 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/MenuUpdateRequest'
+              $ref: '#/components/schemas/MenuRequest'
       responses:
         '200':
           description: Menu Updated Successfully.
@@ -3336,20 +2932,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MenuResponse'
-              example:
-                id: 55
-                site_id: 6
-                name: Updated Main Menu
-                pin: '****'
-                fail_over_destination_code: voicemailbox:43
-                options:
-                  '0': ring_group:sales_updated
-                  '1': extension:105
-                greeting_url: https://cdn.example.com/greetings/menu_55_updated.mp3
-                links:
-                  - href: /sites/6/menus/55
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -3409,20 +2991,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MenuResponse'
-              example:
-                id: 55
-                site_id: 7
-                name: Main Menu
-                pin: '1234'
-                fail_over_destination_code: voicemailbox:general_vm
-                options:
-                  '0': ring_group:sales_rg_new_site
-                  '1': extension:1002_new_site
-                greeting_url: https://cdn.example.com/greetings/menu_55_moved.mp3
-                links:
-                  - href: /sites/7/menus/55
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -3472,20 +3040,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MenuResponse'
-              example:
-                id: 55
-                site_id: 6
-                name: Main Menu
-                pin: '1234'
-                fail_over_destination_code: voicemailbox:general_vm
-                options:
-                  '0': ring_group:sales_rg
-                  '1': extension:1001
-                greeting_url: https://cdn.example.com/greetings/menu_55_new_greeting.mp3
-                links:
-                  - href: /sites/6/menus/55
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -3503,58 +3057,13 @@ paths:
       summary: List Phone Numbers for a Site
       description: Retrieve a paginated list of all phone numbers assigned to the specified site.
       operationId: listSitePhoneNumbers
-      parameters:
-        - name: page
-          in: query
-          description: Page number for pagination.
-          required: false
-          schema:
-            type: integer
-            default: 1
-            example: 1
-        - name: page_size
-          in: query
-          description: Number of phone numbers per page.
-          required: false
-          schema:
-            type: integer
-            default: 25
-            example: 25
       responses:
         '200':
           description: A paginated list of phone numbers for the site.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedPhoneNumberListResponse'
-              example:
-                phone_numbers:
-                  - id: 123
-                    site_id: 6
-                    name: Main Office Line
-                    number: '+13035551212'
-                    destination_code: ring_group:10
-                    destination:
-                      name: Sales Team Ring Group
-                      code: ring_group:10
-                    fail_over_destination_code: voicemailbox:vm_sales
-                    fail_over_destination:
-                      name: Sales Voicemail
-                      code: voicemailbox:vm_sales
-                    e911_id: 45
-                    user_id: null
-                    links:
-                      - href: /sites/6/phone-numbers/123
-                        rel: self
-                        method: GET
-                total_items: 1
-                total_pages: 1
-                current_page: 1
-                per_page: 25
-                links:
-                  - href: /sites/6/phone-numbers?page=1&page_size=25
-                    rel: self
-                    method: GET
+                $ref: '#/components/schemas/PhoneNumberListResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -3573,13 +3082,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PhoneNumberCreateRequest'
-            example:
-              name: Customer Service Line
-              number: '+18005550100'
-              destination_code: menu:support_ivr
-              fail_over_destination_code: voicemailbox:support_general_vm
-              e911_id: 46
+              $ref: '#/components/schemas/PhoneNumberRequest'
       responses:
         '201':
           description: Phone number assigned and configured successfully.
@@ -3587,25 +3090,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/schemas-PhoneNumberResponse'
-              example:
-                id: 124
-                site_id: 6
-                name: Customer Service Line
-                number: '+18005550100'
-                destination_code: menu:support_ivr
-                destination:
-                  name: Support IVR Menu
-                  code: menu:support_ivr
-                fail_over_destination_code: voicemailbox:support_general_vm
-                fail_over_destination:
-                  name: General Support Voicemail
-                  code: voicemailbox:support_general_vm
-                e911_id: 46
-                user_id: null
-                links:
-                  - href: /sites/6/phone-numbers/124
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -3633,25 +3117,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/schemas-PhoneNumberResponse'
-              example:
-                id: 123
-                site_id: 6
-                name: Main Office Line
-                number: '+13035551212'
-                destination_code: ring_group:10
-                destination:
-                  name: Sales Team Ring Group
-                  code: ring_group:10
-                fail_over_destination_code: voicemailbox:vm_sales
-                fail_over_destination:
-                  name: Sales Voicemail
-                  code: voicemailbox:vm_sales
-                e911_id: 45
-                user_id: null
-                links:
-                  - href: /sites/6/phone-numbers/123
-                    rel: self
-                    method: GET
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -3670,7 +3135,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PhoneNumberUpdateRequest'
+              $ref: '#/components/schemas/PhoneNumberRequest'
       responses:
         '200':
           description: Phone number configuration updated successfully.
@@ -3678,25 +3143,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/schemas-PhoneNumberResponse'
-              example:
-                id: 127
-                site_id: 6
-                name: Main Sales Line (Overflow)
-                number: '+13035551234'
-                destination_code: ringgroup:sales_team_rg
-                destination:
-                  name: Sales Team Ring Group
-                  code: ringgroup:sales_team_rg
-                fail_over_destination_code: voicemailbox:vm_sales
-                fail_over_destination:
-                  name: Sales Voicemail
-                  code: voicemailbox:vm_sales
-                e911_id: 45
-                user_id: 5
-                links:
-                  - href: /sites/6/phone-numbers/127
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -3720,74 +3166,6 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/PhoneNumberNotFoundError'
-  /sites/{site_id}/phone-numbers/available:
-    parameters:
-      - $ref: '#/components/parameters/SiteId'
-    get:
-      tags:
-        - Site Features - Phone Numbers
-      summary: List Available Phone Numbers for a Site
-      description: Retrieves phone numbers that are available for assignment to the specified site.  Can be optionally filtered by user ID.
-      operationId: listSiteAvailablePhoneNumbers
-      parameters:
-        - name: userId
-          in: query
-          description: Optional. ID of the user to filter available phone numbers by.
-          required: false
-          schema:
-            type: integer
-            format: int64
-            example: 42
-      responses:
-        '200':
-          description: A list of available phone numbers.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AvailablePhoneNumberListResponse'
-              example:
-                phone_numbers:
-                  - id: 125
-                    site_id: null
-                    name: Inventory DID 1
-                    number: '+17205551000'
-                    destination_code: ''
-                    destination: null
-                    fail_over_destination_code: null
-                    fail_over_destination: null
-                    e911_id: null
-                    user_id: null
-                    assigned: false
-                    assigned_to: null
-                    links:
-                      - href: /phone-number-inventory/125
-                        rel: inventoryDetails
-                        method: GET
-                  - id: 123
-                    site_id: 6
-                    name: Main Office
-                    number: '+13125551234'
-                    destination_code: ring_group:10
-                    destination:
-                      code: ring_group:10
-                      name: Sales Team
-                    fail_over_destination:
-                      code: voicemailbox:vm_sales
-                      name: Sales Voicemail
-                    e911_id: 45
-                    user_id: 42
-                    assigned: true
-                    assigned_to: 42
-                    links:
-                      - href: /sites/6/phone-numbers/123
-                        rel: self
-                        method: GET
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
-        '404':
-          $ref: '#/components/responses/SiteNotFoundError'
   /sites/{site_id}/phone-numbers/{id}/transfer:
     parameters:
       - $ref: '#/components/parameters/SiteId'
@@ -3824,25 +3202,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/schemas-PhoneNumberResponse'
-              example:
-                id: 123
-                site_id: 7
-                name: Main Office Line
-                number: '+13035551212'
-                destination_code: ring_group:10
-                destination:
-                  name: Sales Team Ring Group
-                  code: ring_group:10
-                fail_over_destination_code: voicemailbox:vm_sales
-                fail_over_destination:
-                  name: Sales Voicemail
-                  code: voicemailbox:vm_sales
-                e911_id: 45
-                user_id: null
-                links:
-                  - href: /sites/7/phone-numbers/123
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -3868,61 +3227,13 @@ paths:
       summary: List Ring Groups for a Site
       description: Retrieve a paginated list of all ring groups configured for the specified site.
       operationId: listSiteRingGroups
-      parameters:
-        - name: page
-          in: query
-          description: Page number for pagination.
-          required: false
-          schema:
-            type: integer
-            default: 1
-            example: 1
-        - name: page_size
-          in: query
-          description: Number of ring groups per page.
-          required: false
-          schema:
-            type: integer
-            default: 25
-            example: 25
       responses:
         '200':
           description: A paginated list of ring groups.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedRingGroupListResponse'
-              example:
-                ring_groups:
-                  - id: 10
-                    site_id: 6
-                    name: Sales Team
-                    destination_codes:
-                      - device:dev_sales1
-                      - extension:ext_sales_mobile
-                    destinations:
-                      - name: Sales Device 1
-                        code: device:dev_sales1
-                      - name: Sales Extension Mobile
-                        code: extension:ext_sales_mobile
-                    ring_strategy: simultaneous
-                    timeout: 30
-                    fail_over_destination:
-                      code: voicemailbox:vm_sales
-                      name: Sales Voicemail
-                    user_id: null
-                    links:
-                      - href: /sites/6/ring-groups/10
-                        rel: self
-                        method: GET
-                total_items: 1
-                total_pages: 1
-                current_page: 1
-                per_page: 25
-                links:
-                  - href: /sites/6/ring-groups?page=1&page_size=25
-                    rel: self
-                    method: GET
+                $ref: '#/components/schemas/RingGroupListResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -3941,15 +3252,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RingGroupCreateRequest'
-            example:
-              name: Support Queue
-              destination_codes:
-                - device:support1
-                - device:support2
-              ring_strategy: sequential
-              timeout: 20
-              fail_over_destination_code: voicemailbox:support_vm
+              $ref: '#/components/schemas/RingGroupRequest'
       responses:
         '201':
           description: Ring Group Created Successfully.
@@ -3957,28 +3260,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RingGroupResponse'
-              example:
-                id: 11
-                site_id: 6
-                name: Support Queue
-                destination_codes:
-                  - device:support1
-                  - device:support2
-                destinations:
-                  - name: Support Agent 1 (device:support1)
-                    code: device:support1
-                  - name: Support Agent 2 (device:support2)
-                    code: device:support2
-                ring_strategy: sequential
-                timeout: 20
-                fail_over_destination:
-                  code: voicemailbox:support_vm
-                  name: Support Voicemail
-                user_id: null
-                links:
-                  - href: /sites/6/ring-groups/11
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -4004,28 +3285,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RingGroupResponse'
-              example:
-                id: 10
-                site_id: 6
-                name: Sales Team
-                destination_codes:
-                  - device:dev101
-                  - extension:ext102
-                destinations:
-                  - name: John Smith (device:dev101)
-                    code: device:dev101
-                  - name: Jane Doe (extension:ext102)
-                    code: extension:ext102
-                ring_strategy: simultaneous
-                timeout: 30
-                fail_over_destination:
-                  name: Sales Voicemail (voicemailbox:vm_sales)
-                  code: voicemailbox:vm_sales
-                user_id: null
-                links:
-                  - href: /sites/6/ring-groups/10
-                    rel: self
-                    method: GET
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -4044,15 +3303,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RingGroupUpdateRequest'
-            example:
-              name: Sales & Support Combined
-              destination_codes:
-                - device:dev101
-                - extension:ext_support
-              ring_strategy: sequential
-              timeout: 25
-              fail_over_destination_code: menu:main_company_menu
+              $ref: '#/components/schemas/RingGroupRequest'
       responses:
         '200':
           description: Ring Group Updated Successfully.
@@ -4060,28 +3311,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RingGroupResponse'
-              example:
-                id: 10
-                site_id: 6
-                name: Sales & Support Combined
-                destination_codes:
-                  - device:dev101
-                  - extension:ext_support
-                destinations:
-                  - name: Sales Phone 1
-                    code: device:dev101
-                  - name: Support Ext
-                    code: extension:ext_support
-                ring_strategy: sequential
-                timeout: 25
-                fail_over_destination:
-                  name: Main Company Menu
-                  code: menu:main_company_menu
-                user_id: null
-                links:
-                  - href: /sites/6/ring-groups/10
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -4141,29 +3370,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RingGroupResponse'
-              example:
-                id: 10
-                site_id: 7
-                name: Sales Team
-                destination_codes:
-                  - device:dev_sales1
-                  - extension:ext_sales_mobile
-                destinations:
-                  - name: Sales Phone 1
-                    code: device:dev_sales1
-                  - name: Sales Mobile Ext
-                    code: extension:ext_sales_mobile
-                ring_strategy: simultaneous
-                timeout: 30
-                fail_over_destination_code: voicemailbox:vm_sales
-                fail_over_destination:
-                  name: Sales Voicemail
-                  code: voicemailbox:vm_sales
-                user_id: null
-                links:
-                  - href: /sites/7/ring-groups/10
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -4189,75 +3395,13 @@ paths:
       summary: List Schedules for a Site
       description: Retrieve a paginated list of all schedules that belong to a site.
       operationId: listSiteSchedules
-      parameters:
-        - name: page
-          in: query
-          description: Page number for pagination.
-          required: false
-          schema:
-            type: integer
-            default: 1
-            example: 1
-        - name: page_size
-          in: query
-          description: Number of schedules per page.
-          required: false
-          schema:
-            type: integer
-            default: 25
-            example: 10
       responses:
         '200':
-          description: A paginated list of schedules.
+          description: A list of schedules.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedScheduleListResponse'
-              example:
-                schedules:
-                  - id: '7'
-                    type: schedule
-                    attributes:
-                      name: Business Hours Rule
-                      time_zone: America/Denver
-                      start_hour: '09'
-                      start_minute: '00'
-                      end_hour: '17'
-                      end_minute: '00'
-                      start_weekday: Mon
-                      end_weekday: Fri
-                      exceptions: 12/25,01/01
-                      positive_destination_code: menu:day_menu
-                      negative_destination_code: voicemailbox:after_hours_vm
-                      site_id: 6
-                      positive_destination:
-                        name: Day Menu
-                        code: menu:day_menu
-                      negative_destination:
-                        name: After Hours Voicemail
-                        code: voicemailbox:after_hours_vm
-                    links:
-                      self:
-                        href: /sites/6/schedules/7
-                        rel: self
-                        method: GET
-                total_items: 1
-                total_pages: 1
-                current_page: 1
-                per_page: 25
-                links:
-                  self:
-                    href: /sites/6/schedules?page=1&page_size=25
-                    rel: self
-                    method: GET
-                  first:
-                    href: /sites/6/schedules?page=1&page_size=25
-                    rel: first
-                    method: GET
-                  last:
-                    href: /sites/6/schedules?page=1&page_size=25
-                    rel: last
-                    method: GET
+                $ref: '#/components/schemas/ScheduleListResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -4276,22 +3420,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ScheduleCreateRequest'
-            example:
-              data:
-                type: schedule
-                attributes:
-                  name: Weekend Support Hours
-                  time_zone: America/New_York
-                  start_hour: '10'
-                  start_minute: '00'
-                  end_hour: '14'
-                  end_minute: '00'
-                  start_weekday: Sat
-                  end_weekday: Sun
-                  exceptions: ''
-                  positive_destination_code: ring_group:weekend_support_rg
-                  negative_destination_code: forward:on_call_pager
+              $ref: '#/components/schemas/ScheduleRequest'
       responses:
         '201':
           description: Schedule Created Successfully.
@@ -4299,34 +3428,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ScheduleResponse'
-              example:
-                data:
-                  id: '8'
-                  type: schedule
-                  attributes:
-                    name: Weekend Support Hours
-                    time_zone: America/New_York
-                    site_id: 6
-                    start_hour: '10'
-                    start_minute: '00'
-                    end_hour: '14'
-                    end_minute: '00'
-                    start_weekday: Sat
-                    end_weekday: Sun
-                    exceptions: ''
-                    positive_destination_code: ring_group:weekend_support_rg
-                    negative_destination_code: forward:on_call_pager
-                    positive_destination:
-                      name: Weekend Support RG
-                      code: ring_group:weekend_support_rg
-                    negative_destination:
-                      name: On Call Pager Forward
-                      code: forward:on_call_pager
-                  links:
-                    self:
-                      href: /sites/6/schedules/8
-                      rel: self
-                      method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -4352,34 +3453,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ScheduleResponse'
-              example:
-                data:
-                  id: '7'
-                  type: schedule
-                  attributes:
-                    name: Business Hours Rule
-                    time_zone: America/Denver
-                    start_hour: '09'
-                    start_minute: '00'
-                    end_hour: '17'
-                    end_minute: '00'
-                    start_weekday: Mon
-                    end_weekday: Fri
-                    exceptions: 12/25,01/01
-                    positive_destination_code: menu:day_menu
-                    negative_destination_code: voicemailbox:after_hours_vm
-                    site_id: 6
-                    positive_destination:
-                      name: Day Menu
-                      code: menu:day_menu
-                    negative_destination:
-                      name: After Hours Voicemail
-                      code: voicemailbox:after_hours_vm
-                  links:
-                    self:
-                      href: /sites/6/schedules/7
-                      rel: self
-                      method: GET
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -4398,29 +3471,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ScheduleUpdateRequest'
-            example:
-              data:
-                type: schedule
-                attributes:
-                  name: After Hours Support
-                  time_zone: America/Los_Angeles
-                  start_hour: '18'
-                  start_minute: '00'
-                  end_hour: '23'
-                  end_minute: '59'
-                  start_weekday: Mon
-                  end_weekday: Fri
-                  exceptions: 12/24,12/31
-                  positive_destination_code: menu:support_night_menu
-                  negative_destination_code: voicemailbox:general_support_vm
-                  site_id: 6
-                  positive_destination:
-                    name: Support Night Menu
-                    code: menu:support_night_menu
-                  negative_destination:
-                    name: General Support Voicemail
-                    code: voicemailbox:general_support_vm
+              $ref: '#/components/schemas/ScheduleRequest'
       responses:
         '200':
           description: Schedule updated successfully.
@@ -4428,34 +3479,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ScheduleResponse'
-              example:
-                data:
-                  id: '7'
-                  type: schedule
-                  attributes:
-                    name: After Hours Support
-                    time_zone: America/Los_Angeles
-                    start_hour: '18'
-                    start_minute: '00'
-                    end_hour: '23'
-                    end_minute: '59'
-                    start_weekday: Mon
-                    end_weekday: Fri
-                    exceptions: 12/24,12/31
-                    positive_destination_code: menu:support_night_menu
-                    negative_destination_code: voicemailbox:general_support_vm
-                    site_id: 6
-                    positive_destination:
-                      name: Support Night Menu
-                      code: menu:support_night_menu
-                    negative_destination:
-                      name: General Support Voicemail
-                      code: voicemailbox:general_support_vm
-                  links:
-                    self:
-                      href: /sites/6/schedules/7
-                      rel: self
-                      method: GET
         '400':
           $ref: '#/components/responses/schedule_components-responses-BadRequestError'
         '401':
@@ -4479,76 +3502,6 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/schedule_components-responses-NotFoundError'
-  /sites/{site_id}/schedules/available:
-    parameters:
-      - $ref: '#/components/parameters/SiteId'
-    get:
-      tags:
-        - Site Features - Schedules
-      summary: List Available Schedules for a Site
-      operationId: listSiteAvailableSchedules
-      description: Retrieves available and (if applicable) assigned Schedules that could be used by the Site or a User on the Site.
-      parameters:
-        - name: userId
-          in: query
-          description: Optional. User ID to filter or contextualize available schedules.
-          required: false
-          schema:
-            type: integer
-            format: int64
-            example: 10
-      responses:
-        '200':
-          description: A list of available schedules.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedScheduleListResponse'
-              example:
-                schedules:
-                  - id: '15'
-                    type: schedule
-                    attributes:
-                      name: Company Holiday Schedule Template
-                      time_zone: America/New_York
-                      start_hour: '00'
-                      start_minute: '00'
-                      end_hour: '23'
-                      end_minute: '59'
-                      start_weekday: Mon
-                      end_weekday: Sun
-                      exceptions: 12/25,01/01
-                      positive_destination_code: menu:holiday_closed
-                      negative_destination_code: menu:holiday_closed
-                      site_id: null
-                    links:
-                      self:
-                        href: /schedules/templates/15
-                        rel: self
-                        method: GET
-                total_items: 1
-                total_pages: 1
-                current_page: 1
-                per_page: 25
-                links:
-                  self:
-                    href: /sites/6/schedules/available?page=1&page_size=25
-                    rel: self
-                    method: GET
-                  first:
-                    href: /sites/6/schedules/available?page=1&page_size=25
-                    rel: first
-                    method: GET
-                  last:
-                    href: /sites/6/schedules/available?page=1&page_size=25
-                    rel: last
-                    method: GET
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
-        '404':
-          $ref: '#/components/responses/available_components-responses-SiteNotFoundError'
   /sites/{site_id}/schedules/{id}/transfer:
     parameters:
       - $ref: '#/components/parameters/SiteId'
@@ -4583,34 +3536,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ScheduleResponse'
-              example:
-                data:
-                  id: '7'
-                  type: schedule
-                  attributes:
-                    name: Business Hours Rule
-                    time_zone: America/Denver
-                    start_hour: '09'
-                    start_minute: '00'
-                    end_hour: '17'
-                    end_minute: '00'
-                    start_weekday: Mon
-                    end_weekday: Fri
-                    exceptions: 12/25,01/01
-                    positive_destination_code: menu:day_menu
-                    negative_destination_code: voicemailbox:after_hours_vm
-                    site_id: 8
-                    positive_destination:
-                      name: Day Menu
-                      code: menu:day_menu
-                    negative_destination:
-                      name: After Hours Voicemail
-                      code: voicemailbox:after_hours_vm
-                  links:
-                    self:
-                      href: /sites/8/schedules/7
-                      rel: self
-                      method: GET
         '400':
           $ref: '#/components/responses/transfer_components-responses-BadRequestError-2'
         '401':
@@ -4622,66 +3547,6 @@ paths:
   /sites/{site_id}/seats:
     parameters:
       - $ref: '#/components/parameters/SiteId'
-    get:
-      tags:
-        - Site Features - Seats
-      summary: List Seats for a Site
-      description: Retrieve a paginated list of all seats configured for the specified site.
-      operationId: listSiteSeats
-      parameters:
-        - name: page
-          in: query
-          description: Page number for pagination.
-          required: false
-          schema:
-            type: integer
-            default: 1
-            example: 1
-        - name: page_size
-          in: query
-          description: Number of seats per page.
-          required: false
-          schema:
-            type: integer
-            default: 25
-            example: 25
-      responses:
-        '200':
-          description: A paginated list of seats.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedSeatListResponse'
-              example:
-                seats:
-                  - id: 25
-                    site_id: 6
-                    name: Basic User Seat
-                    template_id: 10
-                    user_id: 42
-                    switchables:
-                      - id: 123
-                        feature_type: voicemailbox
-                        feature_id: 15
-                        name: User Voicemail
-                    links:
-                      - href: /sites/6/seats/25
-                        rel: self
-                        method: GET
-                total_items: 1
-                total_pages: 1
-                current_page: 1
-                per_page: 25
-                links:
-                  - href: /sites/6/seats?page=1&page_size=25
-                    rel: self
-                    method: GET
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
-        '404':
-          $ref: '#/components/responses/SiteNotFoundError'
     post:
       tags:
         - Site Features - Seats
@@ -4706,25 +3571,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SeatResponse'
-              example:
-                id: 26
-                site_id: 6
-                name: Standard Sales Seat
-                template_id: 11
-                user_id: 43
-                switchables:
-                  - id: 125
-                    feature_type: voicemailbox
-                    feature_id: 16
-                    name: Sales Voicemail
-                  - id: 126
-                    feature_type: extension
-                    feature_id: 102
-                    name: Sales Ext 102
-                links:
-                  - href: /sites/6/seats/26
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -4733,172 +3579,6 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/SiteNotFoundError'
-  /sites/{site_id}/seats/{id}:
-    parameters:
-      - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/Id'
-    get:
-      tags:
-        - Site Features - Seats
-      summary: Get Seat Details
-      description: Retrieves detailed information for a specific seat by its ID.
-      operationId: getSiteSeatById
-      responses:
-        '200':
-          description: Seat details retrieved successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SeatResponse'
-              example:
-                id: 25
-                site_id: 6
-                name: Basic User Seat
-                template_id: 10
-                user_id: 42
-                switchables:
-                  - id: 123
-                    feature_type: voicemailbox
-                    feature_id: 15
-                    name: User Voicemail
-                links:
-                  - href: /sites/6/seats/25
-                    rel: self
-                    method: GET
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
-    put:
-      tags:
-        - Site Features - Seats
-      summary: Update Seat Information
-      description: Updates information for an existing seat. Typically name or user assignment. Template is usually fixed post-creation.
-      operationId: updateSiteSeatById
-      requestBody:
-        description: Seat attributes to update.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SeatUpdateRequest'
-            example:
-              name: Advanced User Seat - Updated
-              user_id: 44
-      responses:
-        '200':
-          description: Seat updated successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SeatResponse'
-              example:
-                id: 25
-                site_id: 6
-                name: Advanced User Seat - Updated
-                template_id: 10
-                user_id: 44
-                switchables:
-                  - id: 123
-                    feature_type: voicemailbox
-                    feature_id: 15
-                    name: User Voicemail
-                links:
-                  - href: /sites/6/seats/25
-                    rel: self
-                    method: GET
-        '400':
-          $ref: '#/components/responses/BadRequestError'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
-    delete:
-      tags:
-        - Site Features - Seats
-      summary: Delete Seat
-      description: Permanently deletes a seat and de-provisions its associated features.
-      operationId: deleteSiteSeatById
-      responses:
-        '204':
-          description: Seat deleted successfully.
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
-  /sites/{site_id}/seats/{id}/transfer:
-    parameters:
-      - $ref: '#/components/parameters/SiteId'
-      - $ref: '#/components/parameters/Id'
-    post:
-      tags:
-        - Site Features - Seats
-      summary: Transfer Seat to Another Site
-      description: |
-        Moves a seat (and its provisioned features) from its current site
-        to a new target site within the same customer account.
-      operationId: transferSiteSeat
-      requestBody:
-        description: The identifier of the new site to which the seat should be transferred.
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                new_site_id:
-                  type: integer
-                  format: int64
-                  description: The unique identifier of the target site for the seat.
-                  example: 7
-              required:
-                - new_site_id
-              example:
-                new_site_id: 7
-      responses:
-        '200':
-          description: Seat transferred successfully. The response includes the seat details in its new site context.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SeatResponse'
-              example:
-                id: 25
-                site_id: 7
-                name: Basic User Seat
-                template_id: 10
-                user_id: 42
-                switchables:
-                  - id: 123
-                    feature_type: voicemailbox
-                    feature_id: 15
-                    name: User Voicemail
-                links:
-                  - href: /sites/7/seats/25
-                    rel: self
-                    method: GET
-        '400':
-          $ref: '#/components/responses/BadRequestError'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
-        '404':
-          description: Not Found - The original seat, its current site, or the new target site was not found.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-              example:
-                status: error
-                error: Seat, current site, or target site not found.
-                error_code: RESOURCE_NOT_FOUND_FOR_TRANSFER
   /sites/{site_id}/sip-trunks:
     parameters:
       - $ref: '#/components/parameters/SiteId'
@@ -4908,67 +3588,13 @@ paths:
       summary: List SIP Trunks for a Site
       description: Retrieve a paginated list of all SIP Trunks configured for the specified site.
       operationId: listSiteSipTrunks
-      parameters:
-        - name: page
-          in: query
-          description: Page number for pagination.
-          required: false
-          schema:
-            type: integer
-            default: 1
-            example: 1
-        - name: page_size
-          in: query
-          description: Number of SIP Trunks per page.
-          required: false
-          schema:
-            type: integer
-            default: 25
-            example: 10
       responses:
         '200':
           description: A paginated list of SIP Trunks.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedSipTrunkListResponse'
-              example:
-                sip_trunks:
-                  - id: 161
-                    site_id: 6
-                    name: Main Office SIP Trunk
-                    login: main_trunk_user
-                    active: true
-                    channel_limit: 10
-                    contact_ip: 1.2.3.4:5060
-                    acl: 0.0.0.0/0
-                    caller_id_name: Teliax HQ
-                    caller_id_number: '+13035551212'
-                    disable_comfort_noise: false
-                    timeout: 120
-                    fail_over_destination_code: menu:main_ivr
-                    user_id: null
-                    links:
-                      - href: /sites/6/sip-trunks/161
-                        rel: self
-                        method: GET
-                total_items: 1
-                total_pages: 1
-                current_page: 1
-                per_page: 25
-                links:
-                  self:
-                    href: /sites/6/sip-trunks?page=1&page_size=25
-                    rel: self
-                    method: GET
-                  first:
-                    href: /sites/6/sip-trunks?page=1&page_size=25
-                    rel: first
-                    method: GET
-                  last:
-                    href: /sites/6/sip-trunks?page=1&page_size=25
-                    rel: last
-                    method: GET
+                $ref: '#/components/schemas/SipTrunkListResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -4987,19 +3613,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SipTrunkCreateRequest'
-            example:
-              name: Branch Office Trunk
-              login: branch_user
-              active: true
-              channel_limit: 5
-              contact_ip: 2.3.4.5:5060
-              acl: 192.168.2.0/24
-              caller_id_name: Branch Office
-              caller_id_number: '+17205550102'
-              disable_comfort_noise: false
-              timeout: 60
-              fail_over_destination_code: voicemailbox:branch_main_vm
+              $ref: '#/components/schemas/SipTrunkRequest'
       responses:
         '201':
           description: SIP Trunk Created Successfully. Includes generated credentials if applicable.
@@ -5007,26 +3621,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SipTrunkResponse'
-              example:
-                id: 162
-                site_id: 6
-                name: Branch Office Trunk
-                login: branch_user_generated
-                password: newlyGeneratedSipPassword
-                active: true
-                channel_limit: 5
-                contact_ip: 2.3.4.5:5060
-                acl: 192.168.2.0/24
-                caller_id_name: Branch Office
-                caller_id_number: '+17205550102'
-                disable_comfort_noise: false
-                timeout: 60
-                fail_over_destination_code: voicemailbox:branch_main_vm
-                user_id: null
-                links:
-                  - href: /sites/6/sip-trunks/162
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -5054,28 +3648,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SipTrunkResponse'
-              example:
-                id: 161
-                site_id: 6
-                name: Main Office SIP Trunk
-                login: main_trunk_user
-                active: true
-                channel_limit: 10
-                contact_ip: 1.2.3.4:5060
-                acl: 0.0.0.0/0
-                caller_id_name: Teliax HQ
-                caller_id_number: '+13035551212'
-                disable_comfort_noise: false
-                timeout: 120
-                fail_over_destination_code: menu:main_ivr
-                fail_over_destination:
-                  name: Main IVR Menu
-                  code: menu:main_ivr
-                user_id: null
-                links:
-                  - href: /sites/6/sip-trunks/161
-                    rel: self
-                    method: GET
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -5094,13 +3666,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SipTrunkUpdateRequest'
-            example:
-              name: Primary Outbound Trunk - Updated
-              active: false
-              channel_limit: 15
-              contact_ip: 1.2.3.5:5060
-              caller_id_name: Main Line Updated
+              $ref: '#/components/schemas/SipTrunkRequest'
       responses:
         '200':
           description: SIP Trunk updated successfully.
@@ -5108,28 +3674,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SipTrunkResponse'
-              example:
-                id: 161
-                site_id: 6
-                name: Primary Outbound Trunk - Updated
-                login: main_trunk_user
-                active: false
-                channel_limit: 15
-                contact_ip: 1.2.3.5:5060
-                acl: 0.0.0.0/0
-                caller_id_name: Main Line Updated
-                caller_id_number: '+13035551212'
-                disable_comfort_noise: false
-                timeout: 120
-                fail_over_destination_code: menu:main_ivr
-                fail_over_destination:
-                  name: Main IVR Menu
-                  code: menu:main_ivr
-                user_id: null
-                links:
-                  - href: /sites/6/sip-trunks/161
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -5174,18 +3718,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SipTrunkResponseWithPassword'
-              example:
-                id: 161
-                site_id: 6
-                name: Main Office SIP Trunk
-                login: main_trunk_user
-                password: newGeneratedS3cur3SipP@ss!
-                active: true
-                links:
-                  - href: /sites/6/sip-trunks/161
-                    rel: self
-                    method: GET
+                $ref: '#/components/schemas/SipTrunkResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -5208,24 +3741,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SipTrunkStatus'
-              example:
-                data:
-                  - id: "161"
-                    type: "sip-trunk-status"
-                    attributes:
-                      name: "Main Office SIP Trunk"
-                      login: "main_trunk_user"
-                      status: "registered"
-                      last_registered_at: "2023-10-27T10:20:30Z"
-                      registered_ip_address: "203.0.113.45"
-                  - id: "162"
-                    type: "sip-trunk-status"
-                    attributes:
-                      name: "Backup Trunk"
-                      login: "backup_user"
-                      status: "unregistered"
-                      last_registered_at: null
-                      registered_ip_address: null
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -5246,38 +3761,19 @@ paths:
         description: Transfer parameters
         required: true
         content:
-          application/json:
+          application/x-www-form-urlencoded:
             schema:
               type: object
-              required:
-                - data
               properties:
-                data:
-                  type: object
-                  required:
-                    - type
-                    - attributes
-                  properties:
-                    type:
-                      type: string
-                      enum:
-                        - transfer
-                      example: transfer
-                    attributes:
-                      type: object
-                      required:
-                        - new_site_id
-                      properties:
-                        new_site_id:
-                          type: integer
-                          format: int64
-                          description: ID of the site to transfer the SIP Trunk to
-                          example: 8
+                new_site_id:
+                  type: integer
+                  format: int64
+                  description: The unique identifier of the target site.
+                  example: 8
+              required:
+                - new_site_id
               example:
-                data:
-                  type: transfer
-                  attributes:
-                    new_site_id: 8
+                new_site_id: 8
       responses:
         '200':
           description: SIP Trunk Detail
@@ -5285,28 +3781,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SipTrunkResponse'
-              example:
-                id: 161
-                site_id: 8
-                name: Main Office SIP Trunk
-                login: main_trunk_user
-                active: true
-                channel_limit: 10
-                contact_ip: 1.2.3.4:5060
-                acl: 0.0.0.0/0
-                caller_id_name: Teliax HQ
-                caller_id_number: '+13035551212'
-                disable_comfort_noise: false
-                timeout: 120
-                fail_over_destination_code: menu:main_ivr
-                fail_over_destination:
-                  name: Main IVR Menu
-                  code: menu:main_ivr
-                user_id: null
-                links:
-                  - href: /sites/8/sip-trunks/161
-                    rel: self
-                    method: GET
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -5332,64 +3806,13 @@ paths:
       summary: List Voicemail Boxes for a Site
       operationId: listSiteVoicemailBoxes
       description: Retrieve a paginated list of all voicemail boxes configured for the specified site.
-      parameters:
-        - name: page
-          in: query
-          description: Page number for pagination.
-          required: false
-          schema:
-            type: integer
-            default: 1
-            example: 1
-        - name: page_size
-          in: query
-          description: Number of voicemail boxes per page.
-          required: false
-          schema:
-            type: integer
-            default: 25
-            example: 10
       responses:
         '200':
           description: A paginated list of voicemail boxes.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedVoicemailBoxListResponse'
-              example:
-                data:
-                  - id: '553'
-                    type: voicemail-box
-                    attributes:
-                      name: Sales Team Voicemail
-                      pin: '****'
-                      notification_emails: sales@example.com,manager@example.com
-                      status: active
-                      site_id: 6
-                      announcement_url: https://cdn.example.com/greetings/vm553.mp3
-                    links:
-                      self:
-                        href: /sites/6/voice-mail-boxes/553
-                        rel: self
-                        method: GET
-                links:
-                  self:
-                    href: /sites/6/voice-mail-boxes?page%5Bnumber%5D=1&page_size=25
-                    rel: self
-                    method: GET
-                  first:
-                    href: /sites/6/voice-mail-boxes?page%5Bnumber%5D=1&page_size=25
-                    rel: first
-                    method: GET
-                  last:
-                    href: /sites/6/voice-mail-boxes?page%5Bnumber%5D=1&page_size=25
-                    rel: last
-                    method: GET
-                meta:
-                  total_items: 1
-                  total_pages: 1
-                  current_page: 1
-                  per_page: 25
+                $ref: '#/components/schemas/VoicemailBoxListResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -5415,22 +3838,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VoicemailBoxResponseData'
-              example:
-                id: '554'
-                type: voicemail-box
-                attributes:
-                  name: Support Voicemail
-                  pin: '****'
-                  notification_emails: support@example.com
-                  status: active
-                  site_id: 6
-                  announcement_url: https://cdn.example.com/greetings/vm554_uploaded.mp3
-                links:
-                  self:
-                    href: /sites/6/voice-mail-boxes/554
-                    rel: self
-                    method: GET
+                $ref: '#/components/schemas/VoicemailBoxResponse'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -5455,22 +3863,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VoicemailBoxResponseData'
-              example:
-                id: "553"
-                type: "voicemail-box"
-                attributes:
-                  name: "Sales Team Voicemail"
-                  pin: "****"
-                  notification_emails: "sales@example.com,manager@example.com"
-                  status: "active"
-                  site_id: 6
-                  announcement_url: "https://cdn.example.com/greetings/vm553.mp3"
-                links:
-                  self:
-                    href: "/sites/6/voice-mail-boxes/553"
-                    rel: "self"
-                    method: "GET"
+                $ref: '#/components/schemas/VoicemailBoxResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -5489,39 +3882,16 @@ paths:
         description: Voicemail Box attributes to update.
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               $ref: '#/components/schemas/VoicemailBoxRequest'
-            example:
-              data:
-                type: "voicemail-box"
-                attributes:
-                  name: "Support Voicemail - Updated"
-                  pin: "4321"
-                  notification_emails: "new.support@example.com"
-                  status: "inactive"
       responses:
         '200':
           description: Voicemail Box updated successfully.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VoicemailBoxResponseData'
-              example:
-                id: "553"
-                type: "voicemail-box"
-                attributes:
-                  name: "Support Voicemail - Updated"
-                  pin: "****"
-                  notification_emails: "new.support@example.com"
-                  status: "inactive"
-                  site_id: 6
-                  announcement_url: "https://cdn.example.com/greetings/vm553.mp3"
-                links:
-                  self:
-                    href: "/sites/6/voice-mail-boxes/553"
-                    rel: "self"
-                    method: "GET"
+                $ref: '#/components/schemas/VoicemailBoxResponse'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -5545,70 +3915,6 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/VoicemailBoxNotFoundError'
-  /sites/{site_id}/voice-mail-boxes/available:
-    parameters:
-      - $ref: '#/components/parameters/SiteId'
-    get:
-      tags:
-        - Site Features - Voicemail Boxes
-      summary: List Available Voicemail Boxes for a Site
-      operationId: listSiteAvailableVoicemailBoxes
-      description: Retrieves available Voicemail Boxes that could be used by the Site or a User on the Site.
-      parameters:
-        - name: user_id
-          in: query
-          description: Optional. User ID to filter or contextualize available voicemail boxes.
-          required: false
-          schema:
-            type: integer
-            format: int64
-            example: 10
-      responses:
-        '200':
-          description: A list of available voicemail boxes.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedVoicemailBoxListResponse'
-              example:
-                data:
-                  - id: vm_template_1
-                    type: voicemail-box
-                    attributes:
-                      name: General Voicemail Template
-                      pin: '****'
-                      notification_emails: template@example.com
-                      status: active
-                      site_id: null
-                    links:
-                      self:
-                        href: /voicemail-templates/vm_template_1
-                        rel: self
-                        method: GET
-                links:
-                  self:
-                    href: /sites/6/voice-mail-boxes/available?page%5Bnumber%5D=1&page_size=25
-                    rel: self
-                    method: GET
-                  first:
-                    href: /sites/6/voice-mail-boxes/available?page%5Bnumber%5D=1&page_size=25
-                    rel: first
-                    method: GET
-                  last:
-                    href: /sites/6/voice-mail-boxes/available?page%5Bnumber%5D=1&page_size=25
-                    rel: last
-                    method: GET
-                meta:
-                  total_items: 1
-                  total_pages: 1
-                  current_page: 1
-                  per_page: 25
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
-        '404':
-          $ref: '#/components/responses/SiteNotFoundError'
   /sites/{site_id}/voice-mail-boxes/{id}/transfer:
     post:
       tags:
@@ -5618,18 +3924,8 @@ paths:
       description: >-
         Transfer a Voice Mail Box to a different Site
       parameters:
-        - name: siteId
-          in: path
-          description: ID of Site
-          required: true
-          schema:
-            type: integer
-        - name: id
-          in: path
-          description: ID of Voice Mail Box
-          required: true
-          schema:
-            type: integer
+        - $ref: '#/components/parameters/SiteId'
+        - $ref: '#/components/parameters/Id'
       requestBody:
         description: Voicemail Box attributes to update.
         required: true
@@ -5649,7 +3945,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VoicemailBoxResponseData'
+                $ref: '#/components/schemas/VoicemailBoxResponse'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -5688,22 +3984,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VoicemailBoxResponseData'
-              example:
-                id: "553"
-                type: "voicemail-box"
-                attributes:
-                  name: "Sales Team Voicemail"
-                  pin: "****"
-                  notification_emails: "sales@example.com,manager@example.com"
-                  status: "active"
-                  site_id: 6
-                  announcement_url: "https://cdn.example.com/greetings/vm553.mp3"
-                links:
-                  self:
-                    href: "/sites/6/voice-mail-boxes/553"
-                    rel: "self"
-                    method: "GET"
+                $ref: '#/components/schemas/VoicemailBoxResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -6021,22 +4302,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ThinClientListResponse'
-              example:
-                thin_clients:
-                  - id: 11
-                    name: Denver - Bonsai 5
-                    active: true
-                    category: public
-                    ipv4_address: 63.211.239.115
-                    provider: Teliax Inc.
-                    identification: 00-21-5e-96-e3-bc
-                  - id: 12
-                    name: Denver - Bonsai 6
-                    active: true
-                    category: public
-                    ipv4_address: 63.211.239.116
-                    provider: Teliax Inc.
-                    identification: 00-21-5e-96-fe-6c
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -6398,19 +4663,19 @@ components:
           items:
             $ref: '#/components/schemas/schemas-Link'
           example:
-            - href: /v2/account
+            - href: /account
               rel: self
               method: GET
               title: Customer
-            - href: /v2/account
+            - href: /account
               rel: delete
               method: DELETE
               title: Delete Customer
-            - href: /v2/account
+            - href: /account
               rel: edit
               method: PUT
               title: Edit Customer
-            - href: /v2/address
+            - href: /address
               rel: edit
               title: Update Address
               method: PUT
@@ -6616,44 +4881,6 @@ components:
         - confirmation_token
       example:
         confirmation_token: valid_confirmation_token_string
-    CallBlockResponse:
-      allOf:
-        - $ref: '#/components/schemas/CallBlockCore'
-        - type: object
-          properties:
-            id:
-              type: integer
-              format: int64
-              description: Unique identifier for the call block rule.
-              example: 101
-            site_id:
-              type: integer
-              format: int64
-              description: Identifier of the site this call block rule belongs to.
-              example: 6
-            links:
-              type: array
-              description: HATEOAS links related to this call block rule.
-              items:
-                $ref: '#/components/schemas/schemas-Link'
-              nullable: true
-          required:
-            - id
-            - site_id
-            - number_to_block
-            - block_all_extensions
-      description: Detailed information about a call block rule.
-      example:
-        id: 101
-        site_id: 6
-        number_to_block: '+14155550100'
-        block_all_extensions: true
-        applicable_extensions: null
-        notes: Blocked due to spam reports.
-        links:
-          - href: /sites/6/call-blocks/101
-            rel: self
-            method: GET
     CreditCardResponse:
       allOf:
         - $ref: '#/components/schemas/CreditCardCore'
@@ -8839,252 +7066,6 @@ components:
       allOf:
         - $ref: '#/components/schemas/SiteCore'
       description: Data required to create or update site.
-    CallBlockAttributes:
-      type: object
-      properties:
-        name:
-          type: string
-          description: Name of the Call Block rule.
-        phone_number:
-          type: string
-          description: Phone number pattern to block.
-        direction:
-          type: string
-          enum:
-            - inbound
-            - outbound
-            - both
-          default: inbound
-          description: Direction of calls to block.
-        status:
-          type: string
-          enum:
-            - active
-            - inactive
-          default: active
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: Creation timestamp.
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: Last update timestamp.
-      required:
-        - name
-        - phone_number
-    schemas-CallBlockResponse:
-      type: object
-      required:
-        - data
-      properties:
-        data:
-          type: object
-          required:
-            - id
-            - type
-            - attributes
-          properties:
-            id:
-              type: string
-              format: int64
-              description: Unique identifier for the Call Block rule.
-            type:
-              type: string
-              enum:
-                - call-block
-            attributes:
-              allOf:
-                - $ref: '#/components/schemas/CallBlockAttributes'
-                - type: object
-                  properties:
-                    site_id:
-                      type: integer
-                      format: int64
-                      readOnly: true
-        links:
-          $ref: '#/components/schemas/LinkObject'
-      example:
-        data:
-          id: '101'
-          type: call-block
-          attributes:
-            name: Example Block Rule
-            phone_number: '+15558675309'
-            direction: inbound
-            status: active
-            site_id: 6
-            created_at: '2023-01-15T10:00:00Z'
-            updated_at: '2023-01-15T10:00:00Z'
-          links:
-            self:
-              href: /sites/6/call-blocks/101
-              rel: self
-              method: GET
-    CallBlockListResponse:
-      type: object
-      required:
-        - data
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/schemas-CallBlockResponse'
-        links:
-          $ref: '#/components/schemas/PaginationLinks'
-      example:
-        data:
-          - data:
-              id: '101'
-              type: call-block
-              attributes:
-                name: Block nuisance caller
-                phone_number: '+15551234567'
-                direction: inbound
-                status: active
-                site_id: 6
-                created_at: '2023-01-01T12:00:00Z'
-                updated_at: '2023-01-01T12:00:00Z'
-            links:
-              self:
-                href: /sites/6/call-blocks/101
-                rel: self
-                method: GET
-          - data:
-              id: '102'
-              type: call-block
-              attributes:
-                name: Another Block Rule
-                phone_number: '+15550001111'
-                direction: inbound
-                status: active
-                site_id: 6
-                created_at: '2023-01-02T14:00:00Z'
-                updated_at: '2023-01-02T14:00:00Z'
-            links:
-              self:
-                href: /sites/6/call-blocks/102
-                rel: self
-                method: GET
-        links:
-          self:
-            href: /sites/6/call-blocks?page%5Bnumber%5D=1&page_size=25
-            rel: self
-            method: GET
-          first:
-            href: /sites/6/call-blocks?page%5Bnumber%5D=1&page_size=25
-            rel: first
-            method: GET
-          last:
-            href: /sites/6/call-blocks?page%5Bnumber%5D=1&page_size=25
-            rel: last
-            method: GET
-          next: null
-          prev: null
-    CallBlockCreateRequest:
-      type: object
-      required:
-        - data
-      properties:
-        data:
-          type: object
-          required:
-            - type
-            - attributes
-          properties:
-            type:
-              type: string
-              enum:
-                - call-block
-            attributes:
-              $ref: '#/components/schemas/CallBlockAttributes'
-      example:
-        data:
-          type: call-block
-          attributes:
-            name: Block Robocalls
-            phone_number: +1234567xxxx
-            direction: inbound
-            status: active
-    call-block_components-schemas-Error:
-      type: object
-      description: Standard error response format.
-      properties:
-        status:
-          type: string
-          example: error
-        error:
-          type: string
-          description: A human-readable description of the error.
-        error_code:
-          type: string
-          description: A machine-parsable error code.
-        details:
-          type: array
-          nullable: true
-          items:
-            type: object
-            properties:
-              field:
-                type: string
-                description: JSON pointer to the field that caused the error.
-              issue:
-                type: string
-                description: Specific issue with the field.
-      required:
-        - status
-        - error
-        - error_code
-      example:
-        status: error
-        error: A generic error occurred for individual call block operation.
-        error_code: CALL_BLOCK_DETAIL_ERROR
-    CallBlockUpdateRequest:
-      type: object
-      required:
-        - data
-      properties:
-        data:
-          type: object
-          required:
-            - type
-            - attributes
-          properties:
-            type:
-              type: string
-              enum:
-                - call-block
-            attributes:
-              type: object
-              properties:
-                name:
-                  type: string
-                  nullable: true
-                phone_number:
-                  type: string
-                  nullable: true
-                direction:
-                  type: string
-                  enum:
-                    - inbound
-                    - outbound
-                    - both
-                  nullable: true
-                status:
-                  type: string
-                  enum:
-                    - active
-                    - inactive
-                  nullable: true
-      description: Data for updating an existing Call Block rule. Only provided fields are updated.
-      example:
-        data:
-          type: call-block
-          attributes:
-            name: Priority Block - Updated
-            status: inactive
     ConferenceRoomCore:
       type: object
       properties:
@@ -9240,7 +7221,7 @@ components:
           description: Indicates if the device is a mobile client
           example: true
         fail_over:
-          $ref: '#/components/schemas/schemas-SiteDestination'  
+          $ref: '#/components/schemas/schemas-SiteDestination'
       required:
         - name
         - login
@@ -9294,7 +7275,7 @@ components:
                   nullable: true
                   properties: {}
                   additionalProperties: false
-                  example: 
+                  example:
                     name: 'John Doe(voice_mail_box: 21)'
                     code: 'voice_mail_box:21'
             user_id:
@@ -9330,7 +7311,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/schemas-Link'
-          nullable: true    
+          nullable: true
           example:
             - href: /sites/2322/devices
       required:
@@ -9682,7 +7663,7 @@ components:
             code:
               type: string
               description: The code of the response
-              example: "extension:1232"  
+              example: "extension:1232"
             links:
               type: array
               items:
@@ -9885,12 +7866,12 @@ components:
           description: HATEOAS links related to this fax machine.
           items:
             $ref: '#/components/schemas/Link'
-          nullable: true  
+          nullable: true
           example:
             - href: /sites/6/fax-machines
               rel: self
               title: "Fax Machine Details"
-              method: "GET"  
+              method: "GET"
       required:
         - fax_machines
     FaxMachineCreateRequest:
@@ -10100,6 +8081,14 @@ components:
           description: Indicates if E911 service is enabled for this location. Geocoding and validation occur upon setting this.
           default: true
           example: true
+        latitude:
+          type: string
+          description: Latitude coordinate of the location, if available.
+          example: '39.759000 N'
+        longitude:
+          type: string
+          description: Longitude coordinate of the location, if available.
+          example: '-105.015000 W'
       required:
         - name
         - house_number
@@ -10108,16 +8097,6 @@ components:
         - state_province
         - postal_code
         - country_code
-      example:
-        name: Satellite Office
-        house_number: '1000'
-        street: Commerce St
-        city: Dallas
-        state_province: TX
-        postal_code: '75201'
-        country_code: US
-        caller_id_name: Dallas Office
-        e911_enabled: true
     LocationResponse:
       allOf:
         - $ref: '#/components/schemas/LocationCore'
@@ -10128,11 +8107,12 @@ components:
               format: int64
               description: Unique identifier for the location record.
               example: 9
-            site_id:
-              type: integer
-              format: int64
-              description: Identifier of the site this location belongs to.
-              example: 6
+              readOnly: true
+            site:
+              type: string
+              description: Identifier of the site this forward belongs to.
+              example: hq.ivy.teliax.com
+              readOnly: true
             e911_id:
               type: integer
               format: int64
@@ -10145,53 +8125,27 @@ components:
               readOnly: true
               description: Identifier of the user who last updated this location.
               example: jane.doe@example.com
-            latitude:
-              type: string
-              nullable: true
-              readOnly: true
-            longitude:
-              type: string
-              nullable: true
-              readOnly: true
             links:
               type: array
               description: HATEOAS links related to this location.
               items:
                 $ref: '#/components/schemas/Link'
               nullable: true
-          required:
-            - id
-            - site_id
-            - name
-            - house_number
-            - street
-            - city
-            - state_province
-            - postal_code
-            - country_code
+              example:
+                - href: "/sites/2612/locations/2254"
+                  rel: self
+                  title: "Location Details"
+                  method: "GET"
+                - href: "/sites/2612/locations/2254"
+                  rel: "Delete"
+                  title: "Delete Location"
+                  method: "DELETE"
+                - href: "/sites/2612/locations/2254"
+                  rel: "Edit"
+                  title: "Edit Location"
+                  method: "PUT"
       description: Detailed information about a site location.
-      example:
-        id: 9
-        site_id: 6
-        name: Main Office - Denver
-        house_number: '2150'
-        house_number_suffix: Ste 310
-        street: West 29th Ave
-        city: Denver
-        state_province: CO
-        postal_code: '80211'
-        country_code: US
-        caller_id_name: Teliax Office Denver
-        e911_enabled: true
-        e911_id: 123
-        updated_by: system
-        latitude: '39.759000'
-        longitude: '-105.015000'
-        links:
-          - href: /sites/6/locations/9
-            rel: self
-            method: GET
-    PaginatedLocationListResponse:
+    LocationListResponse:
       type: object
       description: A paginated list of locations for a site.
       properties:
@@ -10199,87 +8153,23 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LocationResponse'
-        total_items:
-          type: integer
-          example: 50
-        total_pages:
-          type: integer
-          example: 5
-        current_page:
-          type: integer
-          example: 1
-        per_page:
-          type: integer
-          example: 10
         links:
           type: array
           items:
             $ref: '#/components/schemas/Link'
           nullable: true
-      required:
-        - locations
-        - total_items
-        - total_pages
-        - current_page
-        - per_page
-      example:
-        locations:
-          - id: 9
-            site_id: 6
-            name: Main Office - Denver
-            house_number: '2150'
-            house_number_suffix: Ste 310
-            street: West 29th Ave
-            city: Denver
-            state_province: CO
-            postal_code: '80211'
-            country_code: US
-            caller_id_name: Teliax Office Denver
-            e911_enabled: true
-            e911_id: 123
-            updated_by: system
-            latitude: '39.759000'
-            longitude: '-105.015000'
-            links:
-              - href: /sites/6/locations/9
-                rel: self
-                method: GET
-        total_items: 1
-        total_pages: 1
-        current_page: 1
-        per_page: 25
-        links:
-          - href: /sites/6/locations?page=1&page_size=25
-            rel: self
-            method: GET
+          example:
+            - href: /sites/2612/locations
+              rel: self
+              method: GET
     LocationCreateRequest:
       allOf:
         - $ref: '#/components/schemas/LocationCore'
       description: Data required to create a new location for a site.
-      example:
-        name: Remote Warehouse
-        house_number: '50'
-        street: Storage Ln
-        city: Aurora
-        state_province: CO
-        postal_code: '80011'
-        country_code: US
-        caller_id_name: Warehouse E911
-        e911_enabled: false
     LocationUpdateRequest:
       allOf:
         - $ref: '#/components/schemas/LocationCore'
       description: Data for updating an existing location. All fields are typically resubmitted for a PUT.
-      example:
-        name: HQ Front Desk - Updated
-        house_number: '123'
-        street: Main St
-        city: Anytown
-        state_province: CA
-        postal_code: '90210'
-        country_code: US
-        caller_id_name: HQ Front Desk Emergency
-        e911_enabled: true
     MenuCore:
       type: object
       properties:
@@ -10292,26 +8182,40 @@ components:
           nullable: true
           description: Numeric PIN for accessing menu options or management features (if applicable).
           example: '1234'
-        fail_over_destination_code:
-          type: string
-          description: System code for the destination if no option is selected or an error occurs.
-          example: voicemailbox:general_vm
+        fail_over:
+          type: object
+          description: Destination if no option is selected or an error occurs.
+          properties:
+            code:
+              type: string
+              description: System code for the destination.
+          required:
+            - code
+          example:
+            code: "ring_group:839"
       required:
         - name
-        - fail_over_destination_code
-      example:
-        name: After Hours Menu
-        pin: '9999'
-        fail_over_destination_code: extension:operator
+        - fail_over
+        - pin
     MenuResponseOptions:
       type: object
       additionalProperties:
-        type: string
-        nullable: true
+        type: object
+        properties:
+          name:
+            type: string
+          code:
+            type: string
+        required:
+          - name
+          - code
       example:
-        '0': ring_group:sales_rg
-        '1': extension:1001
-        '*': voicemailbox:operator_vm
+        "4":
+          name: "Company billing (ring_group:629)"
+          code: "ring_group:345"
+        "3":
+          name: "Company technical support (ring_group:839)"
+          code: "ring_group:9832"
     MenuResponse:
       allOf:
         - $ref: '#/components/schemas/MenuCore'
@@ -10322,14 +8226,34 @@ components:
               format: int64
               description: Unique identifier for the menu.
               example: 55
-            site_id:
-              type: integer
-              format: int64
+              readOnly: true
+            site:
+              type: string
               description: Identifier of the site this menu belongs to.
-              example: 6
+              example: hq.den.teliax.com
+            code:
+              type: string
+              description: The idenntifier code for the current menu
+              example: 'menu:55'
+            fail_over:
+              type: object
+              description: Destination if no option is selected or an error occurs.
+              properties:
+                name:
+                  type: string
+                  description: Human-readable label of the destination.
+                code:
+                  type: string
+                  description: System code for the destination.
+              required:
+                - name
+                - code
+              example:
+                name: "teliax technical support (ring_group:839)"
+                code: "ring_group:839"
             options:
               $ref: '#/components/schemas/MenuResponseOptions'
-            greeting_url:
+            greeting:
               type: string
               format: uri
               nullable: true
@@ -10340,27 +8264,25 @@ components:
               items:
                 $ref: '#/components/schemas/Link'
               nullable: true
+              example:
+                - href: "/sites/2612/menus/509"
+                  rel: "self"
+                  title: "Menu Details"
+                  method: "GET"
+                - href: "/sites/2612/menus/509"
+                  rel: "Delete"
+                  title: "Delete Menu"
+                  method: "DELETE"
+                - href: "/sites/2612/menus/509"
+                  rel: "Edit"
+                  title: "Edit Menu"
+                  method: "PUT"
           required:
             - id
-            - site_id
+            - site
             - name
             - fail_over_destination_code
-      example:
-        id: 55
-        site_id: 6
-        name: Main Business Hours Menu
-        pin: '1234'
-        fail_over_destination_code: voicemailbox:general_vm
-        options:
-          '0': ring_group:sales_rg
-          '1': extension:1001
-          '*': voicemailbox:operator_vm
-        greeting_url: https://cdn.example.com/greetings/menu_55.mp3
-        links:
-          - href: /sites/6/menus/55
-            rel: self
-            method: GET
-    PaginatedMenuListResponse:
+    MenuListResponse:
       type: object
       description: A paginated list of menus.
       properties:
@@ -10368,167 +8290,63 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MenuResponse'
-        total_items:
-          type: integer
-          example: 20
-        total_pages:
-          type: integer
-          example: 2
-        current_page:
-          type: integer
-          example: 1
-        per_page:
-          type: integer
-          example: 10
         links:
           type: array
           items:
             $ref: '#/components/schemas/Link'
           nullable: true
+          example:
+            - href: /sites/2612/menus
+              rel: self
+              method: GET
       required:
         - menus
-        - total_items
-        - total_pages
-        - current_page
-        - per_page
-      example:
-        menus:
-          - id: 55
-            site_id: 6
-            name: Main Menu
-            pin: '****'
-            fail_over_destination_code: voicemailbox:42
-            options:
-              '0': ring_group:10
-              '1': extension:101
-            greeting_url: https://cdn.example.com/greetings/menu_55.mp3
-            links:
-              - href: /sites/6/menus/55
-                rel: self
-                method: GET
-        total_items: 1
-        total_pages: 1
-        current_page: 1
-        per_page: 25
-        links:
-          - href: /sites/6/menus?page=1&page_size=25
-            rel: self
-            method: GET
-    MenuCreateRequest:
-      type: object
-      properties:
-        name:
-          type: string
-        pin:
-          type: string
-          nullable: true
-        fail_over_destination_code:
-          type: string
-        greeting:
-          type: string
-          format: binary
-          nullable: true
-          description: Audio file for the menu greeting.
-        option_routes[0]:
-          type: string
-          nullable: true
-          description: Destination code for key '0'.
-        option_routes[1]:
-          type: string
-          nullable: true
-        option_routes[2]:
-          type: string
-          nullable: true
-        option_routes[3]:
-          type: string
-          nullable: true
-        option_routes[4]:
-          type: string
-          nullable: true
-        option_routes[5]:
-          type: string
-          nullable: true
-        option_routes[6]:
-          type: string
-          nullable: true
-        option_routes[7]:
-          type: string
-          nullable: true
-        option_routes[8]:
-          type: string
-          nullable: true
-        option_routes[9]:
-          type: string
-          nullable: true
-        option_routes[*]:
-          type: string
-          nullable: true
-          description: Destination code for key '*'.
-      required:
-        - name
-        - fail_over_destination_code
-      example:
-        name: New Support IVR
-        pin: '5678'
-        fail_over_destination_code: voicemailbox:support_vm
-        option_routes[0]: ring_group:tech_support
-        option_routes[1]: extension:105
-    MenuUpdateRequest:
-      type: object
-      properties:
-        name:
-          type: string
-          nullable: true
-        pin:
-          type: string
-          nullable: true
-        fail_over_destination_code:
-          type: string
-          nullable: true
-        greeting:
-          type: string
-          format: binary
-          nullable: true
-          description: New audio file for the menu greeting.
-        option_routes[0]:
-          type: string
-          nullable: true
-        option_routes[1]:
-          type: string
-          nullable: true
-        option_routes[2]:
-          type: string
-          nullable: true
-        option_routes[3]:
-          type: string
-          nullable: true
-        option_routes[4]:
-          type: string
-          nullable: true
-        option_routes[5]:
-          type: string
-          nullable: true
-        option_routes[6]:
-          type: string
-          nullable: true
-        option_routes[7]:
-          type: string
-          nullable: true
-        option_routes[8]:
-          type: string
-          nullable: true
-        option_routes[9]:
-          type: string
-          nullable: true
-        option_routes[*]:
-          type: string
-          nullable: true
-      description: Attributes for updating a menu. For multipart/form-data, only include fields to change.
-      example:
-        name: Holiday Menu
-        pin: '2024'
-        fail_over_destination_code: extension:holiday_info
-        option_routes[1]: extension:santa
+        - links
+    MenuRequest:
+      allOf:
+        - $ref: '#/components/schemas/LocationCore'
+        - type: object
+          properties:
+            greeting:
+              type: string
+              format: binary
+              nullable: true
+              description: Audio file for the menu greeting.
+            option_routes[0]:
+              type: string
+              nullable: true
+              description: Destination code for key '0'.
+            option_routes[1]:
+              type: string
+              nullable: true
+            option_routes[2]:
+              type: string
+              nullable: true
+            option_routes[3]:
+              type: string
+              nullable: true
+            option_routes[4]:
+              type: string
+              nullable: true
+            option_routes[5]:
+              type: string
+              nullable: true
+            option_routes[6]:
+              type: string
+              nullable: true
+            option_routes[7]:
+              type: string
+              nullable: true
+            option_routes[8]:
+              type: string
+              nullable: true
+            option_routes[9]:
+              type: string
+              nullable: true
+            option_routes[*]:
+              type: string
+              nullable: true
+              description: Destination code for key '*'.
     PhoneNumberCore:
       type: object
       properties:
@@ -10540,38 +8358,20 @@ components:
           type: string
           description: The actual phone number in E.164 format (e.g., +13035551212).
           example: '+14155550123'
-        destination_code:
-          type: string
+        destination:
+          type: object
           description: System code for the primary destination where calls to this number are routed.
-          example: device:dev_main_reception
-        fail_over_destination_code:
+          properties:
+            code:
+              type: string
+              description: System code for the destination.
+              example: 'siptrunk:2024'
+          required:
+            - code
+        cnam:
           type: string
-          nullable: true
-          description: System code for the failover destination if the primary is unavailable.
-          example: voicemailbox:general_company_vm
-        e911_id:
-          type: integer
-          format: int64
-          nullable: true
-          description: Identifier of the E911 record associated with this phone number for emergency calling.
-          example: 45
-        user_id:
-          type: integer
-          format: int64
-          nullable: true
-          description: Optional. Identifier of a user primarily associated with this phone number.
-          example: 101
-      required:
-        - name
-        - number
-        - destination_code
-      example:
-        name: Support Line
-        number: '+18885551234'
-        destination_code: ring_group:support_rg
-        fail_over_destination_code: menu:after_hours_support
-        e911_id: 46
-        user_id: 102
+          description: Calling Name Information/LIDB Order Details
+          example: Acme Main Office
     schemas-PhoneNumberResponse:
       allOf:
         - $ref: '#/components/schemas/PhoneNumberCore'
@@ -10580,154 +8380,85 @@ components:
             id:
               type: integer
               format: int64
-            site_id:
+              description: Unique identifier for the phone number.
+              readOnly: true
+              example: 123
+            site:
+              type: string
+              format: uri
+              nullable: true
+              example: hq.ivy.teliax.com
+              description: Identifier of the site this phone number belongs to.
+            code:
+              type: string
+              description: System-level code for this phone number, often used in routing configurations.
+              example: phone_number:123
+            destination:
+              type: object
+              description: System code for the primary destination where calls to this number are routed.
+              properties:
+                name:
+                  type: string
+                  description: Human-readable label of the destination.
+                  example: "first sip trunk (sip_trunk:2014)"
+                code:
+                  type: string
+                  description: System code for the destination.
+                  example: "sip_trunk:2014"
+              required:
+                - name
+                - code
+            user_id:
               type: integer
               format: int64
               nullable: true
-            destination:
-              nullable: true
-              oneOf:
-                - $ref: '#/components/schemas/SiteDestination'
-            fail_over_destination:
-              nullable: true
-              oneOf:
-                - $ref: '#/components/schemas/SiteDestination'
+              description: Optional. Identifier of a user primarily associated with this phone number.
+              example: 101
             links:
               type: array
               items:
                 $ref: '#/components/schemas/Link'
               nullable: true
-          required:
-            - id
-            - name
-            - number
-            - destination_code
+              example:
+                - href: "/sites/2612/phone-numbers/45151"
+                  rel: "self"
+                  title: "Phone Number Details"
+                  method: "GET"
+                - href: "/sites/2612/phone-numbers/45151"
+                  rel: "Delete"
+                  title: "Delete Phone Number"
+                  method: "DELETE"
+                - href: "/sites/2612/phone-numbers/45151"
+                  rel: "Edit"
+                  title: "Edit Phone Number"
+                  method: "PUT"
       description: Detailed information about a phone number assigned to a site.
-      example:
-        id: 123
-        site_id: 6
-        name: Main Office Line
-        number: '+13035551212'
-        destination_code: ring_group:10
-        destination:
-          name: Sales Team Ring Group
-          code: ring_group:10
-        fail_over_destination_code: voicemailbox:vm_sales
-        fail_over_destination:
-          name: Sales Voicemail
-          code: voicemailbox:vm_sales
-        e911_id: 45
-        user_id: null
-        links:
-          - href: /sites/6/phone-numbers/123
-            rel: self
-            method: GET
-    PaginatedPhoneNumberListResponse:
+    PhoneNumberListResponse:
       type: object
-      description: A paginated list of phone numbers.
+      description: A list of phone numbers.
       properties:
         phone_numbers:
           type: array
           items:
             $ref: '#/components/schemas/schemas-PhoneNumberResponse'
-        total_items:
-          type: integer
-          example: 50
-        total_pages:
-          type: integer
-          example: 5
-        current_page:
-          type: integer
-          example: 1
-        per_page:
-          type: integer
-          example: 10
         links:
           type: array
           items:
             $ref: '#/components/schemas/Link'
           nullable: true
-      required:
-        - phone_numbers
-        - total_items
-        - total_pages
-        - current_page
-        - per_page
-      example:
-        phone_numbers:
-          - id: 123
-            site_id: 6
-            name: Main Office Line
-            number: '+13035551212'
-            destination_code: ring_group:10
-            destination:
-              name: Sales Team Ring Group
-              code: ring_group:10
-            fail_over_destination_code: voicemailbox:vm_sales
-            fail_over_destination:
-              name: Sales Voicemail
-              code: voicemailbox:vm_sales
-            e911_id: 45
-            user_id: null
-            links:
-              - href: /sites/6/phone-numbers/123
-                rel: self
-                method: GET
-        total_items: 1
-        total_pages: 1
-        current_page: 1
-        per_page: 25
-        links:
-          - href: /sites/6/phone-numbers?page=1&page_size=25
-            rel: self
-            method: GET
-    PhoneNumberCreateRequest:
+          example:
+            - href: "s/sites/2612/phone-numbers"
+              rel: "self"
+              method: "GET"
+              title: "Phone numbers list"
+    PhoneNumberRequest:
       allOf:
         - $ref: '#/components/schemas/PhoneNumberCore'
       description: Data required to assign/create a phone number for a site.
       required:
         - name
         - number
-        - destination_code
-      example:
-        name: Marketing Campaign DID
-        number: +1800555PROMO
-        destination_code: menu:marketing_ivr
-        e911_id: null
-    PhoneNumberUpdateRequest:
-      type: object
-      description: Data for updating an existing phone number's configuration on a site.
-      properties:
-        name:
-          type: string
-          nullable: true
-          description: New user-friendly name for the phone number.
-          example: Support Hotline - Updated
-        destination_code:
-          type: string
-          nullable: true
-          description: New system code for the call routing destination.
-          example: voicemailbox:support_general_vm
-        fail_over_destination_code:
-          type: string
-          nullable: true
-          description: New system code for the failover destination.
-          example: menu:after_hours_support_menu
-        e911_id:
-          type: integer
-          format: int64
-          nullable: true
-          description: New E911 record ID to associate.
-          example: 47
-        user_id:
-          type: integer
-          format: int64
-          nullable: true
-          description: New user ID to associate with the phone number.
-          example: 103
-      example:
-        name: Main Office Line (Primary - Updated)
-        destination_code: device:reception_phone_new
+        - destination
     AvailablePhoneNumber:
       type: object
       allOf:
@@ -10800,52 +8531,38 @@ components:
           type: string
           description: A user-friendly name for the ring group.
           example: Main Sales Line
-        destination_codes:
-          type: array
-          items:
-            type: string
-          description: An array of system codes for the destinations to be rung.
+        destination:
+          type: object
+          description: Destination if no option is selected or an error occurs.
+          properties:
+            code:
+              type: string
+              description: System code for the destination.
+          required:
+            - code
           example:
-            - device:dev123
-            - extension:ext456
-        ring_strategy:
-          type: string
-          enum:
-            - simultaneous
-            - sequential
-            - random
-          description: How the destinations are rung.
-          example: simultaneous
+            code: "siptrunk:839"
         timeout:
           type: integer
           description: Duration in seconds to ring the group before proceeding to failover.
           default: 20
           example: 30
-        fail_over_destination_code:
-          type: string
-          nullable: true
-          description: System code for the failover destination if the ring group is not answered.
-          example: voicemailbox:general_sales_vm
-        user_id:
-          type: integer
-          format: int64
-          nullable: true
-          description: Optional. Identifier of a user primarily associated with this ring group.
-          example: 10
+        fail_over:
+          type: object
+          description: Destination if no option is selected or an error occurs.
+          properties:
+            code:
+              type: string
+              description: System code for the destination.
+          required:
+            - code
+          example:
+            code: "siptrunk:839"
       required:
         - name
         - destination_codes
         - ring_strategy
         - timeout
-      example:
-        name: Customer Support
-        destination_codes:
-          - device:agent1
-          - extension:agent2_mobile
-        ring_strategy: random
-        timeout: 25
-        fail_over_destination_code: menu:support_escalation
-        user_id: 20
     RingGroupResponse:
       allOf:
         - $ref: '#/components/schemas/RingGroupCore'
@@ -10854,14 +8571,23 @@ components:
             id:
               type: integer
               format: int64
-            site_id:
+              example: 1
+              readOnly: true
+            site:
+              type: string
+              example: hq.ivy.teliax.com
+            user_id:
               type: integer
               format: int64
-            destinations:
-              type: array
-              items:
-                $ref: '#/components/schemas/SiteDestination'
-            fail_over_destination:
+              nullable: true
+              description: Optional. Identifier of a user primarily associated with this ring group.
+              example: 10
+            destination:
+              type: object
+              nullable: true
+              allOf:
+                - $ref: '#/components/schemas/SiteDestination'
+            fail_over:
               type: object
               nullable: true
               allOf:
@@ -10871,155 +8597,44 @@ components:
               items:
                 $ref: '#/components/schemas/Link'
               nullable: true
-          required:
-            - id
-            - site_id
-            - name
-            - destination_codes
-            - ring_strategy
-            - timeout
+              example:
+                - href: "/sites/6/ring-groups/800"
+                  rel: "self"
+                  title: "Ring Group Details"
+                  method: "GET"
+                - href: "/sites/6/ring-groups/800"
+                  rel: "Delete"
+                  title: "Delete Ring Group"
+                  method: "DELETE"
+                - href: "/sites/6/ring-groups/800"
+                  rel: "Edit"
+                  title: "Edit Ring Group"
+                  method: "PUT"
       description: Detailed information about a ring group.
-      example:
-        id: 10
-        site_id: 6
-        name: Sales Team
-        destination_codes:
-          - device:dev_sales1
-          - extension:ext_sales_mobile
-        destinations:
-          - name: Sales Device 1
-            code: device:dev_sales1
-          - name: Sales Extension Mobile
-            code: extension:ext_sales_mobile
-        ring_strategy: simultaneous
-        timeout: 30
-        fail_over_destination_code: voicemailbox:vm_sales
-        fail_over_destination:
-          name: Sales Voicemail
-          code: voicemailbox:vm_sales
-        user_id: null
-        links:
-          - href: /sites/6/ring-groups/10
-            rel: self
-            method: GET
-    PaginatedRingGroupListResponse:
+    RingGroupListResponse:
       type: object
-      description: A paginated list of ring groups.
+      description: A list of ring groups.
       properties:
         ring_groups:
           type: array
           items:
             $ref: '#/components/schemas/RingGroupResponse'
-        total_items:
-          type: integer
-          example: 30
-        total_pages:
-          type: integer
-          example: 3
-        current_page:
-          type: integer
-          example: 1
-        per_page:
-          type: integer
-          example: 10
         links:
           type: array
           items:
             $ref: '#/components/schemas/Link'
           nullable: true
+          example:
+            - href: "/sites/6/ring-groups"
+              rel: "self"
+              method: "GET"
+              title: "Ring groups list"
       required:
         - ring_groups
-        - total_items
-        - total_pages
-        - current_page
-        - per_page
-      example:
-        ring_groups:
-          - id: 10
-            site_id: 6
-            name: Sales Team
-            destination_codes:
-              - device:dev_sales1
-              - extension:ext_sales_mobile
-            destinations:
-              - name: Sales Device 1
-                code: device:dev_sales1
-              - name: Sales Extension Mobile
-                code: extension:ext_sales_mobile
-            ring_strategy: simultaneous
-            timeout: 30
-            fail_over_destination_code: voicemailbox:vm_sales
-            fail_over_destination:
-              name: Sales Voicemail
-              code: voicemailbox:vm_sales
-            user_id: null
-            links:
-              - href: /sites/6/ring-groups/10
-                rel: self
-                method: GET
-        total_items: 1
-        total_pages: 1
-        current_page: 1
-        per_page: 25
-        links:
-          - href: /sites/6/ring-groups?page=1&page_size=25
-            rel: self
-            method: GET
-    RingGroupCreateRequest:
+    RingGroupRequest:
       allOf:
         - $ref: '#/components/schemas/RingGroupCore'
       description: Data required to create a new ring group.
-      required:
-        - name
-        - destination_codes
-        - ring_strategy
-        - timeout
-      example:
-        name: Tech Support Tier 1
-        destination_codes:
-          - user:tech1
-          - user:tech2
-        ring_strategy: simultaneous
-        timeout: 60
-        fail_over_destination_code: ring_group:tech_support_tier2
-    RingGroupUpdateRequest:
-      type: object
-      description: Attributes for updating a ring group. Only provide fields to be changed.
-      properties:
-        name:
-          type: string
-          nullable: true
-        destination_codes:
-          type: array
-          items:
-            type: string
-          nullable: true
-        ring_strategy:
-          type: string
-          enum:
-            - simultaneous
-            - sequential
-            - random
-          nullable: true
-        timeout:
-          type: integer
-          nullable: true
-        fail_over_destination_code:
-          type: string
-          nullable: true
-        user_id:
-          type: integer
-          format: int64
-          nullable: true
-          description: Optional. Identifier of a user primarily associated with this ring group.
-          example: 10
-      example:
-        name: Billing Department RG
-        destination_codes:
-          - user:billing_agent1
-          - user:billing_agent2
-        ring_strategy: simultaneous
-        timeout: 15
     ScheduleAttributes:
       type: object
       properties:
@@ -11035,7 +8650,7 @@ components:
           type: string
           description: Start hour (00-23) for the schedule active period.
           example: '08'
-        start_minute:
+        start_min:
           type: string
           description: Start minute (00-59).
           example: '30'
@@ -11043,7 +8658,7 @@ components:
           type: string
           description: End hour (00-23).
           example: '17'
-        end_minute:
+        end_min:
           type: string
           description: End minute (00-59).
           example: '00'
@@ -11060,198 +8675,97 @@ components:
           nullable: true
           description: Space-separated list of dates (MM/DD format) when this schedule is inactive.
           example: 01/01 12/25
-        positive_destination_code:
-          type: string
-          description: System code for the destination if the current time falls within the schedule.
-          example: menu:main_day_menu
-        negative_destination_code:
-          type: string
-          description: System code for the destination if the current time falls outside the schedule.
-          example: voicemailbox:after_hours_vm
+        positive:
+          type: object
+          description: Destination if no option is selected or an error occurs.
+          properties:
+            code:
+              type: string
+              description: System code for the destination.
+          required:
+            - code
+          example:
+            code: "siptrunk:839"
+        negative:
+          type: object
+          description: Destination if no option is selected or an error occurs.
+          properties:
+            code:
+              type: string
+              description: System code for the destination.
+          required:
+            - code
+          example:
+            code: "siptrunk:839"
       required:
         - name
         - time_zone
         - start_hour
-        - start_minute
+        - start_min
         - end_hour
-        - end_minute
+        - end_min
         - start_weekday
         - end_weekday
-        - positive_destination_code
-        - negative_destination_code
-      example:
-        name: Holiday Hours
-        time_zone: America/Los_Angeles
-        start_hour: '10'
-        start_minute: '00'
-        end_hour: '16'
-        end_minute: '00'
-        start_weekday: Mon
-        end_weekday: Mon
-        exceptions: ''
-        positive_destination_code: menu:holiday_greeting
-        negative_destination_code: voicemailbox:closed_vm
-    ScheduleResponseData:
+        - exceptions
+        - positive
+        - negative
+    ScheduleResponse:
+      allOf:
+        - $ref: '#/components/schemas/ScheduleAttributes'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+              readOnly: true
+              description: Unique identifier for the schedule.
+              example: 123
+            site:
+              type: string
+              example: hq.ivy.teliax.com
+            positive:
+              $ref: '#/components/schemas/SiteDestination'
+            negative:
+              $ref: '#/components/schemas/SiteDestination'
+            links:
+              type: array
+              items:
+                $ref: '#/components/schemas/Link'
+              nullable: true
+              example:
+                - href: "/sites/6/schedules/256"
+                  rel: "self"
+                  title: "Schedule Details"
+                  method: "GET"
+                - href: "/sites/6/schedules/256"
+                  rel: "Delete"
+                  title: "Delete Schedule"
+                  method: "DELETE"
+                - href: "/sites/6/schedules/256"
+                  rel: "Edit"
+                  title: "Edit Schedule"
+                  method: "PUT"
+    ScheduleListResponse:
       type: object
-      properties:
-        id:
-          type: string
-        type:
-          type: string
-          enum:
-            - schedule
-        attributes:
-          allOf:
-            - $ref: '#/components/schemas/ScheduleAttributes'
-            - type: object
-              properties:
-                site_id:
-                  type: integer
-                  format: int64
-                  nullable: true
-                positive_destination:
-                  $ref: '#/components/schemas/SiteDestination'
-                negative_destination:
-                  $ref: '#/components/schemas/SiteDestination'
-        links:
-          $ref: '#/components/schemas/LinkObject'
-      required:
-        - id
-        - type
-        - attributes
-    PaginatedScheduleListResponse:
-      type: object
-      description: A paginated list of schedules.
+      description: A list of schedules.
       properties:
         schedules:
           type: array
           items:
-            $ref: '#/components/schemas/ScheduleResponseData'
-        total_items:
-          type: integer
-          example: 20
-        total_pages:
-          type: integer
-          example: 2
-        current_page:
-          type: integer
-          example: 1
-        per_page:
-          type: integer
-          example: 10
+            $ref: '#/components/schemas/ScheduleResponse'
         links:
-          $ref: '#/components/schemas/PaginationLinks'
-      required:
-        - schedules
-        - total_items
-        - total_pages
-        - current_page
-        - per_page
-      example:
-        schedules:
-          - id: '7'
-            type: schedule
-            attributes:
-              name: Business Hours Rule
-              time_zone: America/Denver
-              start_hour: '09'
-              start_minute: '00'
-              end_hour: '17'
-              end_minute: '00'
-              start_weekday: Mon
-              end_weekday: Fri
-              exceptions: 12/25,01/01
-              positive_destination_code: menu:day_menu
-              negative_destination_code: voicemailbox:after_hours_vm
-              site_id: 6
-            links:
-              self:
-                href: /sites/6/schedules/7
-                rel: self
-                method: GET
-        total_items: 1
-        total_pages: 1
-        current_page: 1
-        per_page: 25
-        links:
-          self:
-            href: /sites/6/schedules?page=1&page_size=25
-            rel: self
-            method: GET
-          first:
-            href: /sites/6/schedules?page=1&page_size=25
-            rel: first
-            method: GET
-          last:
-            href: /sites/6/schedules?page=1&page_size=25
-            rel: last
-            method: GET
-    ScheduleCreateRequest:
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+          nullable: true
+          example:
+            - href: "/sites/6/schedules"
+              rel: "self"
+              method: "GET"
+              title: "Schedules list"
+    ScheduleRequest:
       type: object
-      required:
-        - data
-      properties:
-        data:
-          type: object
-          required:
-            - type
-            - attributes
-          properties:
-            type:
-              type: string
-              enum:
-                - schedule
-            attributes:
-              $ref: '#/components/schemas/ScheduleAttributes'
-      example:
-        data:
-          type: schedule
-          attributes:
-            name: Lunch Break Schedule
-            time_zone: America/Chicago
-            start_hour: '12'
-            start_minute: '00'
-            end_hour: '13'
-            end_minute: '00'
-            start_weekday: Mon
-            end_weekday: Fri
-            positive_destination_code: forward:lunch_coverage_phone
-            negative_destination_code: ring_group:main_office_rg
-    ScheduleResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/ScheduleResponseData'
-      required:
-        - data
-      example:
-        data:
-          id: '7'
-          type: schedule
-          attributes:
-            name: Business Hours Rule
-            time_zone: America/Denver
-            start_hour: '09'
-            start_minute: '00'
-            end_hour: '17'
-            end_minute: '00'
-            start_weekday: Mon
-            end_weekday: Fri
-            exceptions: 12/25,01/01
-            positive_destination_code: menu:day_menu
-            negative_destination_code: voicemailbox:after_hours_vm
-            site_id: 6
-            positive_destination:
-              name: Day Menu
-              code: menu:day_menu
-            negative_destination:
-              name: After Hours Voicemail
-              code: voicemailbox:after_hours_vm
-          links:
-            self:
-              href: /sites/6/schedules/7
-              rel: self
-              method: GET
+      $ref: '#/components/schemas/ScheduleAttributes'
     schedule_components-schemas-Error:
       type: object
       description: Standard error response format.
@@ -11281,73 +8795,6 @@ components:
         - status
         - error
         - error_code
-    ScheduleUpdateRequest:
-      type: object
-      required:
-        - data
-      properties:
-        data:
-          type: object
-          required:
-            - type
-            - attributes
-          properties:
-            type:
-              type: string
-              enum:
-                - schedule
-            attributes:
-              type: object
-              properties:
-                name:
-                  type: string
-                  nullable: true
-                time_zone:
-                  type: string
-                  nullable: true
-                start_hour:
-                  type: string
-                  nullable: true
-                start_minute:
-                  type: string
-                  nullable: true
-                end_hour:
-                  type: string
-                  nullable: true
-                end_minute:
-                  type: string
-                  nullable: true
-                start_weekday:
-                  type: string
-                  nullable: true
-                end_weekday:
-                  type: string
-                  nullable: true
-                exceptions:
-                  type: string
-                  nullable: true
-                positive_destination_code:
-                  type: string
-                  nullable: true
-                negative_destination_code:
-                  type: string
-                  nullable: true
-      description: Data for updating an existing Schedule. Only provided fields are updated.
-      example:
-        data:
-          type: schedule
-          attributes:
-            name: Holiday Hours 2024
-            exceptions: 12/24,12/25,12/31,01/01
-            time_zone: America/New_York
-            start_hour: '00'
-            start_minute: '00'
-            end_hour: '23'
-            end_minute: '59'
-            start_weekday: Mon
-            end_weekday: Sun
-            positive_destination_code: announcement:holiday_closed
-            negative_destination_code: announcement:holiday_closed
     available_components-schemas-Error:
       type: object
       description: Standard error response format.
@@ -11651,32 +9098,17 @@ components:
           default: 120
           description: Timeout in seconds for call attempts or registration.
           example: 120
-        fail_over_destination_code:
-          type: string
-          nullable: true
-          description: System code for the failover destination if the trunk is unavailable.
-          example: menu:main_ivr
-        user_id:
-          type: integer
-          format: int64
-          nullable: true
-          description: Optional. Identifier of a user primarily associated with this SIP trunk.
-          example: 11
-      required:
-        - name
-      example:
-        name: Backup Outbound Trunk
-        login: backup_trunk_user
-        active: true
-        channel_limit: 5
-        contact_ip: 4.3.2.1:5060
-        acl: 10.0.0.0/8
-        caller_id_name: Backup Line
-        caller_id_number: '+18005551213'
-        disable_comfort_noise: true
-        timeout: 90
-        fail_over_destination_code: voicemailbox:general_backup_vm
-        user_id: 12
+        fail_over:
+          type: object
+          description: Destination if no option is selected or an error occurs.
+          properties:
+            code:
+              type: string
+              description: System code for the destination.
+              example:
+                code: "ring_group:8369"
+          required:
+            - code
     SipTrunkResponse:
       allOf:
         - $ref: '#/components/schemas/SipTrunkCore'
@@ -11685,54 +9117,55 @@ components:
             id:
               type: integer
               format: int64
-            site_id:
-              type: integer
-              format: int64
+              readOnly: true
+              example: 1
+            site:
+              type: string
+              example: hq.ivy.teliax.com
             password:
               type: string
               format: password
               readOnly: true
               description: The SIP password (only returned on creation if generated by system).
-            login:
-              type: string
-            fail_over_destination:
-              type: object
+            user_id:
+              type: integer
+              format: int64
               nullable: true
-              allOf:
-                - $ref: '#/components/schemas/SiteDestination'
+              description: Optional. Identifier of a user primarily associated with this SIP trunk.
+              example: 11
+            fail_over:
+              type: object
+              description: Destination if no option is selected or an error occurs.
+              properties:
+                code:
+                  type: string
+                  description: System code for the destination.
+                  example:
+                    code: "ring_group:839"
+                name:
+                  type: string
+                  description: Human-readable label of the destination.
+                  example:
+                    name: "teliax technical support (ring_group:839)"
             links:
               type: array
               items:
                 $ref: '#/components/schemas/Link'
               nullable: true
-          required:
-            - id
-            - site_id
-            - login
-            - name
+              example:
+                - href: "/sites/6/sip-trunks/1514"
+                  rel: "self"
+                  title: "Sip Trunk Details"
+                  method: "GET"
+                - href: "/sites/6/sip-trunks/1514"
+                  rel: "Delete"
+                  title: "Delete Sip Trunk"
+                  method: "DELETE"
+                - href: "/sites/6/sip-trunks/1514"
+                  rel: "Edit"
+                  title: "Edit Sip Trunk"
+                  method: "PUT"
       description: Detailed information about a SIP Trunk.
-      example:
-        id: 161
-        site_id: 6
-        name: Main Office SIP Trunk
-        login: main_trunk_user
-        active: true
-        channel_limit: 10
-        contact_ip: 1.2.3.4:5060
-        acl: 0.0.0.0/0
-        caller_id_name: Teliax HQ
-        caller_id_number: '+13035551212'
-        disable_comfort_noise: false
-        timeout: 120
-        fail_over_destination_code: menu:main_ivr
-        fail_over_destination:
-          name: Main IVR Menu
-          code: menu:main_ivr
-        user_id: null
-        links:
-          - href: /sites/6/sip-trunks/161
-            rel: self
-            method: GET
     SipTrunkStatus:
       type: object
       properties:
@@ -11745,24 +9178,7 @@ components:
           type: "array"
           items:
             $ref: '#/components/schemas/Link'
-      example:
-        sip_trunks:
-          - john_doe
-          - jane_doe
-        links:
-          - href: '/sites/6/sip-trunks/status'
-            rel: 'self'
-            title: 'Sip Trunks'
-            method: 'GET'
-          - href: '/sites/6/sip-trunks'
-            rel: 'List'
-            title: 'Sip Trunks'
-            method: 'GET'
-          - href: '/sites/6'
-            rel: 'up'
-            title: 'Site'
-            method: 'GET'
-    PaginatedSipTrunkListResponse:
+    SipTrunkListResponse:
       type: object
       description: A paginated list of SIP Trunks.
       properties:
@@ -11770,190 +9186,20 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SipTrunkResponse'
-        total_items:
-          type: integer
-          example: 10
-        total_pages:
-          type: integer
-          example: 1
-        current_page:
-          type: integer
-          example: 1
-        per_page:
-          type: integer
-          example: 25
         links:
-          $ref: '#/components/schemas/PaginationLinks'
-      required:
-        - sip_trunks
-        - total_items
-        - total_pages
-        - current_page
-        - per_page
-      example:
-        sip_trunks:
-          - id: 161
-            site_id: 6
-            name: Main Office SIP Trunk
-            login: main_trunk_user
-            active: true
-            channel_limit: 10
-            contact_ip: 1.2.3.4:5060
-            acl: 0.0.0.0/0
-            caller_id_name: Teliax HQ
-            caller_id_number: '+13035551212'
-            disable_comfort_noise: false
-            timeout: 120
-            fail_over_destination_code: menu:main_ivr
-            user_id: null
-            links:
-              - href: /sites/6/sip-trunks/161
-                rel: self
-                method: GET
-        total_items: 1
-        total_pages: 1
-        current_page: 1
-        per_page: 25
-        links:
-          self:
-            href: /sites/6/sip-trunks?page=1&page_size=25
-            rel: self
-            method: GET
-          first:
-            href: /sites/6/sip-trunks?page=1&page_size=25
-            rel: first
-            method: GET
-          last:
-            href: /sites/6/sip-trunks?page=1&page_size=25
-            rel: last
-            method: GET
-    SipTrunkCreateRequest:
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+          nullable: true
+          example:
+            - href: "/sites/6/sip-trunks"
+              rel: "self"
+              method: "GET"
+              title: "Siptrunks list"
+    SipTrunkRequest:
       allOf:
         - $ref: '#/components/schemas/SipTrunkCore'
-      required:
-        - name
       description: Data required to create a new SIP Trunk.
-      example:
-        name: New Office Trunk
-        login: newoffice_user
-        active: true
-        channel_limit: 20
-        caller_id_name: New Office Main
-        caller_id_number: '+17205559999'
-    SipTrunkUpdateRequest:
-      type: object
-      description: Attributes for updating a SIP Trunk. Password should be updated via regenerate-password endpoint.
-      properties:
-        name:
-          type: string
-          nullable: true
-          example: Primary International Trunk
-        login:
-          type: string
-          nullable: true
-          example: international_user_updated
-        active:
-          type: boolean
-          nullable: true
-          example: true
-        channel_limit:
-          type: integer
-          nullable: true
-          example: 20
-        contact_ip:
-          type: string
-          nullable: true
-          example: 5.6.7.8:5060
-        acl:
-          type: string
-          nullable: true
-          example: 172.16.0.0/12
-        caller_id_name:
-          type: string
-          nullable: true
-          example: Intl. Calls
-        caller_id_number:
-          type: string
-          nullable: true
-          example: '+18005550105'
-        disable_comfort_noise:
-          type: boolean
-          nullable: true
-          example: false
-        timeout:
-          type: integer
-          nullable: true
-          example: 180
-        fail_over_destination_code:
-          type: string
-          nullable: true
-          example: ring_group:intl_support
-        user_id:
-          type: integer
-          format: int64
-          nullable: true
-          description: Optional. Identifier of a user primarily associated with this SIP Trunk.
-          example: 15
-      example:
-        name: Main Office Trunk - Modified
-    SipTrunkResponseWithPassword:
-      allOf:
-        - $ref: '#/components/schemas/SipTrunkCore'
-        - type: object
-          properties:
-            id:
-              type: integer
-              format: int64
-            site_id:
-              type: integer
-              format: int64
-            login:
-              type: string
-            password:
-              type: string
-              format: password
-              description: The newly generated SIP password for the trunk.
-            fail_over_destination:
-              oneOf:
-                - $ref: '#/components/schemas/SiteDestination'
-                - type: object
-                  nullable: true
-                  description: Failover destination, null if not set.
-            links:
-              type: array
-              items:
-                $ref: '#/components/schemas/Link'
-              nullable: true
-          required:
-            - id
-            - site_id
-            - login
-            - password
-            - name
-      description: SIP Trunk details including the newly regenerated SIP password.
-      example:
-        id: 161
-        site_id: 6
-        name: Main Office SIP Trunk
-        login: main_trunk_user
-        password: newlyGeneratedS3cur3SipP@ss!
-        active: true
-        channel_limit: 10
-        contact_ip: 1.2.3.4:5060
-        acl: 0.0.0.0/0
-        caller_id_name: Teliax HQ
-        caller_id_number: '+13035551212'
-        disable_comfort_noise: false
-        timeout: 120
-        fail_over_destination_code: menu:main_ivr
-        fail_over_destination:
-          name: Main IVR Menu
-          code: menu:main_ivr
-        user_id: null
-        links:
-          - href: /sites/6/sip-trunks/161
-            rel: self
-            method: GET
     VoicemailBoxAttributes:
       type: object
       properties:
@@ -11969,142 +9215,88 @@ components:
           type: string
           description: Email addresses for notifications of new voicemails.
           example: sales@example.com,manager@example.com
-        announcement_url:
-          type: string
-          format: uri
-          readOnly: true
-          nullable: true
-          description: URL of the current announcement greeting.
+          writeOnly: true
         announcement:
           type: string
           format: binary
-          writeOnly: true
           nullable: true
-          example: /path/to/greeting.mp3
           description:  Greeting message for the Voicemail Box. This is a file upload field.
-        status:
-          type: string
-          enum:
-            - active
-            - inactive
-          description: Status of the Voicemail Box.
-          example: active
-        site_id:
-          type: integer
-          format: int64
-          readOnly: true
-          nullable: true
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
       required:
         - name
         - pin
-        - notification_emails
-        - status
-      example:
-        name: Support Line VM
-        pin: '5678'
-        notification_emails: support@example.com
-        status: active
-    VoicemailBoxResponseData:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Unique identifier for the Voicemail Box.
-          example: '553'
-        type:
-          type: string
-          enum:
-            - voicemail-box
-          example: voicemail-box
-        attributes:
-          $ref: '#/components/schemas/VoicemailBoxAttributes'
-        links:
-          $ref: '#/components/schemas/LinkObject'
-      required:
-        - id
-        - type
-        - attributes
-      example:
-        id: '553'
-        type: voicemail-box
-        attributes:
-          name: Sales Team Voicemail
-          pin: '****'
-          notification_emails: sales@example.com,manager@example.com
-          status: active
-          site_id: 6
-          announcement_url: https://cdn.example.com/greetings/vm553.mp3
-        links:
-          self:
-            href: /sites/6/voice-mail-boxes/553
-            rel: self
-            method: GET
-    PaginatedVoicemailBoxListResponse:
+        - notification_email
+    VoicemailBoxResponse:
+      allOf:
+        - $ref: '#/components/schemas/VoicemailBoxAttributes'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+              description: Unique identifier for the Voicemail Box.
+              example: 553
+              readOnly: true
+            site:
+              type: string
+              description: The site where this Voicemail Box is located.
+              example: hq.ivy.teliax.com
+            announcement:
+              type: string
+              format: uri
+              nullable: true
+              description: URL to the current greeting audio file.
+              example: https://cdn.example.com/greetings/conf_3.mp3
+            code:
+              type: string
+              description: System code for the Voicemail Box.
+              example: 'voicemailbox:01'
+            email:
+              type: string
+              format: email
+              description: Email address associated with this Voicemail Box.
+              example: john.doe@exmaple.com
+              readOnly: true
+            user_id:
+              type: integer
+              format: int64
+              nullable: true
+              description: Optional. Identifier of a user primarily associated with this Voicemail Box.
+              example: 42
+            links:
+              type: array
+              items:
+                $ref: '#/components/schemas/Link'
+              nullable: true
+              example:
+                - href: "/sites/2612/voice-mail-boxes/509"
+                  rel: "self"
+                  title: "Menu Details"
+                  method: "GET"
+                - href: "/sites/2612/voice-mail-boxes/509"
+                  rel: "Delete"
+                  title: "Delete Menu"
+                  method: "DELETE"
+                - href: "/sites/2612/voice-mail-boxes/509"
+                  rel: "Edit"
+                  title: "Edit Menu"
+                  method: "PUT"
+    VoicemailBoxListResponse:
       type: object
       description: A paginated list of voicemail boxes.
       properties:
-        data:
+        voice_mail_boxes:
           type: array
           items:
-            $ref: '#/components/schemas/VoicemailBoxResponseData'
+            $ref: '#/components/schemas/VoicemailBoxResponse'
         links:
-          $ref: '#/components/schemas/PaginationLinks'
-        meta:
-          type: object
-          properties:
-            total_items:
-              type: integer
-            total_pages:
-              type: integer
-            current_page:
-              type: integer
-            per_page:
-              type: integer
-      required:
-        - data
-        - meta
-      example:
-        data:
-          - id: '553'
-            type: voicemail-box
-            attributes:
-              name: Sales Team Voicemail
-              pin: '****'
-              notification_emails: sales@example.com,manager@example.com
-              status: active
-              site_id: 6
-              announcement_url: https://cdn.example.com/greetings/vm553.mp3
-            links:
-              self:
-                href: /sites/6/voice-mail-boxes/553
-                rel: self
-                method: GET
-        links:
-          self:
-            href: /sites/6/voice-mail-boxes?page%5Bnumber%5D=1&page_size=25
-            rel: self
-            method: GET
-          first:
-            href: /sites/6/voice-mail-boxes?page%5Bnumber%5D=1&page_size=25
-            rel: first
-            method: GET
-          last:
-            href: /sites/6/voice-mail-boxes?page%5Bnumber%5D=1&page_size=25
-            rel: last
-            method: GET
-        meta:
-          total_items: 1
-          total_pages: 1
-          current_page: 1
-          per_page: 25
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+          nullable: true
+          example:
+            - href: /sites/2612/voice-mail-boxes
+              rel: self
+              method: GET
     VoicemailBoxRequest:
       allOf:
         - $ref: '#/components/schemas/VoicemailBoxAttributes'
@@ -12439,7 +9631,8 @@ components:
           format: int64
           description: Unique identifier for the Thin Client.
           example: 11
-        name:
+          readOnly: true
+        string:
           type: string
           description: A descriptive name for the Thin Client (e.g., its location and type).
           example: Denver - Bonsai 5
@@ -12465,21 +9658,10 @@ components:
           nullable: true
           description: A unique hardware or system identifier for the Thin Client (e.g., MAC address).
           example: 00-21-5e-96-e3-bc
-      required:
-        - id
-        - name
-        - active
-        - category
-        - ipv4_address
-        - provider
-      example:
-        id: 11
-        name: Denver - Bonsai 5
-        active: true
-        category: public
-        ipv4_address: 63.211.239.115
-        provider: Teliax Inc.
-        identification: 00-21-5e-96-e3-bc
+        enterprise_trunking:
+          type: boolean
+          description: Indicator for if enterprise trunking is enabled on the thin client
+          example: false
     ThinClientListResponse:
       type: object
       description: A list of available Thin Clients.
@@ -12488,24 +9670,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ThinClient'
-      required:
-        - thin_clients
-      example:
-        thin_clients:
-          - id: 11
-            name: Denver - Bonsai 5
-            active: true
-            category: public
-            ipv4_address: 63.211.239.115
-            provider: Teliax Inc.
-            identification: 00-21-5e-96-e3-bc
-          - id: 12
-            name: Denver - Bonsai 6
-            active: true
-            category: public
-            ipv4_address: 63.211.239.116
-            provider: Teliax Inc.
-            identification: 00-21-5e-96-fe-6c
     thin-clients_components-schemas-Error:
       type: object
       description: Standard error response format.
@@ -12710,7 +9874,7 @@ components:
             $ref: '#/components/schemas/schemas-Link'
           nullable: true
           example:
-            - href: /v2/users
+            - href: /users
               rel: self
               method: GET
     users_components-schemas-Error:
@@ -13299,36 +10463,6 @@ components:
             status: error
             error: A conflict occurred with the current resource state.
             error_code: RESOURCE_CONFLICT
-    call-block_components-responses-NotFoundError:
-      description: Not Found - The requested resource could not be found.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/call-block_components-schemas-Error'
-          example:
-            status: error
-            error: Resource not found.
-            error_code: RESOURCE_NOT_FOUND
-    call-block_components-responses-BadRequestError:
-      description: Bad Request - Invalid data provided.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/call-block_components-schemas-Error'
-          example:
-            status: error
-            error: Invalid request parameters.
-            error_code: VALIDATION_ERROR
-    responses-ConflictError:
-      description: Conflict - The resource already exists or the request conflicts with the current state.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/call-block_components-schemas-Error'
-          example:
-            status: error
-            error: Resource conflict.
-            error_code: CONFLICT_ERROR
     components-responses-SiteNotFoundError:
       description: Not Found - The specified site could not be found.
       content:
