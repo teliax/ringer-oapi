@@ -70,7 +70,7 @@ info:
     url: https://docs.ringer.tel/support
     email: support@ringer.tel
 servers:
-  - url: https://api.ringer.tel/v2
+  - url: https://uc.leap.tel/v2
     description: Production server
 
 tags:
@@ -4694,7 +4694,7 @@ components:
         Contact your account manager to obtain client credentials.
       flows:
         clientCredentials:
-          tokenUrl: https://api.ringer.tel/v1/oauth/token
+          tokenUrl: https://uc.leap.tel/v2/oauth/token
           scopes:
             read: Read access to API resources
             write: Write access to API resources

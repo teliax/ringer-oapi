@@ -44,11 +44,19 @@ When contributing, please:
 
 ## API Endpoints
 
-Ringer API endpoints are accessible at:
+API endpoints vary by service:
 
+### Ringer APIs (v1)
 ```
 https://api.ringer.tel/v1/{endpoint}
 ```
+
+### Ivy API (Ringer Business - v2)
+```
+https://uc.leap.tel/v2/{endpoint}
+```
+
+**Note:** The Ivy API uses OAuth 2.0 client credentials flow for authentication.
 
 ## Local Development
 
