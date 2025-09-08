@@ -7,6 +7,63 @@ info:
     phone numbers, payments, users, and other business resources.
 
     Operations typically require authentication and appropriate permissions.
+    
+    ## 🚨 Critical Implementation Notes
+    
+    ### Data Type Requirements
+    - **Country codes MUST be strings**: Send `["1", "44"]` not `[1, 44]`
+    - **Integers cause 500 errors**: This is a known backend limitation
+    
+    ### Thin Client Permissions
+    - **Access varies by customer**: Not all thin clients are permitted for all accounts
+    - **Silent permission failures**: API removes unauthorized `thin_client_id` values
+    - **No direct permission check**: Must test by attempting site creation
+    - **Contact admin if blocked**: Thin client access requires administrative approval
+    
+    ### Field Validation
+    - **DNS extensions**: 2-32 chars, lowercase, no reserved words
+    - **SIP passwords**: Exactly 20 chars with mixed case, numbers, symbols
+    - **Caller ID numbers**: Digits only, no formatting
+    
+    ### Error Handling Best Practices
+    - **400 errors**: Field validation failures - check field formats
+    - **500 errors**: Often data type issues (integers vs strings)
+    - **Use debug_id**: Include in support requests for faster resolution
+    - **Test incrementally**: Start with minimal payloads, add fields gradually
+    
+    ## Phone Number Categories
+    
+    When provisioning phone numbers, you must specify the correct category:
+    
+    | Category | Description | Examples |
+    |----------|-------------|----------|
+    | `domestic` | US/Canada regular phone numbers | +1 (303) 555-1234, +1 (416) 555-1234 |
+    | `toll_free` | US toll-free numbers | +1 (800) 555-1234, +1 (877) 555-1234 |
+    | `international` | Non-US/Canada phone numbers | +44 20 7123 4567, +49 30 1234 5678 |
+    
+    **Important**: The category affects billing rates and must match the actual phone number type.
+    
+    ## Phone Number Search Methods
+    
+    Choose the appropriate search method based on your requirements:
+    
+    ### Geographic Search (Recommended)
+    - **City + State**: Most flexible option for finding local numbers
+      - Example: `city=Miami&state_prov=FL`
+    - **ZIP Code**: Precise geographic targeting
+      - Example: `zip=33101`
+    
+    ### Area Code Search
+    - **Area Code**: Find numbers in specific area codes
+      - Example: `area_code=305`
+    
+    ### Advanced Search
+    - **NPA-NXX**: Target specific exchange codes (advanced users)
+      - Example: `npanxx=305555`
+    
+    ### International Search
+    - **Country Code**: Search by numeric country code
+      - Example: `search_category=international&q=44` (UK numbers)
   version: 1.0.6
   contact:
     name: Ringer API Support
@@ -1495,6 +1552,8 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/sites_InternalServerError'
   /sites/{id}:
     parameters:
       - $ref: '#/components/parameters/Id'
@@ -3098,6 +3157,31 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/PhoneNumberRequest'
+            examples:
+              domestic_number:
+                summary: "Domestic US number"
+                value:
+                  name: "Main Line"
+                  number: "13035551234"
+                  category: "domestic"
+                  destination:
+                    code: "SipTrunk:2127"
+              toll_free_number:
+                summary: "Toll-free number"
+                value:
+                  name: "Customer Service"
+                  number: "18005551234"
+                  category: "toll_free"
+                  destination:
+                    code: "SipTrunk:2127"
+              international_number:
+                summary: "International number"
+                value:
+                  name: "London Office"
+                  number: "442071234567"
+                  category: "international"
+                  destination:
+                    code: "SipTrunk:2127"
       responses:
         '201':
           description: Phone number assigned and configured successfully.
@@ -3114,7 +3198,29 @@ paths:
         '404':
           $ref: '#/components/responses/SiteNotFoundError'
         '409':
-          $ref: '#/components/responses/ConflictError'
+          description: Conflict - Phone number unavailable
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Phone number is no longer available or already exists"
+        '422':
+          description: Unprocessable entity - Invalid configuration
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    examples:
+                      - "Invalid destination configuration"
+                      - "SIP trunk not found or not accessible"
+        '500':
+          $ref: '#/components/responses/sites_InternalServerError'
   /sites/{site_id}/phone-numbers/{id}:
     parameters:
       - $ref: '#/components/parameters/SiteId'
@@ -4271,16 +4377,34 @@ paths:
         - Thin Clients
       summary: List Available Thin Clients
       description: |
-        Retrieves a list of all available Thin Clients that can be assigned to Sites.
-        This information is typically used during Site setup or modification to select the appropriate call processing node.
+        Returns all thin clients visible to your account.
+        
+        **IMPORTANT LIMITATION**: This endpoint shows all visible thin clients, but
+        not all returned clients may be usable for site creation due to customer-specific
+        permissions.
+        
+        **Permission Testing**: The API does not provide a direct way to check thin client
+        permissions. You must test permissions by attempting site creation with a minimal payload.
+        
+        **No Permissions Available**: If no thin clients are permitted for your account,
+        contact your administrator for access.
       operationId: listAvailableThinClients
       responses:
         '200':
-          description: A list of available Thin Clients.
+          description: List of thin clients (includes non-permitted clients)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ThinClientListResponse'
+              example:
+                thin_clients:
+                  - id: 27
+                    string: "Denver - Bonsai 10"
+                    provider: "Teliax Inc."
+                    ipv4_address: "63.211.239.102"
+                    category: "public"
+                    active: true
+                    enterprise_trunking: false
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -4458,65 +4582,99 @@ paths:
       parameters:
         - in: query
           name: search_category
-          schema:
-            type: string
-          required: true
-          description: >-
-            Type of number international or US domestic number. Values - international | domestic
-        - in: query
-          name: country
           required: true
           schema:
             type: string
-          description: >-
-            The 3 digit country code. The alphanumeric country code for Australia is AUS. Required when you need a international number
-        - in: query
-          name: state_prov
-          schema:
-            type: string
-          description: >-
-            If you are looking for a US domestic number you can pass the 2 charcter state code for example city => IL.
-            Please note this paramter is required only when searching US domestic numbers. Required if search category `domestic`.
-        - in: query
-          name: city
-          schema:
-            type: string
-          description: >-
-            If you are looking for a US domestic number you can pass the city name for example city => Chicago
+            enum: ["domestic", "international"]
+          description: |
+            **REQUIRED**: Type of phone numbers to search for.
+            
+            - `domestic`: US/Canada phone numbers (includes toll-free)
+            - `international`: Non-US/Canada phone numbers
+          example: "domestic"
         - in: query
           name: area_code
+          required: false
           schema:
             type: string
-          description: >-
-            If you are looking for a US domestic number you can pass the area code of the number you are looking for example 312
+            pattern: "^[0-9]{3}$"
+          description: "3-digit area code for domestic searches"
+          example: "303"
         - in: query
-          name: npanxx
+          name: state_prov
+          required: false
           schema:
             type: string
-          description: >-
-            If you are looking for a US domestic number you can pass the npanxx of the number you are looking for example 312523. Also please keeo in mind the state_prov parameter is required for this search.
+            pattern: "^[A-Z]{2}$"
+          description: "2-letter state/province code (use with city)"
+          example: "CO"
+        - in: query
+          name: city
+          required: false
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 50
+          description: "City name for geographic search (use with state_prov)"
+          example: "Denver"
         - in: query
           name: zip
+          required: false
           schema:
             type: string
-          description: >-
-            If you are looking for a US domestic number you can pass the zip code you are looking for example 60601. Also please keep in mind the state_prov parameter is required for this search.
+            pattern: "^[0-9]{5}$"
+          description: "5-digit ZIP code for domestic searches"
+          example: "80202"
+        - in: query
+          name: npanxx
+          required: false
+          schema:
+            type: string
+            pattern: "^[0-9]{6}$"
+          description: "6-digit NPA-NXX exchange code (advanced)"
+          example: "303555"
         - in: query
           name: q
+          required: false
           schema:
             type: string
-          description: >-
-            The country_code and city or area code
-          example: GBR%2CLondon
+          description: "Search query for international numbers (country code)"
+          example: "44"
+        - in: query
+          name: country
+          required: false
+          schema:
+            type: string
+          description: "3-letter country code for international searches (e.g., GBR, AUS)"
+          example: "GBR"
       responses:
         '200':
-          description: A list of available phone numbers matching the search criteria.
+          description: Available phone numbers found
           content:
             application/json:
               schema:
                 oneOf:
                   - $ref: '#/components/schemas/DomesticNumbersAndLocations'
                   - $ref: '#/components/schemas/InternationalNumberGroup'
+              examples:
+                domestic_search:
+                  summary: "Domestic number search results"
+                  value:
+                    available_numbers: [
+                      "13035551234",
+                      "13035551235",
+                      "13035551236",
+                      "13035551237",
+                      "13035551238"
+                    ]
+                toll_free_search:
+                  summary: "Toll-free number search results"
+                  value:
+                    available_numbers: [
+                      "18005551234",
+                      "18775551235",
+                      "18445551236"
+                    ]
         '400':
           $ref: '#/components/responses/phone-numbers_components-responses-BadRequestError'
         '401':
@@ -6771,8 +6929,14 @@ components:
       properties:
         dns_extension:
           type: string
-          description: The DNS extension for the site, used to form part of its unique SIP domain.
-          example: hq
+          pattern: '^[a-z0-9\-.]{2,32}$'
+          description: |
+            Site DNS extension (subdomain). **Validation Rules**:
+            - 2-32 characters only
+            - Lowercase letters, numbers, hyphens, dots only
+            - **Reserved words forbidden**: 'www', 'us', 'ca', 'jp'
+            - Must be unique across all sites
+          example: chicago-office
         active:
           type: boolean
           description: Indicates if the site is active. Inactive sites cannot place or receive calls.
@@ -6783,32 +6947,58 @@ components:
           example: Innovatech Solutions
         caller_id_number:
           type: string
-          description: Default Caller ID number for outbound calls from this site (e.g., main business number).
-          example: '+14155550100'
+          pattern: '^\d*$'
+          description: |
+            Caller ID number. **Validation Rules**:
+            - Digits only, no letters or special characters
+            - Optional field
+          example: "3125551234"
         thin_client_id:
           type: integer
           format: int64
-          description: Identifier of the thin client (call processing node) assigned to this site.
-          example: 12
+          description: |
+            ID of the thin client to associate with this site.
+            
+            **CRITICAL**: Only thin clients permitted for your customer account will be accepted.
+            The API will silently remove unauthorized thin_client_id values, causing creation to fail.
+            
+            **To check permissions**: Use GET /thin-clients endpoint, then test by attempting
+            site creation with minimal payload.
+            
+            **If no thin clients available**: Contact your administrator for access.
+          example: 27
         acl:
           type: string
-          description: Access Control List (e.g., IP addresses or ranges) defining who can connect to this site's SIP services.
-          example: 0.0.0.0/0
+          description: |
+            Access Control List for IP-based restrictions. **Format Options**:
+            - Single IP: "192.168.1.100"
+            - CIDR notation: "192.168.1.0/24"
+            - IP range: "192.168.1.1-192.168.1.10" (first 3 octets must match)
+            - Multiple entries: comma or space separated
+          example: "192.168.1.0/24, 10.0.0.1"
         channel_limit:
           type: integer
-          description: Maximum number of concurrent call channels allowed for this site.
           minimum: 0
           maximum: 1000
-          example: 55
+          description: Maximum concurrent calls (0-1000)
+          default: 10
+          example: 10
         permitted_country_codes:
           type: array
           items:
-            type: string
-          description: List of permitted outbound country codes or dialing zones for this site. Reference Country Codes API for available values.
-          example:
-            - US
-            - CA
-            - GB
+            type: string  # CRITICAL: Must be strings, not integers
+          description: |
+            Country codes for international calling permissions.
+            
+            **CRITICAL**: Must be strings, not integers (integers cause 500 errors).
+            
+            **Examples**:
+            - ["1"] for US/Canada
+            - ["1", "44", "33"] for US/Canada, UK, France
+            - ["INTERSTATE", "INTRASTATE", "LOCAL", "TOLLFREE"] for US domestic
+            
+            **Common Error**: Sending [1, 44] (integers) instead of ["1", "44"] (strings)
+          example: ["1", "44"]
       required:
         - name
         - dns_extension
@@ -8150,26 +8340,40 @@ components:
       properties:
         name:
           type: string
-          description: A user-friendly name for the phone number (e.g., "Main Line", "Sales Dept").
-          example: Main Business Line
+          description: Display name for the phone number
+          example: "Main Line"
+          minLength: 1
+          maxLength: 255
         number:
           type: string
-          description: The actual phone number in E.164 format (e.g., +13035551212).
-          example: '+14155550123'
+          description: Phone number in E.164 format (digits only, no formatting)
+          example: "13035551234"
+          pattern: "^[0-9]{10,15}$"
+        category:
+          type: string
+          enum: ["domestic", "international", "toll_free"]
+          description: |
+            **REQUIRED**: Phone number category for proper provisioning and billing classification.
+            
+            - `domestic`: US/Canada regular phone numbers
+            - `toll_free`: US toll-free numbers (800, 833, 844, 855, 866, 877, 888)
+            - `international`: Non-US/Canada phone numbers
+          example: "domestic"
         destination:
           type: object
-          description: System code for the primary destination where calls to this number are routed.
+          description: Destination routing code for incoming calls
+          required: ["code"]
           properties:
             code:
               type: string
-              description: System code for the destination.
-              example: 'siptrunk:2024'
-          required:
-            - code
+              description: Destination routing code in format 'Type:ID'
+              example: "SipTrunk:2127"
+              pattern: "^[A-Za-z]+:[0-9]+$"
         cnam:
           type: string
-          description: Calling Name Information/LIDB Order Details
-          example: Acme Main Office
+          description: Caller ID name for outbound calls (optional)
+          example: "Acme Corp"
+          maxLength: 15
     schemas-PhoneNumberResponse:
       allOf:
         - $ref: '#/components/schemas/PhoneNumberCore'
@@ -8256,6 +8460,7 @@ components:
       required:
         - name
         - number
+        - category
         - destination
     AvailablePhoneNumber:
       type: object
@@ -8846,15 +9051,30 @@ components:
           example: Primary Outbound Trunk
         login:
           type: string
-          description: Username for SIP registration/authentication. Can be system-generated if omitted on create.
-          example: primary_trunk_user
+          minLength: 4
+          maxLength: 32
+          pattern: '^[0-9a-zA-Z_-]{4,32}$'
+          description: |
+            SIP trunk login username. **Requirements**:
+            - 4-32 characters
+            - Alphanumeric characters, underscore, hyphen only
+            - Must be unique within the site
+          example: main_trunk_1234
         password:
           type: string
           format: password
+          minLength: 20
+          maxLength: 20
+          pattern: '^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[`~!@#$%^&*()-_=+{}[\]|;:'"<>,.?])[0-9a-zA-Z`~!@#$%^&*()-_=+{}[\]|;:'"<>,.?]{20}$'
           nullable: true
           writeOnly: true
-          description: Password for SIP registration. System-generated if omitted on create. Not returned on GET.
-          example: s3cureTrunkP@ss!
+          description: |
+            SIP trunk password. **EXACT REQUIREMENTS**:
+            - **Exactly 20 characters** (no more, no less)
+            - **Must contain**: uppercase letter, lowercase letter, number, and symbol
+            - **Allowed symbols**: `~!@#$%^&*()-_=+{}[]|;:'"<>,.?
+            - **Recommendation**: Auto-generate to ensure compliance
+          example: "Abc123!@#$%^&*()_+=1"
         active:
           type: boolean
           description: Indicates if the SIP Trunk is active.
@@ -8883,9 +9103,12 @@ components:
           example: My Company Inc.
         caller_id_number:
           type: string
+          pattern: '^\d*$'
           nullable: true
-          description: Default Caller ID number for outbound calls from this trunk.
-          example: '+18005551212'
+          description: |
+            Default Caller ID number for outbound calls from this trunk.
+            **Validation**: Digits only, no formatting characters
+          example: '18005551212'
         disable_comfort_noise:
           type: boolean
           default: false
@@ -10172,15 +10395,32 @@ components:
             error: 'Invalid input: dns_extension is required.'
             error_code: VALIDATION_ERROR
     sites_components-responses-BadRequestError:
-      description: Bad Request - The request was malformed or contained invalid data.
+      description: |
+        **Validation Failed**. Common causes:
+        
+        - **Invalid dns_extension**: Must be 2-32 chars, lowercase, no reserved words ('www', 'us', 'ca', 'jp')
+        - **Missing thin_client_id**: Required field for site creation
+        - **Invalid caller_id_number**: Must contain only digits
+        - **Invalid ACL format**: Must be valid IP addresses, CIDR notation, or ranges
+        - **Invalid channel_limit**: Must be integer 0-1000
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/sites_components-schemas-Error'
-          example:
-            status: error
-            error: 'Invalid input: dns_extension is required.'
-            error_code: VALIDATION_ERROR
+          examples:
+            thin_client_required:
+              summary: Missing thin client
+              value:
+                status: error
+                error: "Bad Request"
+                details: [{"field": "thin_client", "issue": "must be selected", "location": "body"}]
+                error_code: BAD_REQUEST
+            dns_extension_invalid:
+              summary: Invalid DNS extension
+              value:
+                status: error
+                error: 'Invalid input: dns_extension is required.'
+                error_code: VALIDATION_ERROR
     responses-SiteNotFoundError:
       description: Not Found - The requested site could not be found.
       content:
@@ -10191,6 +10431,28 @@ components:
             status: error
             error: The requested site was not found.
             error_code: SITE_NOT_FOUND
+    sites_InternalServerError:
+      description: |
+        **Internal Server Error**. Common causes:
+        
+        - **Country codes as integers**: Send ["1", "44"] not [1, 44]
+        - **DNS/Route53 service failures**: Backend DNS service unavailable
+        - **Thin client authorization issues**: Thin client silently removed due to permissions
+        - **Backend validation failures**: Data type mismatches
+        
+        **Debugging**: Use the `debug_id` from the response when contacting support
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/sites_components-schemas-Error'
+          examples:
+            country_code_error:
+              summary: Country codes sent as integers
+              value:
+                status: error
+                debug_id: "uuid-12345-here"
+                error: "Something went wrong."
+                error_code: INTERNAL_SERVER_ERROR
     ConflictError:
       description: Conflict - The request conflicts with the current state of the resource.
       content:
@@ -10462,12 +10724,33 @@ components:
             error: User not found.
             error_code: RESOURCE_NOT_FOUND
     phone-numbers_components-responses-BadRequestError:
-      description: Bad Request - The request was malformed or contained invalid data.
+      description: Bad request - Invalid search parameters
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/phone-numbers_components-Error'
-          example:
-            status: error
-            error: Invalid parameters for phone number search.
-            error_code: PHONE_NUMBER_VALDATION_ERROR
+          examples:
+            missing_category:
+              summary: "Missing category parameter"
+              value:
+                status: error
+                error: "Category is required for phone number provisioning"
+                error_code: VALIDATION_ERROR
+            invalid_area_code:
+              summary: "Invalid area code format"
+              value:
+                status: error
+                error: "Area code must be exactly 3 digits"
+                error_code: VALIDATION_ERROR
+            invalid_state:
+              summary: "Invalid state code"
+              value:
+                status: error
+                error: "State must be exactly 2 letters"
+                error_code: VALIDATION_ERROR
+            missing_city:
+              summary: "Missing required city with state"
+              value:
+                status: error
+                error: "City is required when state is provided"
+                error_code: VALIDATION_ERROR
