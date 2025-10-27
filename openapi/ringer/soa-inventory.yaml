@@ -1,0 +1,1363 @@
+openapi: 3.0.3
+
+info:
+  title: Ringer SOA - Number Inventory API
+  version: 2.11.0
+  description: |
+    REST API for searching, querying, and managing telephone number inventory.
+
+    This API provides comprehensive capabilities for telephone number management:
+    - **Search & Query** - Find numbers by TN, NPA, NXX, state, locality, LATA, status
+    - **Query Language** - Advanced queries with operators (=, !=, in, contains) and logical expressions
+    - **Metadata Search** - Query any JSONB metadata field (metadata.ban, metadata.account, etc.)
+    - **Reserve** - Hold numbers for applications without expiration
+    - **Assign** - Activate numbers with flexible JSONB metadata (BAN, customer, platform, etc.)
+    - **Update** - Modify metadata for active numbers
+    - **Release** - Return numbers to available pool
+    - **Validation** - Real-time query syntax validation
+
+    **Metadata Flexibility:** Store any key-value pairs in applicationMetadata (JSONB):
+    - Billing: BAN, account_id, rate_plan
+    - Customer: customer_name, contact_info, notes
+    - Technical: platform, server_ip, sip_uri, features
+    - Business: department, campaign, cost_center
+
+    ## Authentication
+
+    All API endpoints require Bearer token authentication using **API Tokens**.
+
+    **Creating an API Token:**
+    1. Log into the web dashboard at https://soa.ringer.tel
+    2. Navigate to Dashboard → Customers → [Select Customer]
+    3. Click "Create Token"
+    4. Configure:
+       - Description (e.g., "Production Integration")
+       - Expiration (optional - can be set to never expire)
+       - Allowed Operations:
+         * `inventory:search` - Search and view inventory
+         * `inventory:reserve` - Reserve numbers
+         * `inventory:assign` - Assign numbers and update metadata
+         * `inventory:release` - Release numbers to pool
+       - Allowed SPIDs (e.g., 567G)
+       - IP Whitelist (optional)
+    5. Copy the token immediately (shown only once)
+
+    **Using the Token:**
+    ```bash
+    curl -X POST https://soa-api.ringer.tel/api/v1/inventory/search \
+      -H "Authorization: Bearer rng_your_token_here" \
+      -H "Content-Type: application/json" \
+      -d '{"searchQuery":"303"}'
+    ```
+
+    **Token Format:** `rng_<random_string>` (approximately 48 characters)
+
+    **Token Security:**
+    - Stored as SHA-256 hash in database
+    - Can be scoped to specific SPIDs and operations
+    - Supports IP whitelisting
+    - Can be revoked or regenerated instantly
+    - Rate limited per customer (default: 100 req/min)
+
+    ## Authorization
+
+    Access is controlled by the **Gatekeeper** service:
+    - **Token scoping** - Tokens restricted to allowed operations and SPIDs
+    - **Customer scoping** - Automatic filtering by accessible customers/SPIDs
+    - **Operation validation** - Each SOA operation validates required SPID constraints
+
+    See `CUSTOMER_API_TOKEN_GUIDE.md` for complete token documentation.
+  contact:
+    name: Ringer API Support
+    email: support@ringer.tel
+    url: https://docs.ringer.tel/
+  license:
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
+
+servers:
+  - url: https://soa-api.ringer.tel/api/v1
+    description: Production API server
+
+tags:
+  - name: Number Inventory
+    description: Search and query telephone number inventory
+  - name: Inventory Summary
+    description: Get aggregate statistics for inventory
+  - name: Inventory Management
+    description: Reserve, assign, and release telephone numbers
+
+security:
+  - bearerAuth: []
+
+paths:
+  /inventory/query:
+    post:
+      tags:
+        - Number Inventory
+      summary: Query inventory using query language
+      description: |
+        Execute advanced queries using the query language syntax.
+
+        **Query Language Features:**
+        - **Fields:** tn, status, ported, spid, lata, state, npa, nxx, ocn, lrn, locality, metadata.*
+        - **Operators:** `=`, `!=`, `in`, `contains`
+        - **Logical:** `and`, `or` with grouping support `()`
+        - **Metadata:** Search any JSONB key with `metadata.{key}` (e.g., `metadata.ban=90000957`)
+
+        **Example Queries:**
+        - `status=available` - Find all available numbers
+        - `status=available and lata=656` - Available numbers in LATA 656
+        - `lata in (120,122) and status=available` - Multiple LATAs
+        - `locality contains "new york"` - Locality text search (quoted for spaces)
+        - `metadata.ban=90000957` - Search by BAN in metadata
+        - `(status=available or status=reserved) and ported=in` - Complex logic
+
+        **Security:** Queries automatically filtered by user's accessible SPIDs.
+
+        **Authorization:** Requires `/api/v1/inventory/query` permission.
+      operationId: queryInventory
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryRequest'
+            examples:
+              simpleQuery:
+                summary: Simple status query
+                value:
+                  query: "status=available"
+                  page: 0
+                  size: 50
+              complexQuery:
+                summary: Complex multi-field query
+                value:
+                  query: "status=available and lata=656 and ported=in"
+                  page: 0
+                  size: 100
+                  sortBy: "telephoneNumber"
+                  sortDirection: "ASC"
+              metadataQuery:
+                summary: Search by metadata
+                value:
+                  query: "metadata.ban=90000957 and status=in_use"
+                  page: 0
+                  size: 50
+              multiValueQuery:
+                summary: Multi-value with IN operator
+                value:
+                  query: "lata in (120,122,656) and status in (available,reserved)"
+                  page: 0
+                  size: 100
+      responses:
+        '200':
+          description: Query executed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResponse'
+              example:
+                content:
+                  - id: "123e4567-e89b-12d3-a456-426614174000"
+                    telephoneNumber: "3035551234"
+                    status: "AVAILABLE"
+                    spid: "567G"
+                    lata: 656
+                    state: "CO"
+                totalElements: 4327
+                totalPages: 87
+                page: 0
+                size: 50
+                first: true
+                last: false
+                executionTimeMs: 351
+                parsedQuery: "ComparisonNode(status=available)"
+        '400':
+          description: Invalid query syntax or validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryErrorResponse'
+              examples:
+                parseError:
+                  summary: Query parse error
+                  value:
+                    error: "Unexpected token 'xyz' (expected value) at position 15"
+                    query: "status=available xyz"
+                    position: 15
+                validationError:
+                  summary: Invalid field name
+                  value:
+                    error: "Invalid field 'invalid_field'"
+                    query: "invalid_field=test"
+                    validOptions: ["tn", "status", "ported", "spid", "lata", "state", "npa", "nxx", "ocn", "lrn", "locality"]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /inventory/query/validate:
+    post:
+      tags:
+        - Number Inventory
+      summary: Validate query syntax
+      description: |
+        Validate query syntax without executing it. Used for real-time validation in the UI.
+
+        Returns validation result with detailed error information if query is invalid.
+
+        **Authorization:** Requires `/api/v1/inventory/query/validate` permission.
+      operationId: validateQuery
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+              properties:
+                query:
+                  type: string
+                  description: Query string to validate
+                  example: "status=available and lata=656"
+            examples:
+              validQuery:
+                summary: Valid query
+                value:
+                  query: "status=available and lata=656"
+              invalidQuery:
+                summary: Invalid query (for testing)
+                value:
+                  query: "invalid_field=test"
+      responses:
+        '200':
+          description: Validation result (always returns 200, check 'valid' field)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryValidationResponse'
+              examples:
+                validResult:
+                  summary: Valid query
+                  value:
+                    valid: true
+                    query: "status=available and lata=656"
+                    parsedQuery: "LogicalNode(AND, ComparisonNode(status=available), ComparisonNode(lata=656))"
+                invalidResult:
+                  summary: Invalid query
+                  value:
+                    valid: false
+                    query: "invalid_field=test"
+                    error: "Invalid field 'invalid_field'"
+                    type: "validation"
+                    validOptions: ["tn", "status", "ported", "spid", "lata", "state", "npa", "nxx", "ocn", "lrn", "locality"]
+                parseError:
+                  summary: Parse error
+                  value:
+                    valid: false
+                    query: "status="
+                    error: "Unexpected token '' (expected value) at position 7"
+                    position: 7
+                    type: "parse"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /inventory/summary:
+    get:
+      tags:
+        - Inventory Summary
+      summary: Get inventory summary for a SPID
+      description: |
+        Retrieve aggregate statistics for a SPID's telephone number inventory.
+
+        Returns counts for all statuses and total blocks owned.
+
+        **Authorization:** Requires `/api/v1/inventory/summary` permission.
+      operationId: getInventorySummary
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: spid
+          in: query
+          required: true
+          description: SPID (Service Provider ID) to get summary for
+          schema:
+            type: string
+            pattern: '^[A-Z0-9]{4}$'
+            example: "567G"
+      responses:
+        '200':
+          description: Inventory summary statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventorySummaryDto'
+              examples:
+                summaryResponse:
+                  summary: Example summary for SPID 567G
+                  value:
+                    spid: "567G"
+                    totalNumbers: 1523000
+                    availableCount: 1510457
+                    reservedCount: 245
+                    inUseCount: 755
+                    portedOutCount: 12543
+                    portedInCount: 3254
+                    quarantineCount: 0
+                    totalBlocks: 1523
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: SPID not found or no inventory data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /inventory/numbers/{telephoneNumber}:
+    get:
+      tags:
+        - Number Inventory
+      summary: Get details for a specific telephone number
+      description: |
+        Retrieve complete details for a specific telephone number.
+
+        Includes ownership, routing, geographic location, port history, and application metadata.
+
+        **Authorization:** Requires `/api/v1/inventory/numbers/{telephoneNumber}` permission.
+      operationId: getNumberDetails
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: telephoneNumber
+          in: path
+          required: true
+          description: 10-digit telephone number (no formatting)
+          schema:
+            type: string
+            pattern: '^[0-9]{10}$'
+            example: "3035551234"
+      responses:
+        '200':
+          description: Number details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NumberInventoryDto'
+              examples:
+                availableNumber:
+                  summary: Available number with full details
+                  value:
+                    id: "123e4567-e89b-12d3-a456-426614174000"
+                    telephoneNumber: "3035551234"
+                    npa: "303"
+                    nxx: "555"
+                    blockId: "A"
+                    spid: "567G"
+                    currentOwnerSpid: "567G"
+                    customerId: null
+                    customerName: null
+                    status: "AVAILABLE"
+                    lifecycleState: "ACTIVE"
+                    currentLrn: "3035551234"
+                    currentOcn: "567G"
+                    npacRegion: "CO"
+                    lata: 656
+                    lataName: "DENVER"
+                    state: "CO"
+                    locality: "DENVER"
+                    switchClli: "DNVRCOMA"
+                    tandemSwitch: "DNVRCOMD"
+                    tandemOcn: "9999"
+                    tandemOcnName: "DENVER TANDEM"
+                    ocnName: "RINGER COMMUNICATIONS"
+                    cocType: "1"
+                    lastPortDate: null
+                    originalSpid: null
+                    applicationId: null
+                    applicationMetadata: null
+                    reservedUntil: null
+                    reservedBy: null
+                    lastLrnDipAt: "2024-10-15T10:30:00Z"
+                    lastLrnDipResult: "NEVER_PORTED"
+                    discoveredVia: "LERG"
+                    createdAt: "2024-10-01T10:00:00Z"
+                    updatedAt: "2024-10-15T10:30:00Z"
+                    lastVerifiedAt: "2024-10-15T10:30:00Z"
+                portedOutNumber:
+                  summary: Number ported out to another carrier
+                  value:
+                    id: "987e6543-e21b-43d2-a654-536241174111"
+                    telephoneNumber: "3035559876"
+                    npa: "303"
+                    nxx: "555"
+                    blockId: "5"
+                    spid: "567G"
+                    currentOwnerSpid: "123A"
+                    status: "PORTED_OUT"
+                    currentLrn: "3035550001"
+                    currentOcn: "123A"
+                    lata: 656
+                    state: "CO"
+                    locality: "DENVER"
+                    lastPortDate: "2024-09-15T14:22:00Z"
+                    portDirection: "OUT"
+                    originalSpid: "567G"
+                    lastLrnDipResult: "PORTED_OUT"
+                    discoveredVia: "LERG"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Telephone number not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Number not found"
+                timestamp: "2024-10-17T12:00:00Z"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /inventory/numbers/{telephoneNumber}/reserve:
+    post:
+      tags:
+        - Inventory Management
+      summary: Reserve a telephone number
+      description: |
+        Reserve a telephone number for an application.
+
+        **Status Transition:** AVAILABLE → RESERVED
+
+        **Validation:**
+        - Number must exist
+        - Number must be AVAILABLE
+        - Number cannot be PORTED_OUT
+
+        **No Auto-Expiration:** Reservations do not expire automatically.
+
+        **Authorization:** Requires `inventory:reserve` token operation.
+      operationId: reserveNumber
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: telephoneNumber
+          in: path
+          required: true
+          description: 10-digit telephone number to reserve
+          schema:
+            type: string
+            pattern: '^[0-9]{10}$'
+            example: "3035551234"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reservedBy
+              properties:
+                reservedBy:
+                  type: string
+                  description: Application or system name reserving the number
+                  example: "ivr-system"
+            example:
+              reservedBy: "ivr-system"
+      responses:
+        '200':
+          description: Number reserved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NumberInventoryDto'
+              example:
+                id: "123e4567-e89b-12d3-a456-426614174000"
+                telephoneNumber: "3035551234"
+                spid: "567G"
+                status: "RESERVED"
+                reservedBy: "ivr-system"
+                reservedUntil: null
+                updatedAt: "2024-10-18T12:00:00Z"
+        '400':
+          description: Invalid request (missing reservedBy)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "reservedBy is required"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Telephone number not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflict - number not in valid state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notAvailable:
+                  summary: Number not available
+                  value:
+                    error: "Number is not available: 3035551234 (current status: IN_USE)"
+                portedOut:
+                  summary: Number ported out
+                  value:
+                    error: "Cannot reserve ported-out number: 3035551234"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /inventory/numbers/{telephoneNumber}/assign:
+    post:
+      tags:
+        - Inventory Management
+      summary: Assign a telephone number with metadata
+      description: |
+        Assign a telephone number to an application with custom metadata.
+
+        **Status Transition:** AVAILABLE or RESERVED → IN_USE
+
+        **Metadata:** Flexible JSONB field - customers can add any key-value pairs.
+        Common examples:
+        - `ban`: Billing Account Number
+        - `customer_name`: End customer name
+        - `platform`: Platform or system name
+        - `department`: Department using the number
+        - `campaign`: Marketing campaign identifier
+
+        **Validation:**
+        - Number must exist
+        - Number must be AVAILABLE or RESERVED
+        - Number cannot be PORTED_OUT
+
+        **Authorization:** Requires `inventory:assign` token operation.
+      operationId: assignNumber
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: telephoneNumber
+          in: path
+          required: true
+          description: 10-digit telephone number to assign
+          schema:
+            type: string
+            pattern: '^[0-9]{10}$'
+            example: "3035551234"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - applicationId
+              properties:
+                applicationId:
+                  type: string
+                  description: Application or system identifier
+                  example: "ivr-system"
+                metadata:
+                  type: object
+                  additionalProperties: true
+                  description: Custom metadata (flexible key-value pairs)
+                  example:
+                    ban: "BAN12345"
+                    customer_name: "Acme Corp"
+                    platform: "Asterisk"
+                    department: "Sales"
+            examples:
+              ivrSystem:
+                summary: IVR system with customer metadata
+                value:
+                  applicationId: "ivr-system"
+                  metadata:
+                    ban: "BAN12345"
+                    customer_name: "Acme Corp"
+                    platform: "Asterisk"
+                    department: "Sales"
+              callCenter:
+                summary: Call center with campaign metadata
+                value:
+                  applicationId: "call-center-app"
+                  metadata:
+                    campaign: "winter-2024"
+                    agent_group: "tier-1-support"
+                    queue_priority: "high"
+      responses:
+        '200':
+          description: Number assigned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NumberInventoryDto'
+              example:
+                id: "123e4567-e89b-12d3-a456-426614174000"
+                telephoneNumber: "3035551234"
+                spid: "567G"
+                status: "IN_USE"
+                applicationId: "ivr-system"
+                applicationMetadata:
+                  ban: "BAN12345"
+                  customer_name: "Acme Corp"
+                  platform: "Asterisk"
+                  department: "Sales"
+                firstAssignedAt: "2024-10-18T12:00:00Z"
+                lastAssignedAt: "2024-10-18T12:00:00Z"
+                timesAssigned: 1
+                updatedAt: "2024-10-18T12:00:00Z"
+        '400':
+          description: Invalid request (missing applicationId)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "applicationId is required"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Telephone number not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflict - number not in valid state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Cannot assign ported-out number: 3035551234"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /inventory/numbers/{telephoneNumber}/metadata:
+    put:
+      tags:
+        - Inventory Management
+      summary: Update number metadata
+      description: |
+        Update custom metadata for an assigned telephone number.
+
+        **Requirements:**
+        - Number must be in IN_USE status
+        - Completely replaces existing metadata
+
+        **Use Cases:**
+        - Update customer information
+        - Change billing account
+        - Add new tracking fields
+        - Update deployment details
+
+        **Authorization:** Requires `inventory:assign` token operation.
+      operationId: updateMetadata
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: telephoneNumber
+          in: path
+          required: true
+          description: 10-digit telephone number
+          schema:
+            type: string
+            pattern: '^[0-9]{10}$'
+            example: "3035551234"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - metadata
+              properties:
+                metadata:
+                  type: object
+                  additionalProperties: true
+                  description: New metadata (replaces existing)
+                  example:
+                    ban: "UPDATED_BAN"
+                    customer_name: "Updated Customer"
+                    notes: "Migrated to new platform"
+            example:
+              metadata:
+                ban: "BAN99999"
+                customer_name: "Updated Corp"
+                platform: "FreeSWITCH"
+                migrated_at: "2024-10-18T12:00:00Z"
+      responses:
+        '200':
+          description: Metadata updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NumberInventoryDto'
+        '400':
+          description: Invalid request (missing metadata)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "metadata is required"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Telephone number not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflict - number not in IN_USE status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Can only update metadata for IN_USE numbers. Current status: AVAILABLE"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /inventory/numbers/{telephoneNumber}/release:
+    post:
+      tags:
+        - Inventory Management
+      summary: Release a telephone number
+      description: |
+        Release a telephone number back to the available pool.
+
+        **Status Transition:** RESERVED or IN_USE → AVAILABLE
+
+        **Cleanup:**
+        - Clears applicationId
+        - Clears applicationMetadata
+        - Clears reservedBy
+        - Status becomes AVAILABLE
+
+        **Validation:**
+        - Number must be RESERVED or IN_USE
+        - Cannot release PORTED_OUT numbers
+
+        **Authorization:** Requires `inventory:release` token operation.
+      operationId: releaseNumber
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: telephoneNumber
+          in: path
+          required: true
+          description: 10-digit telephone number to release
+          schema:
+            type: string
+            pattern: '^[0-9]{10}$'
+            example: "3035551234"
+      responses:
+        '200':
+          description: Number released successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NumberInventoryDto'
+              example:
+                id: "123e4567-e89b-12d3-a456-426614174000"
+                telephoneNumber: "3035551234"
+                spid: "567G"
+                status: "AVAILABLE"
+                applicationId: null
+                applicationMetadata: null
+                reservedBy: null
+                reservedUntil: null
+                updatedAt: "2024-10-18T12:00:00Z"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Telephone number not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflict - number not in valid state for release
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Number cannot be released from current status: AVAILABLE"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        API Token authentication for all API access.
+
+        **Obtaining a Token:**
+        1. Log into the web dashboard
+        2. Navigate to Dashboard → Customers → [Customer] → Create Token
+        3. Configure scoping (operations, SPIDs, IPs)
+        4. Copy the token (shown only once)
+
+        **Token Format:**
+        - Prefix: `rng_`
+        - Length: ~48 characters
+        - Example: `rng_abc123def456ghi789...`
+
+        **Using the Token:**
+        ```bash
+        curl -X POST https://soa-api.ringer.tel/api/v1/inventory/search \
+          -H "Authorization: Bearer rng_your_token_here" \
+          -H "Content-Type: application/json" \
+          -d '{"searchQuery":"303","page":0,"size":50}'
+        ```
+
+        **Token Scoping:**
+        - **Operations:** Restrict to specific SOA operations (e.g., soacreate, soaquery)
+        - **SPIDs:** Restrict to specific SPIDs (e.g., only "567G")
+        - **IPs:** Optional IP whitelist (e.g., only from 203.0.113.5)
+        - **Expiry:** Configurable (or never expires)
+
+        **Security:**
+        - Stored as SHA-256 hash in database
+        - Can be revoked or regenerated instantly
+        - Rate limited per customer (default: 100 req/min)
+        - Automatic SPID constraint validation
+
+        See `CUSTOMER_API_TOKEN_GUIDE.md` for complete documentation.
+
+  schemas:
+    QueryRequest:
+      type: object
+      description: Query request using the query language syntax
+      required:
+        - query
+      properties:
+        query:
+          type: string
+          description: |
+            Query string using the query language syntax.
+
+            Supports fields: tn, status, ported, spid, lata, state, npa, nxx, ocn, lrn, locality, metadata.*
+
+            Operators: =, !=, in, contains
+
+            Logical: and, or, ()
+          example: "status=available and lata=656"
+        page:
+          type: integer
+          minimum: 0
+          default: 0
+          description: Page number (zero-indexed)
+          example: 0
+        size:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 50
+          description: Number of results per page
+          example: 50
+        sortBy:
+          type: string
+          default: "telephoneNumber"
+          description: Field to sort by
+          example: "telephoneNumber"
+        sortDirection:
+          type: string
+          default: "ASC"
+          enum: [ASC, DESC]
+          description: Sort direction
+          example: "ASC"
+        fields:
+          type: array
+          items:
+            type: string
+          description: Optional list of fields to return (for performance optimization)
+          example: ["tn", "status", "spid", "lata"]
+
+    QueryResponse:
+      type: object
+      description: Query execution response with results and metadata
+      required:
+        - content
+        - totalElements
+        - totalPages
+        - executionTimeMs
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/NumberInventoryDto'
+          description: Query results
+        totalElements:
+          type: integer
+          format: int64
+          description: Total number of matching records
+          example: 4327
+        totalPages:
+          type: integer
+          description: Total number of pages
+          example: 87
+        page:
+          type: integer
+          description: Current page number (zero-indexed)
+          example: 0
+        size:
+          type: integer
+          description: Page size
+          example: 50
+        first:
+          type: boolean
+          description: Whether this is the first page
+          example: true
+        last:
+          type: boolean
+          description: Whether this is the last page
+          example: false
+        executionTimeMs:
+          type: integer
+          format: int64
+          description: Query execution time in milliseconds
+          example: 351
+        parsedQuery:
+          type: string
+          description: String representation of the parsed query AST
+          example: "ComparisonNode(status=available)"
+        fields:
+          type: array
+          items:
+            type: string
+          description: Fields returned (if field selection was used)
+          example: ["tn", "status", "spid"]
+
+    QueryErrorResponse:
+      type: object
+      description: Query error response with detailed error information
+      required:
+        - error
+        - query
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "Unexpected token 'xyz' (expected value) at position 15"
+        query:
+          type: string
+          description: The query that failed
+          example: "status=available xyz"
+        position:
+          type: integer
+          description: Position in query where error occurred (for parse errors)
+          example: 15
+        validOptions:
+          type: array
+          items:
+            type: string
+          description: List of valid options (for validation errors)
+          example: ["available", "reserved", "in_use", "ported_out", "quarantine"]
+
+    QueryValidationResponse:
+      type: object
+      description: Query validation result
+      required:
+        - valid
+        - query
+      properties:
+        valid:
+          type: boolean
+          description: Whether the query is valid
+          example: true
+        query:
+          type: string
+          description: The query that was validated
+          example: "status=available and lata=656"
+        parsedQuery:
+          type: string
+          description: String representation of parsed AST (if valid)
+          example: "LogicalNode(AND, ComparisonNode(status=available), ComparisonNode(lata=656))"
+        error:
+          type: string
+          description: Error message (if invalid)
+          example: "Invalid field 'invalid_field'"
+        position:
+          type: integer
+          description: Error position in query (for parse errors)
+          example: 7
+        type:
+          type: string
+          enum: [parse, validation, error]
+          description: Type of error
+          example: "validation"
+        validOptions:
+          type: array
+          items:
+            type: string
+          description: List of valid options (for validation errors)
+          example: ["tn", "status", "ported", "spid", "lata", "state"]
+
+    NumberInventoryDto:
+      type: object
+      description: Complete telephone number inventory details
+      required:
+        - id
+        - telephoneNumber
+        - spid
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        telephoneNumber:
+          type: string
+          pattern: '^[0-9]{10}$'
+          description: 10-digit telephone number
+          example: "3035551234"
+
+        # Block Information
+        npa:
+          type: string
+          pattern: '^[0-9]{3}$'
+          description: NPA (Area Code)
+          example: "303"
+        nxx:
+          type: string
+          pattern: '^[0-9]{3}$'
+          description: NXX (Exchange)
+          example: "555"
+        blockId:
+          type: string
+          description: Block identifier (A or 0-9)
+          example: "A"
+
+        # Ownership
+        spid:
+          type: string
+          description: Original SPID (partition key - never changes)
+          example: "567G"
+        currentOwnerSpid:
+          type: string
+          nullable: true
+          description: Current owner SPID (changes when ported out)
+          example: "567G"
+        customerId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Customer ID if assigned
+        customerName:
+          type: string
+          nullable: true
+          description: Customer name if assigned
+
+        # Number State
+        status:
+          type: string
+          enum: [AVAILABLE, RESERVED, IN_USE, PORTED_OUT, QUARANTINE]
+          description: Current status of the number
+          example: "AVAILABLE"
+        lifecycleState:
+          type: string
+          nullable: true
+          description: Lifecycle state of the number
+          example: "ACTIVE"
+
+        # LERG/LSMS Data
+        currentLrn:
+          type: string
+          pattern: '^[0-9]{10}$'
+          nullable: true
+          description: Current LRN (Location Routing Number)
+          example: "3035551234"
+        currentOcn:
+          type: string
+          nullable: true
+          description: Current OCN (Operating Company Number)
+          example: "567G"
+        npacRegion:
+          type: string
+          nullable: true
+          description: NPAC region
+          example: "CO"
+
+        # Geographic Location
+        lata:
+          type: integer
+          nullable: true
+          description: LATA number
+          example: 656
+        lataName:
+          type: string
+          nullable: true
+          description: LATA name
+          example: "DENVER"
+        state:
+          type: string
+          nullable: true
+          description: State abbreviation
+          example: "CO"
+        locality:
+          type: string
+          nullable: true
+          description: City or locality
+          example: "DENVER"
+
+        # Network Routing Details
+        switchClli:
+          type: string
+          nullable: true
+          description: Switch CLLI code
+          example: "DNVRCOMA"
+        tandemSwitch:
+          type: string
+          nullable: true
+          description: Tandem switch CLLI
+          example: "DNVRCOMD"
+        tandemOcn:
+          type: string
+          nullable: true
+          description: Tandem OCN
+          example: "9999"
+        tandemOcnName:
+          type: string
+          nullable: true
+          description: Tandem OCN provider name
+          example: "DENVER TANDEM"
+        ocnName:
+          type: string
+          nullable: true
+          description: OCN provider name
+          example: "RINGER COMMUNICATIONS"
+        cocType:
+          type: string
+          nullable: true
+          description: Class of Service Type
+          example: "1"
+
+        # Port Tracking
+        lastPortDate:
+          type: string
+          format: date-time
+          nullable: true
+          description: Last port date/time
+          example: "2024-09-15T14:22:00Z"
+        portDirection:
+          type: string
+          enum: ["IN", "OUT"]
+          nullable: true
+          description: Port direction (IN or OUT)
+          example: "OUT"
+        originalSpid:
+          type: string
+          nullable: true
+          description: Original SPID before port-out
+          example: "567G"
+
+        # Application Metadata
+        applicationId:
+          type: string
+          nullable: true
+          description: Application using this number
+          example: "ivr-system"
+        applicationMetadata:
+          type: object
+          nullable: true
+          additionalProperties: true
+          description: Custom metadata from application
+          example:
+            service: "customer-support"
+            campaign: "winter-2025"
+        reservedUntil:
+          type: string
+          format: date-time
+          nullable: true
+          description: Reservation expiration time
+          example: "2024-10-18T10:00:00Z"
+        reservedBy:
+          type: string
+          nullable: true
+          description: Application that reserved the number
+          example: "ivr-system"
+
+        # Audit Tracking
+        lastLrnDipAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Last LRN dip timestamp
+          example: "2024-10-15T10:30:00Z"
+        lastLrnDipResult:
+          type: string
+          enum: [NEVER_PORTED, PORTED_OUT, PORTED_BACK]
+          nullable: true
+          description: Last LRN dip result
+          example: "NEVER_PORTED"
+        discoveredVia:
+          type: string
+          enum: [LERG, LSMS, MANUAL]
+          description: How this number was discovered
+          example: "LERG"
+
+        # Timestamps
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+          example: "2024-10-01T10:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+          example: "2024-10-15T10:30:00Z"
+        lastVerifiedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Last verification timestamp
+          example: "2024-10-15T10:30:00Z"
+
+    InventorySummaryDto:
+      type: object
+      description: Aggregate statistics for a SPID's inventory
+      required:
+        - spid
+        - totalNumbers
+      properties:
+        spid:
+          type: string
+          description: SPID these statistics apply to
+          example: "567G"
+        totalNumbers:
+          type: integer
+          format: int64
+          description: Total numbers in inventory
+          example: 1523000
+        availableCount:
+          type: integer
+          format: int64
+          description: Count of AVAILABLE numbers
+          example: 1510457
+        reservedCount:
+          type: integer
+          format: int64
+          description: Count of RESERVED numbers
+          example: 245
+        inUseCount:
+          type: integer
+          format: int64
+          description: Count of IN_USE numbers
+          example: 755
+        portedOutCount:
+          type: integer
+          format: int64
+          description: Count of PORTED_OUT numbers
+          example: 12543
+        portedInCount:
+          type: integer
+          format: int64
+          description: Count of ported-in numbers (using our LRNs)
+          example: 3254
+        quarantineCount:
+          type: integer
+          format: int64
+          description: Count of QUARANTINE numbers
+          example: 0
+        totalBlocks:
+          type: integer
+          description: Total NPA-NXX blocks owned
+          example: 1523
+
+    ErrorResponse:
+      type: object
+      description: Standard error response
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "No authentication token"
+        timestamp:
+          type: string
+          format: date-time
+          description: Error timestamp
+          example: "2024-10-17T12:00:00Z"
+        path:
+          type: string
+          description: Request path
+          example: "/api/v1/inventory/search"
+
+  responses:
+    Unauthorized:
+      description: Authentication required - missing or invalid JWT token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "No authentication token"
+            timestamp: "2024-10-17T12:00:00Z"
+
+    Forbidden:
+      description: Insufficient permissions - user lacks required permission
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            noPermission:
+              summary: Missing permission
+              value:
+                error: "User does not have permission to access this resource"
+                timestamp: "2024-10-17T12:00:00Z"
+            noSpidAccess:
+              summary: No access to SPID
+              value:
+                error: "User does not have access to SPID: 567G"
+                timestamp: "2024-10-17T12:00:00Z"
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "An unexpected error occurred"
+            timestamp: "2024-10-17T12:00:00Z"

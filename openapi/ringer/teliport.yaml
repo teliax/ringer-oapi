@@ -1,7 +1,7 @@
-openapi: 3.0.1
+openapi: 3.0.3
 info:
   title: Ringer Portability API
-  version: 1.0.0
+  version: 1.0.1
   description: |-
     Service Order Acceptance (SOA) API for Local Number Portability (LNP) operations.
 
@@ -16,11 +16,11 @@ info:
     Authentication: Bearer token required for all endpoints
   contact:
     name: Ringer API Support
-    email: api-support@ringer.tel
-    url: https://ringer.tel
+    email: support@ringer.tel
+    url: https://docs.ringer.tel/
   license:
-    name: Proprietary
-    url: https://ringer.tel/terms
+    name: MIT License
+    url: https://github.com/teliax/ringer-oapi/blob/main/LICENSE
 servers:
   - url: https://soa-api.ringer.tel
     description: Production server
@@ -32,7 +32,7 @@ paths:
   /v1/lnp/soa/release:
     post:
       tags:
-        - SOA Operations SOA Operations
+        - SOA Operations
       summary: Release a port request
       description: Releases a telephone number from a port request
       operationId: release
@@ -96,7 +96,7 @@ paths:
   /v1/lnp/soa/lrn/remove:
     post:
       tags:
-        - SOA Operations SOA Operations
+        - SOA Operations
       summary: Remove an LRN
       description: Removes an existing Local Routing Number
       operationId: removeLrn
@@ -160,7 +160,7 @@ paths:
   /v1/lnp/soa/lrn/create:
     post:
       tags:
-        - SOA Operations SOA Operations
+        - SOA Operations
       summary: Create an LRN
       description: Creates a new Local Routing Number
       operationId: createLrn
@@ -233,7 +233,7 @@ paths:
   /v1/lnp/soa/events/{recno}/acknowledge:
     post:
       tags:
-        - SOA Operations SOA Operations
+        - SOA Operations
       summary: Acknowledge an event
       description: Acknowledges a specific SOA event by record number
       operationId: acknowledgeEvent
@@ -278,7 +278,7 @@ paths:
   /v1/lnp/soa/disconnect:
     post:
       tags:
-        - SOA Operations SOA Operations
+        - SOA Operations
       summary: Disconnect a number
       description: Disconnects a telephone number from service
       operationId: disconnect
@@ -333,7 +333,7 @@ paths:
   /v1/lnp/soa/create:
     post:
       tags:
-        - SOA Operations SOA Operations
+        - SOA Operations
       summary: Create a new port request
       description: Creates a new service order for porting a telephone number
       operationId: create
@@ -406,7 +406,7 @@ paths:
   /v1/lnp/soa/conflict/remove:
     post:
       tags:
-        - SOA Operations SOA Operations
+        - SOA Operations
       summary: Remove a conflict
       description: Removes a telephone number from conflict status
       operationId: removeConflict
@@ -452,7 +452,7 @@ paths:
   /v1/lnp/soa/conflict/create:
     post:
       tags:
-        - SOA Operations SOA Operations
+        - SOA Operations
       summary: Create a conflict
       description: Places a telephone number into conflict status
       operationId: createConflict
@@ -498,7 +498,7 @@ paths:
   /v1/lnp/soa/cancel:
     post:
       tags:
-        - SOA Operations SOA Operations
+        - SOA Operations
       summary: Cancel a port request
       description: Cancels an existing port request for a telephone number
       operationId: cancel
@@ -562,7 +562,7 @@ paths:
   /v1/lnp/soa/activate:
     post:
       tags:
-        - SOA Operations SOA Operations
+        - SOA Operations
       summary: Activate a ported number
       description: Activates a telephone number that has been ported
       operationId: activate
@@ -635,8 +635,12 @@ paths:
   /api/v1/soa/release:
     post:
       tags:
-        - SOA Operations soa-operations-controller
+        - SOA Operations
+      summary: Release port (Internal API)
+      description: Internal API endpoint for releasing a port request
       operationId: releasePort
+      security:
+        - bearerAuth: []
       requestBody:
         content:
           application/json:
@@ -657,8 +661,12 @@ paths:
   /api/v1/soa/query:
     post:
       tags:
-        - SOA Operations soa-operations-controller
-      operationId: queryPort
+        - SOA Operations
+      summary: Query port status (Internal API)
+      description: Internal API endpoint for querying port request status
+      operationId: queryV2
+      security:
+        - bearerAuth: []
       requestBody:
         content:
           application/json:
@@ -679,8 +687,12 @@ paths:
   /api/v1/soa/npanxxcreate:
     post:
       tags:
-        - SOA Operations soa-operations-controller
+        - SOA Operations
+      summary: Create NPA-NXX port (Internal API)
+      description: Internal API endpoint for creating NPA-NXX level port requests
       operationId: createNpanxx
+      security:
+        - bearerAuth: []
       requestBody:
         content:
           application/json:
@@ -701,8 +713,12 @@ paths:
   /api/v1/soa/intrasp:
     post:
       tags:
-        - SOA Operations soa-operations-controller
+        - SOA Operations
+      summary: Intra-SP port (Internal API)
+      description: Internal API endpoint for intra-service provider porting operations
       operationId: intraSp
+      security:
+        - bearerAuth: []
       requestBody:
         content:
           application/json:
@@ -723,8 +739,12 @@ paths:
   /api/v1/soa/create:
     post:
       tags:
-        - SOA Operations soa-operations-controller
+        - SOA Operations
+      summary: Create port request (Internal API)
+      description: Internal API endpoint for creating a new port request
       operationId: createPort
+      security:
+        - bearerAuth: []
       requestBody:
         content:
           application/json:
@@ -745,8 +765,12 @@ paths:
   /api/v1/soa/conflictremove:
     post:
       tags:
-        - SOA Operations soa-operations-controller
-      operationId: removeConflict_1
+        - SOA Operations
+      summary: Remove port conflict (Internal API)
+      description: Internal API endpoint for removing a port conflict
+      operationId: removeConflictV2
+      security:
+        - bearerAuth: []
       requestBody:
         content:
           application/json:
@@ -767,8 +791,12 @@ paths:
   /api/v1/soa/conflictcreate:
     post:
       tags:
-        - SOA Operations soa-operations-controller
-      operationId: createConflict_1
+        - SOA Operations
+      summary: Create port conflict (Internal API)
+      description: Internal API endpoint for creating a port conflict notification
+      operationId: createConflictV2
+      security:
+        - bearerAuth: []
       requestBody:
         content:
           application/json:
@@ -789,8 +817,12 @@ paths:
   /api/v1/soa/actreadyget:
     post:
       tags:
-        - SOA Operations soa-operations-controller
+        - SOA Operations
+      summary: Get activation-ready ports (Internal API)
+      description: Internal API endpoint for retrieving ports ready for activation
       operationId: getActivationReady
+      security:
+        - bearerAuth: []
       requestBody:
         content:
           application/json:
@@ -811,8 +843,12 @@ paths:
   /api/v1/soa/activate:
     post:
       tags:
-        - SOA Operations soa-operations-controller
+        - SOA Operations
+      summary: Activate ported number (Internal API)
+      description: Internal API endpoint for activating a ported telephone number
       operationId: activatePort
+      security:
+        - bearerAuth: []
       requestBody:
         content:
           application/json:
@@ -833,7 +869,7 @@ paths:
   /v1/lnp/soa/status/{tn}:
     get:
       tags:
-        - SOA Operations SOA Operations
+        - SOA Operations
       summary: Get number status
       description: Gets the current status of a telephone number
       operationId: getStatus
@@ -844,7 +880,7 @@ paths:
           required: true
           schema:
             type: string
-          example: 2125551234
+          example: "2125551234"
       responses:
         '200':
           description: Status retrieved successfully
@@ -878,7 +914,7 @@ paths:
   /v1/lnp/soa/spid/{tn}:
     get:
       tags:
-        - SOA Operations SOA Operations
+        - SOA Operations
       summary: Get SPID for number
       description: Gets the current SPID information for a telephone number
       operationId: getSpid
@@ -889,7 +925,7 @@ paths:
           required: true
           schema:
             type: string
-          example: 2125551234
+          example: "2125551234"
       responses:
         '200':
           description: SPID retrieved successfully
@@ -923,7 +959,7 @@ paths:
   /v1/lnp/soa/query/{tn}:
     get:
       tags:
-        - SOA Operations SOA Operations
+        - SOA Operations
       summary: Query port status
       description: Queries the current status and details of a telephone number
       operationId: query
@@ -934,14 +970,14 @@ paths:
           required: true
           schema:
             type: string
-          example: 2125551234
+          example: "2125551234"
         - name: newspid
           in: query
           description: 4-character SPID
           required: false
           schema:
             type: string
-          example: 1234
+          example: "1234"
         - name: region
           in: query
           description: 4-character region ID
@@ -991,7 +1027,7 @@ paths:
   /v1/lnp/soa/events:
     get:
       tags:
-        - SOA Operations SOA Operations
+        - SOA Operations
       summary: Get SOA events
       description: Retrieves unacknowledged SOA events
       operationId: getEvents
@@ -1019,7 +1055,7 @@ paths:
   /v1/lnp/soa/activation-ready/{newspid}:
     get:
       tags:
-        - SOA Operations SOA Operations
+        - SOA Operations
       summary: Get activation-ready numbers
       description: Gets all numbers ready for activation for a specific SPID
       operationId: getActivationReady_1
@@ -1030,7 +1066,7 @@ paths:
           required: true
           schema:
             type: string
-          example: 1234
+          example: "1234"
       responses:
         '200':
           description: Numbers retrieved successfully
@@ -1064,17 +1100,24 @@ paths:
   /api/v1/soa/status/{tn}:
     get:
       tags:
-        - SOA Operations soa-operations-controller
-      operationId: getStatus_1
+        - SOA Operations
+      summary: Get port status for a telephone number
+      description: Retrieves the current porting status and details for a specific telephone number
+      operationId: getStatusV2
+      security:
+        - bearerAuth: []
       parameters:
         - name: tn
           in: path
           required: true
+          description: 10-digit telephone number
           schema:
             type: string
+            pattern: '^[0-9]{10}$'
+            example: "3035551234"
       responses:
         '200':
-          description: OK
+          description: Status information retrieved successfully
           content:
             '*/*':
               schema:
@@ -1084,17 +1127,24 @@ paths:
   /api/v1/soa/spidget/{tn}:
     get:
       tags:
-        - SOA Operations soa-operations-controller
-      operationId: getSpid_1
+        - SOA Operations
+      summary: Get SPID for a telephone number
+      description: Retrieves the Service Provider ID (SPID) associated with a telephone number
+      operationId: getSpidV2
+      security:
+        - bearerAuth: []
       parameters:
         - name: tn
           in: path
           required: true
+          description: 10-digit telephone number
           schema:
             type: string
+            pattern: '^[0-9]{10}$'
+            example: "3035551234"
       responses:
         '200':
-          description: OK
+          description: SPID retrieved successfully
           content:
             '*/*':
               schema:
